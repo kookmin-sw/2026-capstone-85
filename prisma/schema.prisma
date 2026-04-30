@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  JOB_SEEKER
+  COMPANY
+  ADMIN
+}
+
+enum CompanyType {
+  BIG4
+  LOCAL_ACCOUNTING_FIRM
+  MID_SMALL_ACCOUNTING_FIRM
+  FINANCIAL_COMPANY
+  GENERAL_COMPANY
+  PUBLIC_INSTITUTION
+}
+
+enum JobFamily {
+  AUDIT
+  TAX
+  FAS
+  DEAL
+  INTERNAL_ACCOUNTING
+  IN_HOUSE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  CONTRACT
+  INTERN
+  PART_TIME
+}
+
+enum KicpaCondition {
+  REQUIRED
+  PREFERRED
+  NONE
+  UNCLEAR
+}
+
+enum TraineeStatus {
+  AVAILABLE
+  UNAVAILABLE
+  UNCLEAR
+}
+
+enum DeadlineType {
+  FIXED_DATE
+  UNTIL_FILLED
+  ALWAYS_OPEN
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+  DRAFT
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AiSuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  username     String    @unique
+  passwordHash String
+  displayName  String?
+  role         UserRole
+  companyId    String?
+  company      Company?  @relation(fields: [companyId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  jobSubmissions JobSubmission[]
+}
+
+model Company {
+  id             String      @id @default(uuid())
+  name           String      @unique
+  type           CompanyType
+  websiteUrl     String?
+  externalLinks  String[]    @default([])
+  tags           String[]    @default([])
+  employeeCount  Int?
+  averageSalary  Int?
+  foundedYear    Int?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  users          User[]
+  jobs           Job[]
+  jobSubmissions JobSubmission[]
+}
+
+model Source {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  baseUrl     String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  jobs Job[]
+}
+
+model Label {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs JobLabel[]
+}
+
+model Job {
+  id                           String          @id @default(uuid())
+  title                        String
+  description                  String
+  companyId                    String
+  sourceId                     String
+  originalUrl                  String
+  jobFamily                    JobFamily
+  employmentType               EmploymentType
+  companyType                  CompanyType
+  kicpaCondition               KicpaCondition
+  traineeStatus                TraineeStatus
+  practicalTrainingInstitution Boolean?
+  minExperienceYears           Int?
+  maxExperienceYears           Int?
+  location                     String?
+  deadlineType                 DeadlineType
+  deadline                     DateTime?
+  status                       JobStatus       @default(OPEN)
+  lastCheckedAt                DateTime
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @updatedAt
+
+  company       Company        @relation(fields: [companyId], references: [id])
+  source        Source         @relation(fields: [sourceId], references: [id])
+  labels        JobLabel[]
+  aiSuggestions AiSuggestion[]
+
+  @@index([status, deadline])
+  @@index([jobFamily])
+  @@index([companyType])
+  @@index([traineeStatus])
+}
+
+model JobLabel {
+  jobId   String
+  labelId String
+  job     Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, labelId])
+}
+
+model JobSubmission {
+  id             String           @id @default(uuid())
+  companyId      String
+  submittedById  String
+  title          String
+  description    String
+  originalUrl    String?
+  jobFamily      JobFamily
+  employmentType EmploymentType
+  deadlineType   DeadlineType
+  deadline       DateTime?
+  status         SubmissionStatus @default(PENDING)
+  adminNote      String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  company     Company @relation(fields: [companyId], references: [id])
+  submittedBy User    @relation(fields: [submittedById], references: [id])
+}
+
+model AiSuggestion {
+  id        String             @id @default(uuid())
+  jobId     String
+  summary   String
+  tags      String[]           @default([])
+  risks     String[]           @default([])
+  rawJson   Json
+  status    AiSuggestionStatus @default(PENDING)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model ImportRun {
+  id           String   @id @default(uuid())
+  sourceName   String
+  status       String
+  totalRows    Int      @default(0)
+  importedRows Int      @default(0)
+  errorRows    Int      @default(0)
+  notes        String?
+  createdAt    DateTime @default(now())
+}
