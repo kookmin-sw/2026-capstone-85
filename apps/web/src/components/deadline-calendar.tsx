@@ -26,20 +26,20 @@ type CalendarModalEntryType = JobCalendarEventType | "ONGOING";
 
 const calendarEventMeta: Record<
   CalendarModalEntryType,
-  { label: string; barClassName: string; badgeTone?: "teal" }
+  { label: string; barClassName: string; badgeTone?: "pink" }
 > = {
   START: {
     label: "시작",
-    barClassName: "border-sky-200 bg-sky-50 text-sky-950",
+    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
   },
   DEADLINE: {
     label: "마감",
-    barClassName: "border-rose-200 bg-rose-50 text-rose-950",
-    badgeTone: "teal",
+    barClassName: "border-pink-200 bg-[#FFF0F5] text-[#C0295C]",
+    badgeTone: "pink",
   },
   ONGOING: {
     label: "진행 중",
-    barClassName: "border-emerald-200 bg-emerald-50 text-emerald-950",
+    barClassName: "border-gray-100 bg-white text-gray-600",
   },
 };
 
@@ -75,7 +75,7 @@ export function MiniDeadlineCalendar({
   const days = useMemo(() => getCalendarGridDays(monthDate), [monthDate]);
 
   return (
-    <section className="grid gap-4 border border-[var(--app-line)] bg-[var(--app-surface)] p-4">
+    <section className="grid gap-4 rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className="flex items-center gap-2 text-lg font-semibold">
@@ -137,8 +137,8 @@ export function MiniDeadlineCalendar({
               aria-label={`${dateKey} 마감 공고 ${deadlineCount}건`}
               className={
                 inMonth
-                  ? "min-h-16 border border-[var(--app-line)] bg-white p-1 text-left hover:border-[var(--brand)]"
-                  : "min-h-16 border border-transparent bg-[#fbfbf8] p-1 text-left text-neutral-400"
+                  ? "min-h-16 rounded-lg border border-[var(--app-line)] bg-white p-1 text-left transition-colors hover:border-[var(--brand)] hover:bg-[#FFF5F8]"
+                  : "min-h-16 rounded-lg border border-transparent bg-gray-50 p-1 text-left text-gray-300"
               }
             >
               <span
@@ -154,7 +154,7 @@ export function MiniDeadlineCalendar({
                 {Array.from({ length: dots }).map((_, index) => (
                   <span
                     key={index}
-                    className="h-1.5 w-1.5 rounded-full bg-teal-600"
+                    className="h-1.5 w-1.5 rounded-full bg-pink-500"
                   />
                 ))}
               </div>
@@ -223,7 +223,7 @@ export function FullDeadlineCalendar({
   );
 
   return (
-    <section className="grid gap-4 border border-[var(--app-line)] bg-[var(--app-surface)] p-4">
+    <section className="grid gap-4 rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-normal">채용 캘린더</h1>
@@ -270,10 +270,10 @@ export function FullDeadlineCalendar({
             </button>
           </div>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">
-            <span className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-950">
+            <span className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-gray-700">
               공고 기간
             </span>
-            <span className="rounded border border-rose-200 bg-rose-50 px-2 py-1 text-rose-950">
+            <span className="rounded-md border border-pink-200 bg-[#FFF0F5] px-2.5 py-1 text-[#E8457A]">
               마감 지점
             </span>
           </div>
@@ -286,7 +286,7 @@ export function FullDeadlineCalendar({
             {weekLabels.map((label) => (
               <div
                 key={label}
-                className="border-b border-r border-[var(--app-line)] bg-[#fbfbf8] px-2 py-2 text-center font-semibold text-[var(--app-muted)]"
+                className="border-b border-r border-[var(--app-line)] bg-gray-50 px-2 py-2 text-center text-xs font-semibold text-gray-500"
               >
                 {label}
               </div>
@@ -315,8 +315,8 @@ export function FullDeadlineCalendar({
                     aria-label={`${dateKey} 채용 기간 ${activeRanges.length}건`}
                     className={
                       inMonth
-                        ? "relative min-h-44 border-r border-[var(--app-line)] bg-white p-2 text-left align-top hover:bg-teal-50/40"
-                        : "relative min-h-44 border-r border-[var(--app-line)] bg-[#fbfbf8] p-2 text-left text-neutral-400"
+                        ? "relative min-h-44 border-r border-[var(--app-line)] bg-white p-2 text-left align-top transition-colors hover:bg-[#FFF8FA]"
+                        : "relative min-h-44 border-r border-[var(--app-line)] bg-gray-50 p-2 text-left text-gray-300"
                     }
                   >
                     <span
@@ -489,8 +489,8 @@ function rangeContainsDateKey(range: JobCalendarRange, dateKey: string) {
 function rangeSegmentClassName(segment: CalendarRangeSegment) {
   const rangeHasDeadline = segment.range.endDate !== null;
   const colorClassName = rangeHasDeadline
-    ? "border-emerald-200 bg-gradient-to-r from-sky-50 via-emerald-50 to-rose-50 text-emerald-950"
-    : "border-sky-200 bg-sky-50 text-sky-950";
+    ? "border-pink-200 bg-[#FFF5F8] text-[#C0295C]"
+    : "border-gray-200 bg-gray-50 text-gray-700";
 
   if (segment.startsAtRangeStart && segment.endsAtRangeEnd) {
     return `rounded-md ${colorClassName}`;

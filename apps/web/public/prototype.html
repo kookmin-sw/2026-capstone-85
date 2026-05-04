@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accountit — CPA 전용 채용 큐레이션 플랫폼</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── CSS Variables ── */
+:root {
+  --primary: #E8457A;
+  --primary-dark: #D03368;
+  --primary-light: #fff0f5;
+  --primary-mid: #ffd6e5;
+  --red: #FF4D4F;
+  --red-light: #fff1f0;
+  --orange: #FA8C16;
+  --orange-light: #fff7e6;
+  --yellow: #FAAD14;
+  --yellow-light: #fffbe6;
+  --blue: #1890FF;
+  --blue-light: #e6f4ff;
+  --gray-50: #FAFAFA;
+  --gray-100: #F5F5F5;
+  --gray-150: #F0F0F0;
+  --gray-200: #E8E8E8;
+  --gray-300: #D9D9D9;
+  --gray-400: #BFBFBF;
+  --gray-500: #8C8C8C;
+  --gray-600: #595959;
+  --gray-700: #434343;
+  --gray-800: #262626;
+  --gray-900: #141414;
+  --white: #FFFFFF;
+  --border: #EBEBEB;
+  --border-strong: #D9D9D9;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.05);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body {
+  background: var(--gray-50);
+  color: var(--gray-800);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* Pages */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── NAV ── */
+nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+}
+.nav-inner {
+  max-width: 1400px; margin: 0 auto;
+  padding: 0 24px;
+  display: flex; align-items: center; height: 56px; gap: 0;
+}
+.nav-logo {
+  font-size: 20px; font-weight: 800;
+  color: var(--gray-900);
+  margin-right: 40px; cursor: pointer;
+  letter-spacing: -0.04em; flex-shrink: 0;
+  text-decoration: none;
+}
+.nav-logo .logo-cpa { color: var(--primary); }
+.nav-tab {
+  height: 56px; display: flex; align-items: center;
+  padding: 0 16px; font-size: 14px; font-weight: 500;
+  color: var(--gray-500); border-bottom: 2px solid transparent;
+  cursor: pointer; transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: var(--gray-800); }
+.nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.nav-badge {
+  background: var(--primary); color: white;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 20px; margin-left: 5px;
+}
+.nav-sp { flex: 1; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.nav-icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray-500); cursor: pointer; transition: background .15s;
+  border: none; background: transparent;
+}
+.nav-icon-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+.nav-user {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 4px 8px; border-radius: var(--radius-sm);
+  transition: background .15s;
+}
+.nav-user:hover { background: var(--gray-100); }
+.nav-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--primary); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.nav-user-info .name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.nav-user-info .role { font-size: 11px; color: var(--gray-500); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; font-size: 13px; font-weight: 600;
+  border-radius: var(--radius-sm); cursor: pointer;
+  border: 1px solid transparent; transition: all .15s;
+  white-space: nowrap; font-family: inherit; text-decoration: none;
+}
+.btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+.btn-outline { background: white; color: var(--gray-700); border-color: var(--border-strong); }
+.btn-outline:hover { background: var(--gray-50); border-color: var(--gray-400); }
+.btn-ghost { background: transparent; color: var(--gray-600); border-color: transparent; }
+.btn-ghost:hover { background: var(--gray-100); color: var(--gray-800); }
+.btn-danger { background: transparent; color: var(--red); border-color: var(--border); }
+.btn-danger:hover { background: var(--red-light); border-color: var(--red); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 4px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; font-size: 11px; font-weight: 600;
+  border-radius: 20px; white-space: nowrap;
+}
+.badge-gray { background: var(--gray-100); color: var(--gray-600); }
+.badge-primary { background: var(--primary-light); color: var(--primary-dark); }
+.badge-red { background: var(--primary-light); color: var(--primary-dark); }
+.badge-orange { background: var(--primary-light); color: var(--primary-dark); }
+.badge-gray { background: var(--gray-100); color: var(--gray-600); }
+.badge-blue { background: var(--gray-100); color: var(--gray-600); }
+.badge-outline { background: white; color: var(--gray-600); border: 1px solid var(--border-strong); }
+
+/* ── D-DAY BADGE ── */
+.dday {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 3px 8px; font-size: 11px; font-weight: 700;
+  border-radius: 4px; white-space: nowrap;
+  font-family: 'Pretendard', sans-serif;
+}
+.dday-d0 { background: var(--primary); color: white; }
+.dday-d3 { background: var(--primary-light); color: var(--primary-dark); border: 1px solid var(--primary-mid); }
+.dday-d7 { background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-mid); }
+.dday-d30 { background: var(--primary-light); color: var(--primary-dark); border: 1px solid var(--primary-mid); }
+.dday-gray { background: var(--gray-100); color: var(--gray-500); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── JOB CARD ── */
+.job-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  cursor: pointer;
+  transition: box-shadow .2s, border-color .2s, transform .15s;
+  position: relative;
+}
+.job-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.job-card.closed-job { opacity: .5; pointer-events: none; }
+.company-logo {
+  width: 44px; height: 44px; border-radius: 10px;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: white;
+  flex-shrink: 0; overflow: hidden; background: var(--gray-200);
+}
+
+/* ── INPUTS ── */
+input, select, textarea {
+  background: var(--white); border: 1px solid var(--border-strong);
+  color: var(--gray-800); border-radius: var(--radius-sm);
+  font-family: 'Pretendard', sans-serif; font-size: 13.5px; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232,69,122,.12);
+}
+select option { background: white; }
+
+/* ── CHECKBOX ── */
+.fcheck {
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; padding: 5px 0; font-size: 13px; color: var(--gray-700);
+}
+.fcheck input[type=checkbox], .fcheck input[type=radio] {
+  width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer;
+  border-radius: 3px;
+}
+.fcheck:hover { color: var(--gray-900); }
+
+/* ── QUICK PILLS ── */
+.qpill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; font-size: 13px; font-weight: 500;
+  border-radius: 20px; border: 1.5px solid var(--border-strong);
+  color: var(--gray-600); background: var(--white);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.qpill:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+.qpill.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark); font-weight: 600; }
+
+/* ── SECTION HEADER ── */
+.sh { font-size: 12px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+
+/* ── SIDEBAR NAV ── */
+.side-nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  font-size: 13.5px; font-weight: 500; color: var(--gray-600);
+  cursor: pointer; transition: all .15s;
+  text-decoration: none;
+}
+.side-nav-item:hover { background: var(--gray-100); color: var(--gray-900); }
+.side-nav-item .icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: var(--gray-400); flex-shrink: 0; }
+.side-nav-item:hover .icon { color: var(--primary); }
+
+/* ── INNER TABS ── */
+.inner-tab {
+  padding: 8px 16px; font-size: 13.5px; font-weight: 500;
+  color: var(--gray-500); border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all .15s;
+}
+.inner-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.inner-tab:hover { color: var(--gray-800); }
+
+/* ── CALENDAR ── */
+.cal-day-header { text-align: center; font-size: 12px; font-weight: 600; color: var(--gray-400); padding: 8px 0; }
+.cal-cell {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 13.5px; font-weight: 500; border-radius: 50%;
+  cursor: default; position: relative; color: var(--gray-700);
+  transition: background .12s;
+}
+.cal-cell.other-month { color: var(--gray-300); }
+.cal-cell.today-cal {
+  background: var(--primary); color: white; font-weight: 700;
+}
+.cal-cell.has-d3 { background: var(--primary-light); color: var(--primary-dark); font-weight: 700; cursor: pointer; }
+.cal-cell.has-d3:hover { background: var(--primary-mid); }
+.cal-cell.has-d7 { background: var(--primary-light); color: var(--primary); font-weight: 600; cursor: pointer; }
+.cal-cell.has-d7:hover { background: var(--primary-mid); }
+.cal-cell.has-d30 { background: var(--primary-light); color: var(--primary-dark); font-weight: 600; cursor: pointer; }
+.cal-cell.has-d30:hover { background: var(--primary-mid); }
+.cal-dot {
+  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+}
+.cal-cell.today-cal .cal-dot { background: rgba(255,255,255,.6); }
+
+/* ── STAT CARD ── */
+.stat-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px 20px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-icon {
+  width: 44px; height: 44px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.stat-val { font-size: 24px; font-weight: 800; color: var(--gray-900); line-height: 1.1; letter-spacing: -0.02em; }
+.stat-lbl { font-size: 12px; color: var(--gray-500); margin-top: 1px; }
+
+/* ── ADMIN TABLE ── */
+.atable { width: 100%; border-collapse: collapse; }
+.atable th {
+  padding: 10px 14px; text-align: left; font-size: 11.5px; font-weight: 600;
+  color: var(--gray-500); border-bottom: 1px solid var(--border); background: var(--gray-50);
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.atable td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+.atable tr:last-child td { border-bottom: none; }
+.atable tbody tr:hover td { background: var(--gray-50); }
+
+/* ── MODAL ── */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); width: 640px;
+  max-width: 95vw; max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.modal-hd { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-bd { padding: 24px; }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+.toast-item {
+  background: var(--gray-900); color: white;
+  padding: 12px 18px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  animation: toastIn .22s cubic-bezier(.22,.68,0,1.2);
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.2);
+}
+@keyframes toastIn { from { opacity:0; transform:translateY(10px) scale(.96); } to { opacity:1; transform:none; } }
+
+/* ── FORM ── */
+.fg { margin-bottom: 16px; }
+.fg label { display: block; font-size: 12.5px; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
+.fg input, .fg select, .fg textarea { width: 100%; padding: 9px 12px; }
+.fg textarea { resize: vertical; min-height: 90px; }
+
+/* ── MISC ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+mark { background: rgba(232,69,122,.12); color: var(--primary-dark); border-radius: 2px; padding: 0 2px; }
+.divider { border: none; border-top: 1px solid var(--border); }
+.pbar { height: 4px; background: var(--gray-100); border-radius: 2px; overflow: hidden; }
+.pbar-inner { height: 100%; background: var(--primary); border-radius: 2px; }
+
+/* ── HERO ── */
+.hero-banner {
+  background: linear-gradient(130deg, #fff0f5 0%, #ffd6e5 40%, #ffb3cc 100%);
+  border-radius: var(--radius-lg); padding: 36px 40px;
+  position: relative; overflow: hidden; min-height: 200px;
+  display: flex; align-items: center;
+}
+.hero-banner::before {
+  content: ''; position: absolute; right: -20px; top: -20px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(232,69,122,.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero-3d {
+  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+  font-size: 100px; opacity: .85; pointer-events: none;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,.12));
+}
+
+/* ── TRENDING CARDS (horizontal scroll) ── */
+.trending-scroll {
+  display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.trending-scroll::-webkit-scrollbar { display: none; }
+.trending-card {
+  min-width: 230px; background: var(--white);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 16px; cursor: pointer; flex-shrink: 0;
+  transition: box-shadow .2s, border-color .2s, transform .15s;
+  box-shadow: var(--shadow-sm);
+}
+.trending-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary); transform: translateY(-2px); }
+
+/* ── DEADLINE LIST ── */
+.deadline-row {
+  display: grid; grid-template-columns: 1fr auto auto auto;
+  align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s; border-radius: 6px; padding: 10px 8px;
+}
+.deadline-row:hover { background: var(--gray-50); }
+.deadline-row:last-child { border-bottom: none; }
+
+/* ── WEEK TOP LIST ── */
+.top-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s; border-radius: 6px; padding: 9px 8px;
+}
+.top-item:hover { background: var(--gray-50); }
+.top-item:last-child { border-bottom: none; }
+.top-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.top-num.n1 { background: var(--primary); color: white; }
+.top-num.n2 { background: var(--gray-200); color: var(--gray-600); }
+.top-num.n3 { background: var(--gray-200); color: var(--gray-600); }
+.top-num.n4, .top-num.n5 { background: transparent; color: var(--gray-400); border: 1px solid var(--gray-200); }
+
+/* ── KEYWORD CHIP ── */
+.kw-chip {
+  display: inline-flex; align-items: center;
+  padding: 5px 12px; font-size: 12px; font-weight: 500;
+  border-radius: 20px; background: var(--gray-100);
+  color: var(--gray-600); cursor: pointer; transition: all .15s;
+  border: 1px solid var(--border);
+}
+.kw-chip:hover { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary); }
+
+/* ── TIP BOX ── */
+.tip-box {
+  background: linear-gradient(135deg, #fff0f5 0%, #ffd6e5 100%);
+  border: 1px solid var(--primary-mid); border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+/* ── FILTER SIDEBAR ── */
+.filter-group { margin-bottom: 0; }
+.filter-section {
+  padding: 16px 0; border-bottom: 1px solid var(--border);
+}
+.filter-section:last-child { border-bottom: none; }
+.filter-section-title {
+  font-size: 12.5px; font-weight: 700; color: var(--gray-700);
+  margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ── AI BLOCK ── */
+.ai-block {
+  background: linear-gradient(135deg, #fff0f5 0%, #f0f7ff 100%);
+  border: 1px solid #ffd6e5; border-radius: var(--radius-md); padding: 20px;
+}
+.ai-label {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--primary); color: white;
+  font-size: 10.5px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ── COMPANY LOGO COLORS ── */
+.logo-bg-0 { background: #E8457A; }
+.logo-bg-1 { background: #D03368; }
+.logo-bg-2 { background: #c0326a; }
+.logo-bg-3 { background: #555555; }
+.logo-bg-4 { background: #888888; }
+.logo-bg-5 { background: #aa3366; }
+.logo-bg-6 { background: #cc4477; }
+.logo-bg-7 { background: #6b6b6b; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     NAV
+═══════════════════════════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo" onclick="nav('dashboard')">
+      Account<span class="logo-cpa">it</span>
+    </span>
+    <span class="nav-sp" style="flex:0;width:20px"></span>
+    <span class="nav-tab active" id="nav-dashboard" onclick="nav('dashboard')">홈</span>
+    <span class="nav-tab" id="nav-jobs" onclick="nav('jobs')">채용공고</span>
+    <span class="nav-tab" id="nav-companies" onclick="nav('companies')">회사소개</span>
+    <span class="nav-tab" id="nav-calendar" onclick="nav('calendar')">마감일 캘린더</span>
+    <span class="nav-sp"></span>
+    <div class="nav-right">
+      <button class="nav-icon-btn" onclick="document.getElementById('nav-search-modal').style.display='flex'" title="검색">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </button>
+      <span id="nav-auth-guest" style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="nav('login')">로그인</button>
+        <button class="btn btn-primary btn-sm" onclick="nav('signup')">회원가입</button>
+      </span>
+      <span id="nav-auth-user" style="display:none;align-items:center;gap:8px">
+        <span id="nav-username" style="font-size:13px;font-weight:600;color:var(--gray-700)"></span>
+        <button class="btn btn-outline btn-sm" onclick="handleLogout()">로그아웃</button>
+      </span>
+    </div>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════
+     HOME (DASHBOARD)
+═══════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <!-- HERO SECTION -->
+  <div style="background:linear-gradient(135deg,#fff5f8 0%,#ffe8f0 50%,#fff0f5 100%);min-height:480px;position:relative;overflow:hidden;display:flex;align-items:center">
+    <!-- decorative circles -->
+    <div style="position:absolute;right:-80px;top:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(232,69,122,.08) 0%,transparent 70%);pointer-events:none"></div>
+    <div style="position:absolute;left:-40px;bottom:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(232,69,122,.06) 0%,transparent 70%);pointer-events:none"></div>
+    <div style="max-width:1100px;margin:0 auto;padding:60px 24px;display:flex;align-items:center;gap:40px;width:100%">
+      <div style="flex:1;max-width:560px">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--primary-light);border:1px solid var(--primary-mid);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--primary);margin-bottom:20px">
+          CPA 전용 채용 큐레이션 플랫폼
+        </div>
+        <h1 style="font-size:48px;font-weight:800;color:var(--gray-900);line-height:1.2;letter-spacing:-0.03em;margin-bottom:16px">
+          회계사 채용,<br><span style="color:var(--primary)">더 빠르고 정확하게</span>
+        </h1>
+        <p style="font-size:16px;color:var(--gray-500);line-height:1.65;margin-bottom:32px">회계사 채용 공고를 한 곳에 모아, 필요한 기준으로 정리해드립니다.<br>마감일, 수습 가능 여부, 직무군, 연차 등으로 맞춤 검색하세요.</p>
+        <div style="display:flex;gap:10px;max-width:520px">
+          <div style="flex:1;position:relative">
+            <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray-400)" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="hero-search" type="text" placeholder="회사명, 공고명, 직무, 키워드로 검색하세요" style="width:100%;padding:14px 14px 14px 44px;font-size:14px;border-radius:10px;border:1.5px solid var(--border-strong)" onkeydown="if(event.key==='Enter'){searchFromHero()}">
+          </div>
+          <button class="btn btn-primary" style="padding:14px 24px;font-size:14px;border-radius:10px" onclick="searchFromHero()">검색</button>
+        </div>
+      </div>
+      <!-- 3D decorative icons -->
+      <div style="flex:1;position:relative;height:360px;display:flex;align-items:center;justify-content:center">
+        <div style="position:absolute;left:10%;top:10%;font-size:52px;animation:float1 4s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(232,69,122,.2))">📅</div>
+        <div style="position:absolute;right:10%;top:20%;font-size:44px;animation:float2 5s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.1))">👤</div>
+        <div style="position:absolute;left:5%;bottom:25%;font-size:40px;animation:float3 6s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.1))">🔍</div>
+        <div style="position:absolute;right:5%;bottom:20%;font-size:48px;animation:float1 5.5s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.1))">📊</div>
+        <div style="position:absolute;center:0;top:50%;transform:translateY(-50%);font-size:56px;animation:float2 4.5s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(232,69,122,.15))">📋</div>
+        <div style="position:absolute;right:25%;top:50%;transform:translateY(-50%);font-size:42px;animation:float3 7s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.08))">🏢</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div style="background:white;border-bottom:1px solid var(--border)">
+    <div style="max-width:1100px;margin:0 auto;padding:20px 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:0">
+      <div style="display:flex;align-items:center;gap:14px;padding:0 24px;border-right:1px solid var(--border)">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:18px">💼</div>
+        <div><div style="font-size:22px;font-weight:800;color:var(--gray-900);letter-spacing:-0.03em" id="stat-active">1,842<span style="font-size:14px">+</span></div><div style="font-size:12px;color:var(--gray-500)">진행 중인 공고</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:0 24px;border-right:1px solid var(--border)">
+        <div style="width:40px;height:40px;border-radius:10px;background:#fff0f5;display:flex;align-items:center;justify-content:center;font-size:18px">🏢</div>
+        <div><div style="font-size:22px;font-weight:800;color:var(--gray-900);letter-spacing:-0.03em">320<span style="font-size:14px">+</span></div><div style="font-size:12px;color:var(--gray-500)">참여 기업</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:0 24px;border-right:1px solid var(--border)">
+        <div style="width:40px;height:40px;border-radius:10px;background:#fff5f0;display:flex;align-items:center;justify-content:center;font-size:18px">👥</div>
+        <div><div style="font-size:22px;font-weight:800;color:var(--gray-900);letter-spacing:-0.03em">18,600<span style="font-size:14px">+</span></div><div style="font-size:12px;color:var(--gray-500)">CPA 회원</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:0 24px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#f0f7ff;display:flex;align-items:center;justify-content:center;font-size:18px">⏰</div>
+        <div><div style="font-size:22px;font-weight:800;color:var(--gray-900);letter-spacing:-0.03em">3,240<span style="font-size:14px">+</span></div><div style="font-size:12px;color:var(--gray-500)">이번 주 신규 공고</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK SEARCH -->
+  <div style="max-width:1100px;margin:0 auto;padding:40px 24px 60px">
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 32px;box-shadow:var(--shadow-sm)">
+      <div style="font-size:17px;font-weight:700;color:var(--gray-900);margin-bottom:6px">빠른 탐색</div>
+      <div style="font-size:13px;color:var(--gray-400);margin-bottom:20px">원하는 공고를 빠르게 찾아보세요</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+        <div onclick="quickFilter('trainee')" style="display:flex;align-items:center;gap:14px;padding:18px 20px;border:1.5px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='white'">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🎓</div>
+          <div><div style="font-size:14px;font-weight:700;color:var(--gray-900)">수습 CPA</div><div style="font-size:12px;color:var(--gray-400);margin-top:2px">수습 가능한 공고만 보기</div></div>
+          <svg style="margin-left:auto;color:var(--gray-300);flex-shrink:0" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div onclick="quickFilter('entry')" style="display:flex;align-items:center;gap:14px;padding:18px 20px;border:1.5px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='white'">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fff5f0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✨</div>
+          <div><div style="font-size:14px;font-weight:700;color:var(--gray-900)">신입</div><div style="font-size:12px;color:var(--gray-400);margin-top:2px">신입 채용 공고 보기</div></div>
+          <svg style="margin-left:auto;color:var(--gray-300);flex-shrink:0" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div onclick="quickFilter('career')" style="display:flex;align-items:center;gap:14px;padding:18px 20px;border:1.5px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='white'">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f0f7ff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💼</div>
+          <div><div style="font-size:14px;font-weight:700;color:var(--gray-900)">경력/이직</div><div style="font-size:12px;color:var(--gray-400);margin-top:2px">경력 채용 공고 보기</div></div>
+          <svg style="margin-left:auto;color:var(--gray-300);flex-shrink:0" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div onclick="quickFilter('urgent')" style="display:flex;align-items:center;gap:14px;padding:18px 20px;border:1.5px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='white'">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fff7e6;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⏰</div>
+          <div><div style="font-size:14px;font-weight:700;color:var(--gray-900)">마감 임박</div><div style="font-size:12px;color:var(--gray-400);margin-top:2px">D-7 이내 마감 공고 보기</div></div>
+          <svg style="margin-left:auto;color:var(--gray-300);flex-shrink:0" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes float1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+@keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes float3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+</style>
+
+<!-- ═══════════════════════════════════════
+     JOB LIST
+═══════════════════════════════════════ -->
+<div class="page" id="page-jobs">
+  <div style="max-width:1280px;margin:0 auto;padding:24px 32px">
+    <!-- Search bar + sort -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+      <div style="flex:1;position:relative">
+        <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray-400)" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input id="search-input" type="text" placeholder="회사명, 공고명, 직무, 키워드로 검색하세요" style="width:100%;padding:12px 14px 12px 44px;font-size:14px;border-radius:10px;border:1.5px solid var(--border);outline:none;transition:border-color .15s" oninput="applyFilters()" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <button class="btn btn-primary" style="padding:12px 28px;font-size:14px;font-weight:600" onclick="applyFilters()">검색</button>
+      <select id="sort-select" style="padding:12px 14px;border-radius:10px;width:160px;font-size:13px;border:1.5px solid var(--border);background:white;cursor:pointer" onchange="applyFilters()">
+        <option value="deadline">마감임박순</option>
+        <option value="latest">최신등록순</option>
+      </select>
+    </div>
+
+    <!-- Filter box (unified) -->
+    <div class="card" style="margin-bottom:16px;overflow:hidden">
+      <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg width="14" height="14" fill="none" stroke="var(--primary)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+          <span style="font-size:13px;font-weight:700;color:var(--gray-700)">필터</span>
+          <button onclick="toggleFilterBox('jobs')" id="filter-toggle-btn-jobs" style="font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:500">필터 닫기 ∧</button>
+        </div>
+        <button onclick="clearAllFilters()" style="font-size:12px;color:var(--gray-400);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px">
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          필터 초기화
+        </button>
+      </div>
+      <div id="filter-box-body-jobs" style="padding:16px 24px">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:24px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">직무군</div>
+            <label class="fcheck"><input type="checkbox" id="fc-all-cat" checked onchange="toggleAllCat(this)"> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="감사" id="filter-cat-감사" onchange="onSubCheckJobs('fc-all-cat','filter-cat-sub')"> 감사</label>
+            <label class="fcheck"><input type="checkbox" value="세무" id="filter-cat-세무" class="filter-cat-sub" onchange="onSubCheckJobs('fc-all-cat','filter-cat-sub')"> 세무</label>
+            <label class="fcheck"><input type="checkbox" value="FAS" id="filter-cat-FAS" class="filter-cat-sub" onchange="onSubCheckJobs('fc-all-cat','filter-cat-sub')"> FAS</label>
+            <label class="fcheck"><input type="checkbox" value="Deal" id="filter-cat-Deal" class="filter-cat-sub" onchange="onSubCheckJobs('fc-all-cat','filter-cat-sub')"> Deal</label>
+            <label class="fcheck"><input type="checkbox" value="내부회계" id="filter-cat-내부회계" class="filter-cat-sub" onchange="onSubCheckJobs('fc-all-cat','filter-cat-sub')"> 내부회계</label>
+            <label class="fcheck"><input type="checkbox" value="인하우스" id="filter-cat-인하우스" class="filter-cat-sub" onchange="onSubCheckJobs('fc-all-cat','filter-cat-sub')"> 인하우스</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">회사 유형</div>
+            <label class="fcheck"><input type="checkbox" id="fc-all-ct" checked onchange="toggleAllCt(this)"> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="Big4" id="filter-ct-Big4" class="filter-ct-sub" onchange="onSubCheckJobs('fc-all-ct','filter-ct-sub')"> Big4</label>
+            <label class="fcheck"><input type="checkbox" value="로컬" id="filter-ct-로컬" class="filter-ct-sub" onchange="onSubCheckJobs('fc-all-ct','filter-ct-sub')"> 로컬 회계법인</label>
+            <label class="fcheck"><input type="checkbox" value="중소" id="filter-ct-중소" class="filter-ct-sub" onchange="onSubCheckJobs('fc-all-ct','filter-ct-sub')"> 중소 회계법인</label>
+            <label class="fcheck"><input type="checkbox" value="금융사" id="filter-ct-금융사" class="filter-ct-sub" onchange="onSubCheckJobs('fc-all-ct','filter-ct-sub')"> 금융사</label>
+            <label class="fcheck"><input type="checkbox" value="일반기업" id="filter-ct-일반기업" class="filter-ct-sub" onchange="onSubCheckJobs('fc-all-ct','filter-ct-sub')"> 일반 기업</label>
+            <label class="fcheck"><input type="checkbox" value="공공기관" id="filter-ct-공공기관" class="filter-ct-sub" onchange="onSubCheckJobs('fc-all-ct','filter-ct-sub')"> 공공기관</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">고용 형태</div>
+            <label class="fcheck"><input type="checkbox" id="fc-all-et" checked onchange="toggleAllEt(this)"> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="정규직" id="filter-et-정규직" class="filter-et-sub" onchange="onSubCheckJobs('fc-all-et','filter-et-sub')"> 정규직</label>
+            <label class="fcheck"><input type="checkbox" value="계약직" id="filter-et-계약직" class="filter-et-sub" onchange="onSubCheckJobs('fc-all-et','filter-et-sub')"> 계약직</label>
+            <label class="fcheck"><input type="checkbox" value="인턴" id="filter-et-인턴" class="filter-et-sub" onchange="onSubCheckJobs('fc-all-et','filter-et-sub')"> 인턴</label>
+            <label class="fcheck"><input type="checkbox" value="파트타임" id="filter-et-파트타임" class="filter-et-sub" onchange="onSubCheckJobs('fc-all-et','filter-et-sub')"> 파트타임</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">KICPA 조건</div>
+            <label class="fcheck"><input type="checkbox" id="fc-all-kicpa" checked onchange="toggleAllKicpa(this)"> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="필수" id="filter-kicpa-필수" class="filter-kicpa-sub" onchange="onSubCheckJobs('fc-all-kicpa','filter-kicpa-sub')"> 필수</label>
+            <label class="fcheck"><input type="checkbox" value="우대" id="filter-kicpa-우대" class="filter-kicpa-sub" onchange="onSubCheckJobs('fc-all-kicpa','filter-kicpa-sub')"> 우대</label>
+            <label class="fcheck"><input type="checkbox" value="무관" id="filter-kicpa-무관" class="filter-kicpa-sub" onchange="onSubCheckJobs('fc-all-kicpa','filter-kicpa-sub')"> 무관</label>
+            <label class="fcheck"><input type="checkbox" value="불명확" id="filter-kicpa-불명확" class="filter-kicpa-sub" onchange="onSubCheckJobs('fc-all-kicpa','filter-kicpa-sub')"> 불명확</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">마감 유형</div>
+            <label class="fcheck"><input type="checkbox" id="fc-all-dt" checked onchange="toggleAllDt(this)"> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="특정일" id="filter-dt-특정일" class="filter-dt-sub" onchange="onSubCheckJobs('fc-all-dt','filter-dt-sub')"> 특정일 마감</label>
+            <label class="fcheck"><input type="checkbox" value="채용시" id="filter-dt-채용시" class="filter-dt-sub" onchange="onSubCheckJobs('fc-all-dt','filter-dt-sub')"> 채용시 마감</label>
+            <label class="fcheck"><input type="checkbox" value="상시" id="filter-dt-상시" class="filter-dt-sub" onchange="onSubCheckJobs('fc-all-dt','filter-dt-sub')"> 상시채용</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">경력 연차</div>
+            <div style="padding:0 2px;margin-top:4px">
+              <input type="range" id="filter-exp-slider" min="0" max="15" value="15" style="width:100%;accent-color:var(--primary)" oninput="document.getElementById('exp-label').textContent=this.value>=15?'15년+':this.value===0?'신입':this.value+'년';applyFilters()">
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-400);margin-top:6px">
+                <span>신입</span><span id="exp-label" style="color:var(--primary);font-weight:600">15년+</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">수습 CPA 가능</div>
+            <label class="fcheck"><input type="checkbox" id="fc-all-tr" checked onchange="toggleAllTr(this)"> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="true" id="filter-tr-true" class="filter-tr-sub" onchange="onSubCheckJobs('fc-all-tr','filter-tr-sub')"> 가능</label>
+            <label class="fcheck"><input type="checkbox" value="false" id="filter-tr-false" class="filter-tr-sub" onchange="onSubCheckJobs('fc-all-tr','filter-tr-sub')"> 불가능</label>
+            <label class="fcheck"><input type="checkbox" value="unknown" id="filter-tr-unknown" class="filter-tr-sub" onchange="onSubCheckJobs('fc-all-tr','filter-tr-sub')"> 불명확</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result count + active filter tag + view toggle -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span id="result-count" style="font-size:13px;color:var(--gray-500);font-weight:500"></span>
+      <span id="active-filter-tag" style="display:none;font-size:12px;background:var(--primary-light);color:var(--primary);border-radius:20px;padding:3px 10px;font-weight:600">필터 적용 중 ×</span>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button onclick="setView('grid')" id="view-grid" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </button>
+        <button onclick="setView('list')" id="view-list" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:white;color:var(--gray-500);display:flex;align-items:center;justify-content:center;cursor:pointer">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:flex-start">
+      <!-- Job grid -->
+      <div style="flex:1;min-width:0">
+        <div id="job-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+        <div id="no-results" style="display:none;text-align:center;padding:80px 20px;color:var(--gray-400)">
+          <div style="font-size:40px;margin-bottom:12px">🔍</div>
+          <div style="font-size:15px;font-weight:600;color:var(--gray-600)">조건에 맞는 공고가 없습니다</div>
+          <div style="font-size:13px;margin-top:6px">필터를 조정해보세요</div>
+          <button class="btn btn-outline btn-sm" style="margin-top:16px" onclick="clearAllFilters()">전체 초기화</button>
+        </div>
+        <!-- Pagination -->
+        <div id="pagination" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:28px;padding-bottom:20px"></div>
+      </div>
+
+      <!-- Right sidebar: mini calendar + D-7 -->
+      <div style="width:296px;flex-shrink:0;position:sticky;top:76px;display:flex;flex-direction:column;gap:12px">
+        <!-- Mini Calendar Card -->
+        <div class="card" style="padding:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:10px">마감일 캘린더 <span style="font-size:11px;font-weight:400;color:var(--gray-400)">(필터 적용)</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <button style="background:none;border:none;cursor:pointer;color:var(--gray-500);font-size:20px;line-height:1;padding:2px 6px;border-radius:4px" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='none'" onclick="miniCalPrev()">‹</button>
+            <span id="mini-cal-title" style="font-size:13px;font-weight:700;color:var(--gray-800)"></span>
+            <button style="background:none;border:none;cursor:pointer;color:var(--gray-500);font-size:20px;line-height:1;padding:2px 6px;border-radius:4px" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='none'" onclick="miniCalNext()">›</button>
+          </div>
+          <!-- Day headers -->
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px">
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--primary);padding:3px 0">일</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--gray-400);padding:3px 0">월</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--gray-400);padding:3px 0">화</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--gray-400);padding:3px 0">수</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--gray-400);padding:3px 0">목</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--gray-400);padding:3px 0">금</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--gray-500);padding:3px 0">토</div>
+          </div>
+          <!-- Day grid rendered by JS -->
+          <div id="mini-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px"></div>
+          <!-- Selected day jobs popup -->
+          <div id="mini-cal-day-popup" style="display:none;margin-top:10px;padding:10px;background:var(--gray-50);border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:700;color:var(--gray-600);margin-bottom:6px" id="mini-cal-popup-date"></div>
+            <div id="mini-cal-popup-list"></div>
+            <button onclick="document.getElementById('mini-cal-day-popup').style.display='none'" style="font-size:10px;color:var(--gray-400);background:none;border:none;cursor:pointer;margin-top:6px">닫기 ×</button>
+          </div>
+        </div>
+
+        <!-- D-7 urgent list -->
+        <div class="card" style="padding:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:700;color:var(--gray-900)">D-7 마감 임박 공고</div>
+            <button onclick="quickFilter('urgent')" style="font-size:11px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:600">전체 보기 →</button>
+          </div>
+          <div id="sidebar-urgent-list"></div>
+          <div style="font-size:10px;color:var(--gray-400);margin-top:8px">* D-day는 마감일 기준입니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     JOB DETAIL
+═══════════════════════════════════════ -->
+<div class="page" id="page-detail">
+  <div style="max-width:1280px;margin:0 auto;padding:24px 32px">
+    <div id="detail-breadcrumb" style="font-size:13px;color:var(--gray-400);margin-bottom:16px;display:flex;align-items:center;gap:6px"></div>
+    <button class="btn btn-ghost btn-sm" onclick="nav('jobs')" style="margin-bottom:16px;color:var(--gray-600)">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      목록으로
+    </button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     COMPANIES
+═══════════════════════════════════════ -->
+<div class="page" id="page-companies">
+  <div style="max-width:1280px;margin:0 auto;padding:24px 32px">
+    <div id="company-list-view">
+      <!-- Search bar + sort (same structure as jobs page) -->
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+        <div style="flex:1;position:relative">
+          <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray-400)" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="co-search" type="text" placeholder="회사명, 유형, 직무로 검색하세요" style="width:100%;padding:12px 14px 12px 44px;font-size:14px;border-radius:10px;border:1.5px solid var(--border);outline:none;transition:border-color .15s" oninput="renderCompanies()" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <button class="btn btn-primary" style="padding:12px 28px;font-size:14px;font-weight:600" onclick="renderCompanies()">검색</button>
+        <select id="co-sort" style="padding:12px 14px;border-radius:10px;width:160px;font-size:13px;border:1.5px solid var(--border);background:white;cursor:pointer" onchange="renderCompanies()">
+          <option value="name">이름순</option>
+          <option value="jobs">공고 많은순</option>
+        </select>
+      </div>
+
+      <!-- Filter box (unified structure) -->
+      <div class="card" style="margin-bottom:16px;overflow:hidden">
+        <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg width="14" height="14" fill="none" stroke="var(--primary)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            <span style="font-size:13px;font-weight:700;color:var(--gray-700)">필터</span>
+            <button onclick="toggleFilterBox('co')" id="filter-toggle-btn-co" style="font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:500">필터 닫기 ∧</button>
+          </div>
+          <button onclick="clearCoFilters()" style="font-size:12px;color:var(--gray-400);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            필터 초기화
+          </button>
+        </div>
+        <div id="filter-box-body-co" style="padding:16px 24px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">회사 유형</div>
+              <label class="fcheck"><input type="checkbox" id="co-all" checked onchange="coToggleAll(this)"> <span style="font-weight:600">전체</span></label>
+              <label class="fcheck"><input type="checkbox" value="Big4" class="co-type-f" onchange="onCoSubCheck('co-all','co-type-f')"> Big4</label>
+              <label class="fcheck"><input type="checkbox" value="로컬" class="co-type-f" onchange="onCoSubCheck('co-all','co-type-f')"> 로컬 회계법인</label>
+              <label class="fcheck"><input type="checkbox" value="중소" class="co-type-f" onchange="onCoSubCheck('co-all','co-type-f')"> 중소 회계법인</label>
+              <label class="fcheck"><input type="checkbox" value="금융사" class="co-type-f" onchange="onCoSubCheck('co-all','co-type-f')"> 금융사</label>
+              <label class="fcheck"><input type="checkbox" value="일반기업" class="co-type-f" onchange="onCoSubCheck('co-all','co-type-f')"> 일반 기업</label>
+              <label class="fcheck"><input type="checkbox" value="공공기관" class="co-type-f" onchange="onCoSubCheck('co-all','co-type-f')"> 공공기관</label>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">직무군</div>
+              <label class="fcheck"><input type="checkbox" id="co-tag-all" checked onchange="coTagToggleAll(this)"> <span style="font-weight:600">전체</span></label>
+              <label class="fcheck"><input type="checkbox" value="감사" class="co-tag-f" onchange="onCoSubCheck('co-tag-all','co-tag-f')"> 감사</label>
+              <label class="fcheck"><input type="checkbox" value="세무" class="co-tag-f" onchange="onCoSubCheck('co-tag-all','co-tag-f')"> 세무</label>
+              <label class="fcheck"><input type="checkbox" value="FAS" class="co-tag-f" onchange="onCoSubCheck('co-tag-all','co-tag-f')"> FAS</label>
+              <label class="fcheck"><input type="checkbox" value="Deal" class="co-tag-f" onchange="onCoSubCheck('co-tag-all','co-tag-f')"> Deal</label>
+              <label class="fcheck"><input type="checkbox" value="내부회계" class="co-tag-f" onchange="onCoSubCheck('co-tag-all','co-tag-f')"> 내부회계</label>
+              <label class="fcheck"><input type="checkbox" value="인하우스" class="co-tag-f" onchange="onCoSubCheck('co-tag-all','co-tag-f')"> 인하우스</label>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">업력</div>
+              <label class="fcheck"><input type="checkbox" id="co-age-all" checked onchange="coAgeToggleAll(this)"> <span style="font-weight:600">전체</span></label>
+              <label class="fcheck"><input type="checkbox" value="5" class="co-age-f" onchange="onCoSubCheck('co-age-all','co-age-f')"> 5년 이상</label>
+              <label class="fcheck"><input type="checkbox" value="10" class="co-age-f" onchange="onCoSubCheck('co-age-all','co-age-f')"> 10년 이상</label>
+              <label class="fcheck"><input type="checkbox" value="more" class="co-age-f" onchange="onCoSubCheck('co-age-all','co-age-f')"> 20년 이상</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result count -->
+      <div style="font-size:13px;color:var(--gray-500);font-weight:500;margin-bottom:16px">총 <span id="co-total">0</span>개 회사</div>
+
+      <div id="company-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px"></div>
+      <!-- Pagination -->
+      <div id="co-pagination" style="display:flex;justify-content:center;gap:6px;margin-top:28px;padding-bottom:20px"></div>
+    </div>
+    <div id="company-detail" style="display:none">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('company-detail').style.display='none';document.getElementById('company-list-view').style.display='block'" style="margin-bottom:20px">← 회사 목록</button>
+      <div id="company-detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CALENDAR PAGE
+═══════════════════════════════════════ -->
+<div class="page" id="page-calendar">
+  <div style="max-width:1280px;margin:0 auto;padding:24px 32px">
+    <!-- Filter box (unified with jobs page) -->
+    <div class="card" style="margin-bottom:16px;overflow:hidden">
+      <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg width="14" height="14" fill="none" stroke="var(--primary)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+          <span style="font-size:13px;font-weight:700;color:var(--gray-700)">필터</span>
+          <button onclick="toggleFilterBox('cal')" id="filter-toggle-btn-cal" style="font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:500">필터 닫기 ∧</button>
+        </div>
+        <button onclick="clearCalFilters()" style="font-size:12px;color:var(--gray-400);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px">
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          필터 초기화
+        </button>
+      </div>
+      <div id="filter-box-body-cal" style="padding:16px 24px">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:24px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">직무군</div>
+            <label class="fcheck"><input type="checkbox" id="cal-f-all-cat" onchange="calToggleAll('cat',this)" checked> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="감사" class="cal-f-cat" onchange="onCalSubCheck('cal-f-all-cat','cal-f-cat')"> 감사</label>
+            <label class="fcheck"><input type="checkbox" value="세무" class="cal-f-cat" onchange="onCalSubCheck('cal-f-all-cat','cal-f-cat')"> 세무</label>
+            <label class="fcheck"><input type="checkbox" value="FAS" class="cal-f-cat" onchange="onCalSubCheck('cal-f-all-cat','cal-f-cat')"> FAS</label>
+            <label class="fcheck"><input type="checkbox" value="Deal" class="cal-f-cat" onchange="onCalSubCheck('cal-f-all-cat','cal-f-cat')"> Deal</label>
+            <label class="fcheck"><input type="checkbox" value="내부회계" class="cal-f-cat" onchange="onCalSubCheck('cal-f-all-cat','cal-f-cat')"> 내부회계</label>
+            <label class="fcheck"><input type="checkbox" value="인하우스" class="cal-f-cat" onchange="onCalSubCheck('cal-f-all-cat','cal-f-cat')"> 인하우스</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">회사 유형</div>
+            <label class="fcheck"><input type="checkbox" id="cal-f-all-ct" onchange="calToggleAll('ct',this)" checked> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="Big4" class="cal-f-ct" onchange="onCalSubCheck('cal-f-all-ct','cal-f-ct')"> Big4</label>
+            <label class="fcheck"><input type="checkbox" value="로컬" class="cal-f-ct" onchange="onCalSubCheck('cal-f-all-ct','cal-f-ct')"> 로컬</label>
+            <label class="fcheck"><input type="checkbox" value="중소" class="cal-f-ct" onchange="onCalSubCheck('cal-f-all-ct','cal-f-ct')"> 중소</label>
+            <label class="fcheck"><input type="checkbox" value="금융사" class="cal-f-ct" onchange="onCalSubCheck('cal-f-all-ct','cal-f-ct')"> 금융사</label>
+            <label class="fcheck"><input type="checkbox" value="일반기업" class="cal-f-ct" onchange="onCalSubCheck('cal-f-all-ct','cal-f-ct')"> 일반 기업</label>
+            <label class="fcheck"><input type="checkbox" value="공공기관" class="cal-f-ct" onchange="onCalSubCheck('cal-f-all-ct','cal-f-ct')"> 공공기관</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">고용 형태</div>
+            <label class="fcheck"><input type="checkbox" id="cal-f-all-et" onchange="calToggleAll('et',this)" checked> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="정규직" class="cal-f-et" onchange="onCalSubCheck('cal-f-all-et','cal-f-et')"> 정규직</label>
+            <label class="fcheck"><input type="checkbox" value="계약직" class="cal-f-et" onchange="onCalSubCheck('cal-f-all-et','cal-f-et')"> 계약직</label>
+            <label class="fcheck"><input type="checkbox" value="인턴" class="cal-f-et" onchange="onCalSubCheck('cal-f-all-et','cal-f-et')"> 인턴</label>
+            <label class="fcheck"><input type="checkbox" value="파트타임" class="cal-f-et" onchange="onCalSubCheck('cal-f-all-et','cal-f-et')"> 파트타임</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">KICPA 조건</div>
+            <label class="fcheck"><input type="checkbox" id="cal-f-all-kicpa" onchange="calToggleAll('kicpa',this)" checked> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="필수" class="cal-f-kicpa" onchange="onCalSubCheck('cal-f-all-kicpa','cal-f-kicpa')"> 필수</label>
+            <label class="fcheck"><input type="checkbox" value="우대" class="cal-f-kicpa" onchange="onCalSubCheck('cal-f-all-kicpa','cal-f-kicpa')"> 우대</label>
+            <label class="fcheck"><input type="checkbox" value="무관" class="cal-f-kicpa" onchange="onCalSubCheck('cal-f-all-kicpa','cal-f-kicpa')"> 무관</label>
+            <label class="fcheck"><input type="checkbox" value="불명확" class="cal-f-kicpa" onchange="onCalSubCheck('cal-f-all-kicpa','cal-f-kicpa')"> 불명확</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">마감 유형</div>
+            <label class="fcheck"><input type="checkbox" id="cal-f-all-dt" onchange="calToggleAll('dt',this)" checked> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="직접" class="cal-f-dt" onchange="onCalSubCheck('cal-f-all-dt','cal-f-dt')"> 직접</label>
+            <label class="fcheck"><input type="checkbox" value="특정일" class="cal-f-dt" onchange="onCalSubCheck('cal-f-all-dt','cal-f-dt')"> 특정일 마감</label>
+            <label class="fcheck"><input type="checkbox" value="상시채용" class="cal-f-dt" onchange="onCalSubCheck('cal-f-all-dt','cal-f-dt')"> 상시채용</label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">경력 연차</div>
+            <div style="padding:0 2px;margin-top:4px">
+              <input type="range" id="cal-f-exp" min="0" max="15" value="15" style="width:100%;accent-color:var(--primary)" oninput="document.getElementById('cal-exp-label').textContent=this.value>=15?'15년+':this.value===0?'신입':this.value+'년';renderFullCalendar()">
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-400);margin-top:6px">
+                <span>신입</span><span id="cal-exp-label" style="color:var(--primary);font-weight:600">15년+</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:8px">수습 CPA 가능</div>
+            <label class="fcheck"><input type="checkbox" id="cal-f-all-tr" onchange="calToggleAll('tr',this)" checked> <span style="font-weight:600">전체</span></label>
+            <label class="fcheck"><input type="checkbox" value="true" class="cal-f-tr" onchange="onCalSubCheck('cal-f-all-tr','cal-f-tr')"> 가능</label>
+            <label class="fcheck"><input type="checkbox" value="false" class="cal-f-tr" onchange="onCalSubCheck('cal-f-all-tr','cal-f-tr')"> 불가능</label>
+            <label class="fcheck"><input type="checkbox" value="unknown" class="cal-f-tr" onchange="onCalSubCheck('cal-f-all-tr','cal-f-tr')"> 불명확</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter active tag row -->
+    <div style="display:flex;align-items:center;margin-bottom:16px">
+      <span id="cal-filter-tag" style="font-size:12px;background:var(--primary-light);color:var(--primary);border-radius:20px;padding:4px 12px;font-weight:600">필터 적용 중 ×</span>
+    </div>
+
+    <!-- Full calendar card -->
+    <div class="card" style="padding:20px 24px;overflow:hidden">
+      <!-- Month nav -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:20px">
+        <button style="background:none;border:none;cursor:pointer;color:var(--gray-500);font-size:24px;line-height:1;padding:4px 10px;border-radius:6px" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='none'" onclick="fullCalPrev()">‹</button>
+        <span id="full-cal-title" style="font-size:18px;font-weight:700;color:var(--gray-900);min-width:120px;text-align:center"></span>
+        <button style="background:none;border:none;cursor:pointer;color:var(--gray-500);font-size:24px;line-height:1;padding:4px 10px;border-radius:6px" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='none'" onclick="fullCalNext()">›</button>
+      </div>
+      <!-- Day of week headers (static) -->
+      <div id="cal-dow-header" style="display:grid;grid-template-columns:repeat(7,1fr)">
+        <div style="text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:var(--primary);border:1px solid var(--border);border-right:none;background:var(--gray-50)">일</div>
+        <div style="text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:var(--gray-600);border:1px solid var(--border);border-right:none;background:var(--gray-50)">월</div>
+        <div style="text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:var(--gray-600);border:1px solid var(--border);border-right:none;background:var(--gray-50)">화</div>
+        <div style="text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:var(--gray-600);border:1px solid var(--border);border-right:none;background:var(--gray-50)">수</div>
+        <div style="text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:var(--gray-600);border:1px solid var(--border);border-right:none;background:var(--gray-50)">목</div>
+        <div style="text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:var(--gray-600);border:1px solid var(--border);border-right:none;background:var(--gray-50)">금</div>
+        <div style="text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:var(--gray-500);border:1px solid var(--border);background:var(--gray-50)">토</div>
+      </div>
+      <!-- Calendar grid rendered by JS -->
+      <div id="full-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr)"></div>
+      <!-- Legend -->
+      <div style="margin-top:16px;display:flex;align-items:center;gap:20px;font-size:12px;color:var(--gray-500)">
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--primary);display:inline-block"></span> 오늘</div>
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--primary-light);border:1px solid var(--primary);display:inline-block"></span> 선택한 날짜</div>
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--primary-mid);display:inline-block"></span> 마감일이 있는 날짜</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LOGIN
+═══════════════════════════════════════ -->
+<div class="page" id="page-login">
+  <div style="max-width:480px;margin:60px auto;padding:24px">
+    <div class="card" style="padding:36px 32px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:24px;font-weight:800;color:var(--gray-900);letter-spacing:-0.03em">Account<span style="color:var(--primary)">it</span></div>
+        <div style="font-size:15px;color:var(--gray-500);margin-top:8px">로그인</div>
+      </div>
+      <div class="fg"><label>아이디</label><input id="login-email" type="text" placeholder="아이디를 입력해주세요"></div>
+      <div class="fg"><label>비밀번호</label><input id="login-password" type="password" placeholder="비밀번호를 입력해주세요"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:14px;margin-top:8px" onclick="handleLogin()">로그인</button>
+      <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--gray-500)">아직 계정이 없으신가요? <span onclick="nav('signup')" style="color:var(--primary);cursor:pointer;font-weight:600">회원가입</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SIGNUP
+═══════════════════════════════════════ -->
+<div class="page" id="page-signup">
+  <div style="max-width:680px;margin:40px auto;padding:24px" id="signup-step-1">
+    <div class="card" style="padding:32px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:22px;font-weight:800;color:var(--gray-900)">1. 회원 유형 선택</div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-0.03em;margin-top:4px">회원가입</div>
+        <div style="font-size:13px;color:var(--gray-400);margin-top:6px">Accountit에서 당신의 이력을 관리하세요.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div onclick="showSignupForm('personal')" style="border:2px solid var(--border);border-radius:var(--radius-md);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='white'">
+          <div style="font-size:36px;margin-bottom:12px">👤</div>
+          <div style="font-size:15px;font-weight:700;color:var(--gray-900);margin-bottom:6px">개인회원</div>
+          <div style="font-size:12px;color:var(--gray-500)">개인으로 가입하여<br>Accountit의 서비스를 이용할 수 있습니다.</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:16px;width:100%;justify-content:center">개인회원 가입</button>
+        </div>
+        <div onclick="showSignupForm('corporate')" style="border:2px solid var(--border);border-radius:var(--radius-md);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='white'">
+          <div style="font-size:36px;margin-bottom:12px">🏢</div>
+          <div style="font-size:15px;font-weight:700;color:var(--gray-900);margin-bottom:6px">기업회원</div>
+          <div style="font-size:12px;color:var(--gray-500)">기업으로 가입하여<br>공고를 등록하고 관리할 수 있습니다.</div>
+          <button class="btn btn-outline btn-sm" style="margin-top:16px;width:100%;justify-content:center">기업회원 가입</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Personal signup form -->
+  <div style="max-width:480px;margin:40px auto;padding:24px;display:none" id="signup-form-personal">
+    <div class="card" style="padding:32px">
+      <div style="font-size:13px;color:var(--gray-400);margin-bottom:4px">2-1. 개인회원 가입</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:4px">개인회원 가입</div>
+      <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px">개인정보를 입력해주세요.</div>
+      <div class="fg"><label>아이디</label><input id="signup-username" type="text" placeholder="아이디를 입력해주세요"></div>
+      <div class="fg"><label>비밀번호</label><input id="signup-password" type="password" placeholder="비밀번호를 입력해주세요"></div>
+      <div class="fg"><label>비밀번호 확인</label><input id="signup-password-confirm" type="password" placeholder="비밀번호를 다시 입력해주세요"></div>
+      <div class="fg"><label>이름</label><input id="signup-displayname" type="text" placeholder="이름을 입력해주세요"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:14px" onclick="handlePersonalSignup()">가입하기</button>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--gray-500)">이미 계정이 있으신가요? <span onclick="nav('login')" style="color:var(--primary);cursor:pointer;font-weight:600">로그인</span></div>
+    </div>
+  </div>
+  <!-- Corporate signup form -->
+  <div style="max-width:480px;margin:40px auto;padding:24px;display:none" id="signup-form-corporate">
+    <div class="card" style="padding:32px">
+      <div style="font-size:13px;color:var(--gray-400);margin-bottom:4px">2-2. 기업회원 가입</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:20px">기업회원 가입</div>
+      <div class="fg"><label>회사명</label><input type="text" placeholder="회사명을 입력해주세요"></div>
+      <div class="fg"><label>회사 유형</label>
+        <select><option value="">회사 유형을 선택해주세요</option><option>Big4</option><option>로컬 회계법인</option><option>중소 회계법인</option><option>금융사</option><option>일반기업</option><option>공공기관</option></select>
+      </div>
+      <div style="padding:12px 14px;background:var(--primary-light);border:1px solid var(--primary-mid);border-radius:8px;font-size:12.5px;color:var(--primary);margin-bottom:16px">
+        ⓘ 관리자 승인 후 계정이 활성화됩니다. 입력한 이메일로 승인 안내를 보내드립니다.
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:14px" onclick="showCorporateApproval()">가입 신청</button>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--gray-500)">이미 계정이 있으신가요? <span onclick="nav('login')" style="color:var(--primary);cursor:pointer;font-weight:600">로그인</span></div>
+    </div>
+  </div>
+  <!-- Corporate approval pending -->
+  <div style="max-width:480px;margin:40px auto;padding:24px;display:none;text-align:center" id="signup-approval">
+    <div class="card" style="padding:40px 32px">
+      <div style="font-size:52px;margin-bottom:16px">⏳</div>
+      <div style="font-size:18px;font-weight:700;color:var(--gray-900);margin-bottom:10px">가입 신청이 완료되었습니다.</div>
+      <div style="font-size:13px;color:var(--gray-500);line-height:1.65;margin-bottom:24px">관리자 승인을 기다리고 있습니다.<br>승인 완료 시 등록하신 이메일로 안내드리겠습니다.</div>
+      <button class="btn btn-primary" onclick="nav('dashboard')">홈으로 이동</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CORPORATE PAGE (기업회원)
+═══════════════════════════════════════ -->
+<div class="page" id="page-corporate">
+  <div style="max-width:900px;margin:0 auto;padding:24px">
+    <div class="card" style="padding:24px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px;font-weight:800">삼일회계법인</span>
+            <span class="badge badge-primary">연결</span>
+            <span class="badge badge-gray">기업회원</span>
+          </div>
+          <div style="font-size:13px;color:var(--gray-500);margin-top:8px">회사 정보</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;background:var(--gray-50);border-radius:8px;padding:12px">
+            <div style="font-size:13px"><span style="color:var(--gray-400)">회사명</span> <span style="font-weight:600;margin-left:8px">삼일회계법인</span></div>
+            <div style="font-size:13px"><span style="color:var(--gray-400)">회사유형</span> <span style="font-weight:600;margin-left:8px">회계법인</span></div>
+          </div>
+          <div style="margin-top:12px;padding:10px 14px;background:var(--primary-light);border:1px solid var(--primary-mid);border-radius:8px;font-size:12.5px;color:var(--primary)">ⓘ 로그인 시 계정 비밀번호를 통해 다른 기업 계정으로 전환할 수 있습니다.</div>
+        </div>
+        <button class="btn btn-primary" onclick="nav('corporate-post')">공고 등록하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CORPORATE POST (공고 등록)
+═══════════════════════════════════════ -->
+<div class="page" id="page-corporate-post">
+  <div style="max-width:700px;margin:0 auto;padding:24px">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:4px">공고 등록</h2>
+    <p style="font-size:13px;color:var(--gray-500);margin-bottom:20px">채용 공고 정보를 입력해주세요.</p>
+    <!-- Company info fixed -->
+    <div class="card" style="padding:16px 20px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">회사 정보 (고정)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="padding:10px 14px;background:var(--gray-50);border-radius:6px"><div style="font-size:11px;color:var(--gray-400)">회사명</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">삼일회계법인</div></div>
+        <div style="padding:10px 14px;background:var(--gray-50);border-radius:6px"><div style="font-size:11px;color:var(--gray-400)">회사 유형</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">회계법인</div></div>
+      </div>
+    </div>
+    <!-- Post info -->
+    <div class="card" style="padding:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px">공고 정보</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="fg" style="grid-column:1/3"><label>공고명</label><input type="text" placeholder="공고명을 입력해주세요"></div>
+        <div class="fg"><label>직무군</label><select><option value="">직무군을 선택해주세요</option><option>감사</option><option>세무</option><option>FAS</option><option>Deal</option><option>내부회계</option><option>인하우스</option></select></div>
+        <div class="fg"><label>고용형태</label><select><option value="">고용형태를 선택해주세요</option><option>정규직</option><option>계약직</option><option>인턴</option><option>파트타임</option></select></div>
+        <div class="fg"><label>마감일</label><input type="date"></div>
+        <div class="fg"><label>마감 유형</label><select><option value="">마감 유형을 선택해주세요</option><option>특정일</option><option>채용시</option><option>상시</option></select></div>
+        <div class="fg"><label>KICPA 조건</label><select><option value="">KICPA 조건을 선택해주세요</option><option>필수</option><option>우대</option><option>무관</option><option>불명확</option></select></div>
+        <div class="fg"><label>수습 가능 여부</label><select><option value="">수습 가능 여부를 선택해주세요</option><option value="true">가능</option><option value="false">불가</option><option value="unknown">불명확</option></select></div>
+        <div class="fg"><label>요구 경력</label><select><option value="">요구 경력을 선택해주세요</option><option>신입</option><option>1-3년</option><option>3-5년</option><option>5년+</option><option>무관</option></select></div>
+        <div class="fg"><label>출처</label><input type="text" placeholder="출처를 입력해주세요"></div>
+        <div class="fg" style="grid-column:1/3"><label>원문 링크</label><input type="url" placeholder="https:// 원문 링크를 입력해주세요"></div>
+        <div class="fg" style="grid-column:1/3"><label>태그</label><input type="text" placeholder="태그를 입력하고 Enter로 추가하세요 (최대 10개)"></div>
+        <div class="fg" style="grid-column:1/3">
+          <label>공고 내용</label>
+          <textarea placeholder="공고 내용을 입력해주세요" style="min-height:200px"></textarea>
+          <div style="text-align:right;font-size:11px;color:var(--gray-400);margin-top:4px">0 / 5000</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-outline" onclick="nav('corporate')">취소</button>
+        <button class="btn btn-primary" onclick="showToast('✓ 공고가 등록되었습니다');nav('corporate')">등록하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     ADMIN (hidden, keep for data)
+═══════════════════════════════════════ -->
+<div class="page" id="page-admin" style="display:none!important"></div>
+
+<!-- ═══════════════════════════════════════
+     MODALS
+═══════════════════════════════════════ -->
+<div class="modal-bg" id="modal-create">
+  <div class="modal">
+    <div class="modal-hd">
+      <span style="font-size:16px;font-weight:700;color:var(--gray-900)" id="modal-title">공고 등록</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-create')" style="color:var(--gray-500)">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="fg" style="grid-column:1/3">
+          <label>공고명 *</label>
+          <input id="f-title" type="text" placeholder="예: 감사본부 공인회계사 채용">
+        </div>
+        <div class="fg">
+          <label>회사명 *</label>
+          <input id="f-company" type="text" placeholder="예: 삼일회계법인">
+        </div>
+        <div class="fg">
+          <label>직무군 *</label>
+          <select id="f-category">
+            <option value="">선택</option>
+            <option>감사</option><option>세무</option><option>FAS</option>
+            <option>Deal</option><option>내부회계</option><option>인하우스</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>회사 유형</label>
+          <select id="f-comptype">
+            <option value="">선택</option>
+            <option>Big4</option><option>로컬</option><option>중소</option>
+            <option>금융사</option><option>일반기업</option><option>공공기관</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>고용 형태</label>
+          <select id="f-emptype">
+            <option>정규직</option><option>계약직</option><option>인턴</option><option>파트타임</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>마감일</label>
+          <input id="f-deadline" type="date">
+        </div>
+        <div class="fg">
+          <label>마감 유형</label>
+          <select id="f-deadlinetype">
+            <option value="특정일">특정일 마감</option>
+            <option value="채용시">채용 시 마감</option>
+            <option value="상시">상시채용</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>KICPA 조건</label>
+          <select id="f-kicpa">
+            <option>필수</option><option>우대</option><option>무관</option><option>불명확</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>수습 가능 여부</label>
+          <select id="f-trainee">
+            <option value="true">가능</option><option value="false">불가</option><option value="unknown">불명확</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>요구 경력</label>
+          <select id="f-explevel">
+            <option>신입</option><option>1-3년</option><option>3-5년</option><option>5년+</option><option>무관</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>출처</label>
+          <select id="f-source">
+            <option>KICPA</option><option>사람인</option><option>잡코리아</option><option>원티드</option><option>리멤버</option><option>회사 직접</option>
+          </select>
+        </div>
+        <div class="fg" style="grid-column:1/3">
+          <label>원문 링크</label>
+          <input id="f-link" type="url" placeholder="https://...">
+        </div>
+        <div class="fg" style="grid-column:1/3">
+          <label>태그 (쉼표로 구분)</label>
+          <input id="f-tags" type="text" placeholder="#Big4, #감사, #수습가능">
+        </div>
+        <div class="fg" style="grid-column:1/3">
+          <label>공고 내용</label>
+          <textarea id="f-desc" placeholder="공고 주요 내용, 자격요건, 우대사항 등"></textarea>
+        </div>
+      </div>
+      <input type="hidden" id="f-edit-id" value="">
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+        <button class="btn btn-outline" onclick="closeModal('modal-create')">취소</button>
+        <button class="btn btn-primary" onclick="submitJobForm()">등록하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-cal">
+  <div class="modal" style="width:460px">
+    <div class="modal-hd">
+      <span id="modal-cal-title" style="font-size:15px;font-weight:700;color:var(--gray-900)"></span>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-cal')" style="color:var(--gray-500)">✕</button>
+    </div>
+    <div class="modal-bd" id="modal-cal-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT (unchanged logic)
+═══════════════════════════════════════ -->
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:4000';
+const TODAY = new Date();
+
+// ── ENUM MAPS ─────────────────────────────────────────────────
+const JOB_FAMILY_MAP = { '감사':'AUDIT','세무':'TAX','FAS':'FAS','Deal':'DEAL','내부회계':'INTERNAL_ACCOUNTING','인하우스':'IN_HOUSE' };
+const COMPANY_TYPE_MAP = { 'Big4':'BIG4','로컬':'LOCAL_ACCOUNTING_FIRM','중소':'MID_SMALL_ACCOUNTING_FIRM','금융사':'FINANCIAL_COMPANY','일반기업':'GENERAL_COMPANY','공공기관':'PUBLIC_INSTITUTION' };
+const EMPLOYMENT_TYPE_MAP = { '정규직':'FULL_TIME','계약직':'CONTRACT','인턴':'INTERN','파트타임':'PART_TIME' };
+const KICPA_MAP = { '필수':'REQUIRED','우대':'PREFERRED','무관':'NONE','불명확':'UNCLEAR' };
+const DEADLINE_TYPE_MAP = { '특정일':'FIXED_DATE','채용시':'UNTIL_FILLED','상시':'ALWAYS_OPEN' };
+const TRAINEE_MAP = { 'true':'AVAILABLE','false':'UNAVAILABLE','unknown':'UNCLEAR' };
+
+const JOB_FAMILY_LABEL = { 'AUDIT':'감사','TAX':'세무','FAS':'FAS','DEAL':'Deal','INTERNAL_ACCOUNTING':'내부회계','IN_HOUSE':'인하우스' };
+const COMPANY_TYPE_LABEL = { 'BIG4':'Big4','LOCAL_ACCOUNTING_FIRM':'로컬','MID_SMALL_ACCOUNTING_FIRM':'중소','FINANCIAL_COMPANY':'금융사','GENERAL_COMPANY':'일반기업','PUBLIC_INSTITUTION':'공공기관' };
+const EMPLOYMENT_TYPE_LABEL = { 'FULL_TIME':'정규직','CONTRACT':'계약직','INTERN':'인턴','PART_TIME':'파트타임' };
+const KICPA_LABEL = { 'REQUIRED':'필수','PREFERRED':'우대','NONE':'무관','UNCLEAR':'불명확' };
+const DEADLINE_TYPE_LABEL = { 'FIXED_DATE':'특정일','UNTIL_FILLED':'채용시','ALWAYS_OPEN':'상시' };
+const TRAINEE_LABEL = { 'AVAILABLE':'가능','UNAVAILABLE':'불가','UNCLEAR':'불명확' };
+
+// ── HELPERS ───────────────────────────────────────────────────
+function daysFromToday(dateStr) {
+  if (!dateStr) return 9999;
+  const d = new Date(dateStr);
+  const t = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+  return Math.ceil((d - t) / 86400000);
+}
+
+function ddayLabel(j) {
+  if (!j) return { text: '-', cls: 'dday-gray' };
+  if (j.deadlineType === 'UNTIL_FILLED') return { text: '채용시마감', cls: 'dday-gray' };
+  if (j.deadlineType === 'ALWAYS_OPEN') return { text: '상시채용', cls: 'dday-gray' };
+  const d = (j.dDay !== null && j.dDay !== undefined) ? j.dDay : (j.deadline ? daysFromToday(j.deadline) : null);
+  if (d === null) return { text: '-', cls: 'dday-gray' };
+  if (d < 0) return { text: '마감', cls: 'dday-gray' };
+  if (d === 0) return { text: 'D-DAY', cls: 'dday-d0' };
+  if (d <= 3) return { text: `D-${d}`, cls: 'dday-d3' };
+  if (d <= 7) return { text: `D-${d}`, cls: 'dday-d7' };
+  return { text: `D-${d}`, cls: 'dday-d30' };
+}
+
+// ── AUTH STATE ────────────────────────────────────────────────
+let currentUser = null;
+let _lastFilteredJobs = [];
+let _jobsPage = 1;
+const JOBS_PAGE_SIZE = 20;
+
+async function checkAuth() {
+  try {
+    const r = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+    if (r.ok) { const d = await r.json(); currentUser = d.user || null; }
+    else currentUser = null;
+  } catch { currentUser = null; }
+  updateNavAuth();
+}
+
+function updateNavAuth() {
+  const guest = document.getElementById('nav-auth-guest');
+  const user = document.getElementById('nav-auth-user');
+  const nameEl = document.getElementById('nav-username');
+  if (currentUser) {
+    if (guest) guest.style.display = 'none';
+    if (user) user.style.display = 'flex';
+    if (nameEl) nameEl.textContent = currentUser.displayName || currentUser.username;
+  } else {
+    if (guest) guest.style.display = 'flex';
+    if (user) user.style.display = 'none';
+  }
+}
+
+// (jobsDB removed — data comes from API)
+let jobsDB = [];
+
+let activeFilters = { quickFilters: new Set() };
+let calDate = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+
+// ── COMPANY LOGOS ─────────────────────────────────────────────
+const logoBgColors = [
+  ['#E8457A','#D03368'],['#c0326a','#a0255a'],['#d4537e','#b8355f'],
+  ['#6b6b6b','#4a4a4a'],['#555555','#333333'],['#888888','#666666'],
+  ['#aa3366','#882244'],['#cc4477','#aa2255']
+];
+function logoBgPair(name) { let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))&0xffff; return logoBgColors[h%logoBgColors.length]; }
+function logoBgColor(name) { return logoBgPair(name)[0]; }
+function logoBgColor2(name) { return logoBgPair(name)[1]; }
+
+const logoColors = ['logo-bg-0','logo-bg-1','logo-bg-2','logo-bg-3','logo-bg-4','logo-bg-5','logo-bg-6','logo-bg-7'];
+const logoCache = {};
+function getLogoClass(name) {
+  if (!logoCache[name]) {
+    let h = 0; for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+    logoCache[name] = logoColors[h % logoColors.length];
+  }
+  return logoCache[name];
+}
+function logoInitials(name) {
+  if (!name) return '??';
+  const words = name.replace(/[()（）]/g,'').trim().split(/\s+/);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return name.slice(0, 2);
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.add('active');
+  const nt = document.getElementById('nav-' + page);
+  if (nt) nt.classList.add('active');
+  window.location.hash = '#/' + page;
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'jobs') { applyFilters(); }
+  if (page === 'companies') renderCompanies();
+  if (page === 'calendar') renderFullCalendar();
+  if (page === 'signup') {
+    const s1=document.getElementById('signup-step-1');
+    const sf1=document.getElementById('signup-form-personal');
+    const sf2=document.getElementById('signup-form-corporate');
+    const sa=document.getElementById('signup-approval');
+    if(s1)s1.style.display='block';
+    if(sf1)sf1.style.display='none';
+    if(sf2)sf2.style.display='none';
+    if(sa)sa.style.display='none';
+  }
+}
+
+function quickFilter(type) {
+  clearAllFilters();
+  if (type === 'trainee') toggleQF('trainee');
+  else if (type === 'entry') toggleQF('entry');
+  else if (type === 'career') toggleQF('career');
+  else if (type === 'urgent') toggleQF('urgent');
+  nav('jobs');
+}
+
+function searchKeyword(kw) {
+  nav('jobs');
+  setTimeout(() => {
+    const si = document.getElementById('search-input');
+    if (si) { si.value = kw; applyFilters(); }
+  }, 80);
+}
+
+// ── FILTERS ────────────────────────────────────────────────────
+function toggleQF(key) {
+  if (activeFilters.quickFilters.has(key)) activeFilters.quickFilters.delete(key);
+  else activeFilters.quickFilters.add(key);
+  nav('jobs');
+}
+
+// ── UNIFIED FILTER BOX TOGGLE ──────────────────────────────────
+function toggleFilterBox(tabId) {
+  const bodyId = tabId ? `filter-box-body-${tabId}` : 'filter-box-body';
+  const btnId  = tabId ? `filter-toggle-btn-${tabId}` : 'filter-toggle-btn';
+  const body = document.getElementById(bodyId);
+  const btn  = document.getElementById(btnId);
+  if(!body) return;
+  if(body.style.display==='none'){
+    body.style.display='block';
+    if(btn) btn.textContent='필터 닫기 ∧';
+  } else {
+    body.style.display='none';
+    if(btn) btn.textContent='필터 열기 ∨';
+  }
+}
+
+// ── UNIFIED "전체" TOGGLE LOGIC ────────────────────────────────
+// When "전체" checked → uncheck all sub-items; when sub-item checked → uncheck "전체"
+function onAllCheck(allId, subClass, callback){
+  const allEl=document.getElementById(allId);
+  if(!allEl)return;
+  if(allEl.checked){
+    document.querySelectorAll('.'+subClass).forEach(c=>c.checked=false);
+  }
+  if(callback)callback();
+}
+function onSubCheck(allId, subClass, callback){
+  // If any sub checked, uncheck "전체"
+  const anyChecked=[...document.querySelectorAll('.'+subClass)].some(c=>c.checked);
+  const allEl=document.getElementById(allId);
+  if(allEl&&anyChecked) allEl.checked=false;
+  if(callback)callback();
+}
+
+function toggleAllCat(el) { ['감사','세무','FAS','Deal','내부회계','인하우스'].forEach(v=>{const c=document.getElementById('filter-cat-'+v);if(c)c.checked=false;}); applyFilters(); }
+function toggleAllCt(el)  { ['Big4','로컬','중소','금융사','일반기업','공공기관'].forEach(v=>{const c=document.getElementById('filter-ct-'+v);if(c)c.checked=false;}); applyFilters(); }
+function toggleAllEt(el)  { ['정규직','계약직','인턴','파트타임'].forEach(v=>{const c=document.getElementById('filter-et-'+v);if(c)c.checked=false;}); applyFilters(); }
+function toggleAllKicpa(el){ ['필수','우대','무관','불명확'].forEach(v=>{const c=document.getElementById('filter-kicpa-'+v);if(c)c.checked=false;}); applyFilters(); }
+function toggleAllDt(el)  { ['특정일','채용시','상시'].forEach(v=>{const c=document.getElementById('filter-dt-'+v);if(c)c.checked=false;}); applyFilters(); }
+function toggleAllTr(el)  { ['true','false','unknown'].forEach(v=>{const c=document.getElementById('filter-tr-'+v);if(c)c.checked=false;}); applyFilters(); }
+function onSubCheckJobs(allId, subClass){ onSubCheck(allId, subClass, applyFilters); }
+
+// Calendar tab toggles
+function calToggleAll(type,el){
+  document.querySelectorAll(`.cal-f-${type}`).forEach(c=>c.checked=false);
+  renderFullCalendar();
+}
+function onCalSubCheck(allId, subClass){ onSubCheck(allId, subClass, renderFullCalendar); }
+
+// Company tab toggles
+function coToggleAll(el){ document.querySelectorAll('#page-companies input[type=checkbox]:not(#co-all):not(#co-tag-all):not(#co-age-all):not(.co-tag-f):not(.co-age-f)').forEach(c=>c.checked=false); renderCompanies(); }
+function coTagToggleAll(el){ document.querySelectorAll('.co-tag-f').forEach(c=>c.checked=false); renderCompanies(); }
+function coAgeToggleAll(el){ document.querySelectorAll('.co-age-f').forEach(c=>c.checked=false); renderCompanies(); }
+function onCoSubCheck(allId, subClass){ onSubCheck(allId, subClass, renderCompanies); }
+
+function getCheckedVals(prefix, vals) { return vals.filter(v=>document.getElementById(prefix+v)?.checked); }
+
+let currentView = 'grid';
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-grid').style.background = v==='grid'?'var(--primary)':'white';
+  document.getElementById('view-grid').style.color = v==='grid'?'white':'var(--gray-500)';
+  document.getElementById('view-list').style.background = v==='list'?'var(--primary)':'white';
+  document.getElementById('view-list').style.color = v==='list'?'white':'var(--gray-500)';
+  applyFilters();
+}
+
+async function applyFilters() {
+  const kw = (document.getElementById('search-input')?.value||'').trim();
+  const sortRaw = document.getElementById('sort-select')?.value||'deadline';
+  const sort = sortRaw === 'deadline' ? 'deadlineAsc' : 'latest';
+
+  const catChecked = getCheckedVals('filter-cat-', ['감사','세무','FAS','Deal','내부회계','인하우스']);
+  const ctChecked  = getCheckedVals('filter-ct-',  ['Big4','로컬','중소','금융사','일반기업','공공기관']);
+  const etChecked  = getCheckedVals('filter-et-',  ['정규직','계약직','인턴','파트타임']);
+  const kicpaChecked = getCheckedVals('filter-kicpa-', ['필수','우대','무관','불명확']);
+  const dtChecked  = getCheckedVals('filter-dt-',  ['특정일','채용시','상시']);
+  const trChecked  = getCheckedVals('filter-tr-',  ['true','false','unknown']);
+  const expMax = parseInt(document.getElementById('filter-exp-slider')?.value||'15');
+
+  const params = new URLSearchParams();
+  params.set('sort', sort);
+  params.set('pageSize', '50');
+  if (kw) params.set('search', kw);
+  if (catChecked.length === 1) params.set('jobFamily', JOB_FAMILY_MAP[catChecked[0]] || catChecked[0]);
+  if (ctChecked.length === 1)  params.set('companyType', COMPANY_TYPE_MAP[ctChecked[0]] || ctChecked[0]);
+  if (etChecked.length === 1)  params.set('employmentType', EMPLOYMENT_TYPE_MAP[etChecked[0]] || etChecked[0]);
+  if (kicpaChecked.length === 1) params.set('kicpaCondition', KICPA_MAP[kicpaChecked[0]] || kicpaChecked[0]);
+  if (dtChecked.length === 1)  params.set('deadlineType', DEADLINE_TYPE_MAP[dtChecked[0]] || dtChecked[0]);
+  if (trChecked.length === 1)  params.set('traineeStatus', TRAINEE_MAP[trChecked[0]] || trChecked[0]);
+  if (activeFilters.quickFilters.has('trainee')) params.set('traineeStatus', 'AVAILABLE');
+  if (activeFilters.quickFilters.has('urgent')) params.set('deadlineWithinDays', '7');
+  if (activeFilters.quickFilters.has('entry')) params.set('maxExperienceYears', '0');
+  if (activeFilters.quickFilters.has('career')) params.set('minExperienceYears', '3');
+  if (expMax < 15) params.set('maxExperienceYears', String(expMax));
+
+  const grid = document.getElementById('job-grid');
+  const noRes = document.getElementById('no-results');
+  const cnt = document.getElementById('result-count');
+  const filterTag = document.getElementById('active-filter-tag');
+  if (!grid) return;
+
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--gray-400)">공고를 불러오는 중...</div>';
+  if (noRes) noRes.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API_BASE}/jobs?${params.toString()}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const results = data.items || [];
+    _lastFilteredJobs = results;
+
+    const hasFilters = catChecked.length||ctChecked.length||etChecked.length||kicpaChecked.length||dtChecked.length||trChecked.length||kw||activeFilters.quickFilters.size>0;
+    if (filterTag) filterTag.style.display = hasFilters ? 'inline-block' : 'none';
+
+    if (results.length === 0) {
+      grid.innerHTML = '';
+      if (noRes) noRes.style.display = 'block';
+      if (cnt) cnt.textContent = '총 0건의 공고';
+    } else {
+      if (cnt) cnt.textContent = `총 ${data.total}건의 공고`;
+      if (currentView === 'list') {
+        grid.style.gridTemplateColumns = '1fr';
+        grid.innerHTML = results.map(j => jobListItem(j, kw)).join('');
+      } else {
+        grid.style.gridTemplateColumns = 'repeat(auto-fill,minmax(280px,1fr))';
+        grid.innerHTML = results.map(j => jobCard(j, kw)).join('');
+      }
+    }
+    renderMiniCalendar(results);
+    renderSidebarUrgent(results);
+  } catch {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--red)">공고를 불러오지 못했습니다. 서버 연결을 확인해주세요.</div>';
+  }
+}
+
+function getChecked(id) {
+  return [...document.querySelectorAll(`#${id} input[type=checkbox]:checked`)].map(c=>c.value);
+}
+function getJobsChecked(vals) {
+  return vals.filter(v => { const el = document.querySelector(`#page-jobs input[value="${v}"]`); return el && el.checked; });
+}
+
+function clearAllFilters() {
+  activeFilters.quickFilters.clear();
+  document.querySelectorAll('.qpill').forEach(p=>p.classList.remove('active'));
+  // Uncheck all sub-items
+  ['filter-cat-감사','filter-cat-세무','filter-cat-FAS','filter-cat-Deal','filter-cat-내부회계','filter-cat-인하우스',
+   'filter-ct-Big4','filter-ct-로컬','filter-ct-중소','filter-ct-금융사','filter-ct-일반기업','filter-ct-공공기관',
+   'filter-et-정규직','filter-et-계약직','filter-et-인턴','filter-et-파트타임',
+   'filter-kicpa-필수','filter-kicpa-우대','filter-kicpa-무관','filter-kicpa-불명확',
+   'filter-dt-특정일','filter-dt-채용시','filter-dt-상시',
+   'filter-tr-true','filter-tr-false','filter-tr-unknown'
+  ].forEach(id=>{ const el=document.getElementById(id); if(el)el.checked=false; });
+  // Check all 전체 checkboxes
+  ['fc-all-cat','fc-all-ct','fc-all-et','fc-all-kicpa','fc-all-dt','fc-all-tr'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.checked=true;
+  });
+  // Reset slider
+  const sl=document.getElementById('filter-exp-slider'); if(sl){sl.value=15;document.getElementById('exp-label').textContent='15년+';}
+  const si = document.getElementById('search-input'); if(si) si.value='';
+  applyFilters();
+}
+
+function highlight(text, kw) {
+  if (!kw) return text;
+  return text.replace(new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
+}
+
+// ── JOB CARD ───────────────────────────────────────────────────
+function compTypeStyle(type) {
+  return type === 'BIG4' ? 'badge-primary' : 'badge-gray';
+}
+function kicpaStyle(k) {
+  return k === 'REQUIRED' ? 'badge-primary' : 'badge-gray';
+}
+
+function jobCard(j, kw='') {
+  const dd = ddayLabel(j);
+  const isUrgent = j.deadlineType === 'FIXED_DATE' && j.dDay !== null && j.dDay >= 0 && j.dDay <= 7;
+  const ctLabel = COMPANY_TYPE_LABEL[j.companyType] || j.companyType;
+  const jfLabel = JOB_FAMILY_LABEL[j.jobFamily] || j.jobFamily;
+  const kLabel  = KICPA_LABEL[j.kicpaCondition] || j.kicpaCondition;
+  const deadlineText = j.deadline ? '마감 ' + j.deadline : (j.deadlineType === 'ALWAYS_OPEN' ? '상시채용' : '채용시마감');
+  return `<div class="job-card" onclick="openDetail('${j.id}')">
+    <div style="height:72px;border-radius:8px;margin-bottom:14px;overflow:hidden;background:linear-gradient(135deg,${logoBgColor(j.companyName)} 0%,${logoBgColor2(j.companyName)} 100%);display:flex;align-items:center;padding:0 16px;position:relative">
+      <div style="font-size:22px;font-weight:900;color:white;letter-spacing:-0.02em;opacity:.95">${logoInitials(j.companyName)}</div>
+      <div style="position:absolute;right:10px;top:10px">${isUrgent ? '<span style="font-size:10px;font-weight:700;background:rgba(255,255,255,.25);color:white;padding:2px 8px;border-radius:4px">D-7 마감 임박</span>' : ''}</div>
+    </div>
+    <div style="font-size:12px;font-weight:500;color:var(--gray-400);margin-bottom:3px">${highlight(j.companyName,kw)}</div>
+    <div style="font-size:14.5px;font-weight:700;color:var(--gray-900);line-height:1.35;letter-spacing:-0.01em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:10px">${highlight(j.title,kw)}</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+      <span style="font-size:12.5px;font-weight:600;color:var(--gray-700)">${deadlineText}</span>
+      <span class="dday ${dd.cls}" style="font-size:11px">${dd.text}</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
+      <span class="badge badge-gray">${jfLabel}</span>
+      <span class="badge ${compTypeStyle(j.companyType)}">${ctLabel}</span>
+      <span class="badge ${kicpaStyle(j.kicpaCondition)}">KICPA ${kLabel}</span>
+      ${j.traineeStatus==='AVAILABLE'?'<span class="badge badge-primary">수습가능</span>':''}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)">
+      <span style="font-size:11px;color:var(--gray-400)">${j.sourceName||''}</span>
+      <span style="font-size:10.5px;color:var(--gray-300)">${(j.lastCheckedAt||'').slice(0,10)}</span>
+    </div>
+  </div>`;
+}
+
+// ── DETAIL ─────────────────────────────────────────────────────
+async function openDetail(id) {
+  nav('detail');
+  document.getElementById('detail-breadcrumb').innerHTML = `<span onclick="nav('dashboard')" style="cursor:pointer;color:var(--gray-400)">🏠</span> <span style="color:var(--gray-300)">›</span> <span onclick="nav('jobs')" style="cursor:pointer;color:var(--gray-400)">채용공고</span> <span style="color:var(--gray-300)">›</span> <span style="color:var(--gray-600)">불러오는 중...</span>`;
+  document.getElementById('detail-content').innerHTML = '<div style="text-align:center;padding:80px;color:var(--gray-400)">공고를 불러오는 중...</div>';
+  let j;
+  try {
+    const res = await fetch(`${API_BASE}/jobs/${id}`);
+    if (!res.ok) throw new Error();
+    j = await res.json();
+  } catch {
+    document.getElementById('detail-content').innerHTML = '<div style="text-align:center;padding:80px;color:var(--red)">공고를 불러오지 못했습니다.</div>';
+    return;
+  }
+  const dd = ddayLabel(j);
+  const ctLabel = COMPANY_TYPE_LABEL[j.companyType] || j.companyType;
+  const jfLabel = JOB_FAMILY_LABEL[j.jobFamily] || j.jobFamily;
+  const kLabel  = KICPA_LABEL[j.kicpaCondition] || j.kicpaCondition;
+  const etLabel = EMPLOYMENT_TYPE_LABEL[j.employmentType] || j.employmentType;
+  const trLabel = TRAINEE_LABEL[j.traineeStatus] || j.traineeStatus;
+  const dtLabel = DEADLINE_TYPE_LABEL[j.deadlineType] || j.deadlineType;
+  const descHtml = (j.description||'')
+    .replace(/## (.+)/g,'<div style="font-size:14px;font-weight:700;color:var(--gray-800);margin:16px 0 8px">$1</div>')
+    .replace(/- (.+)/g,'<div style="font-size:13.5px;color:var(--gray-600);padding-left:14px;margin:3px 0">· $1</div>')
+    .replace(/\n/g,'');
+  const isUrgent = j.deadlineType === 'FIXED_DATE' && j.dDay !== null && j.dDay >= 0 && j.dDay <= 7;
+  const ai = j.aiSuggestion;
+  document.getElementById('detail-breadcrumb').innerHTML = `<span onclick="nav('dashboard')" style="cursor:pointer;color:var(--gray-400)">🏠</span> <span style="color:var(--gray-300)">›</span> <span onclick="nav('jobs')" style="cursor:pointer;color:var(--gray-400)">채용공고</span> <span style="color:var(--gray-300)">›</span> <span style="color:var(--gray-600)">${j.companyName}</span>`;
+  const expRange = [j.minExperienceYears, j.maxExperienceYears].filter(v=>v!==null&&v!==undefined);
+  const expText = expRange.length === 0 ? '무관' : expRange.length === 1 ? `${expRange[0]}년+` : `${expRange[0]}~${expRange[1]}년`;
+  document.getElementById('detail-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
+      <div>
+        <div class="card" style="padding:0;margin-bottom:16px;overflow:hidden">
+          <div style="height:140px;background:linear-gradient(135deg,${logoBgColor(j.companyName)} 0%,${logoBgColor2(j.companyName)} 100%);position:relative;display:flex;align-items:flex-end;padding:20px">
+            <div style="font-size:44px;font-weight:900;color:rgba(255,255,255,.3);letter-spacing:-0.02em;position:absolute;right:20px;top:50%;transform:translateY(-50%)">${logoInitials(j.companyName)}</div>
+          </div>
+          <div style="padding:20px 24px">
+            ${isUrgent?'<div style="font-size:11px;font-weight:700;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:3px 10px;display:inline-block;margin-bottom:10px">D-7 마감 임박</div>':''}
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+              <div>
+                <div style="font-size:13px;color:var(--gray-400);margin-bottom:4px">${j.companyName}</div>
+                <h1 style="font-size:22px;font-weight:800;color:var(--gray-900);line-height:1.3;letter-spacing:-0.02em">${j.title}</h1>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">마감일 ${j.deadline||'-'}</div>
+                <div class="dday ${dd.cls}" style="font-size:15px;padding:6px 14px;display:inline-block">${dd.text}</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px">
+              <span class="badge badge-gray">${jfLabel}</span>
+              <span class="badge ${compTypeStyle(j.companyType)}">${ctLabel}</span>
+              <span class="badge ${kicpaStyle(j.kicpaCondition)}">KICPA ${kLabel}</span>
+              ${j.traineeStatus==='AVAILABLE'?'<span class="badge badge-primary">수습가능</span>':''}
+              ${j.employmentType!=='FULL_TIME'?`<span class="badge badge-gray">${etLabel}</span>`:''}
+            </div>
+            <div style="font-size:11.5px;color:var(--gray-400);margin-top:12px">출처: ${j.sourceName||''} &nbsp;|&nbsp; 최종 수집 ${(j.lastCheckedAt||'').slice(0,10)}</div>
+          </div>
+        </div>
+
+        <div class="ai-block" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <span class="ai-label">✦ AI 요약</span>
+            <span style="font-size:11px;color:var(--gray-400)">자동 생성 · 참고용</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="padding:14px;background:white;border-radius:8px;border:1px solid var(--primary-mid)">
+              <div style="font-size:12px;font-weight:700;color:var(--gray-500);margin-bottom:6px">📋 공고 핵심 요약</div>
+              <p style="font-size:13.5px;color:var(--gray-700);line-height:1.65">${ai&&ai.summary ? ai.summary : `${j.companyName}의 ${jfLabel} 부문 채용. KICPA ${kLabel} 조건, 고용형태 ${etLabel}.`}</p>
+            </div>
+            <div style="padding:14px;background:white;border-radius:8px;border:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:700;color:var(--gray-500);margin-bottom:6px">🎯 요구 경력/자격 요약</div>
+              <div style="font-size:13px;color:var(--gray-600)">· 경력 ${expText} / KICPA ${kLabel}<br>· 고용형태: ${etLabel}<br>· 수습 CPA 인정: ${trLabel}</div>
+            </div>
+            ${ai&&ai.risks&&ai.risks.length?`
+            <div style="padding:14px;background:white;border-radius:8px;border:1px solid #fde8e8">
+              <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px">⚠️ 확인 필요 사항</div>
+              ${ai.risks.map(r=>`<div style="font-size:13px;color:var(--gray-600)">· ${r}</div>`).join('')}
+            </div>`:''}
+            <div style="padding:14px;background:white;border-radius:8px;border:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:700;color:var(--gray-500);margin-bottom:8px">🏷 추천 태그</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px">
+                ${(ai&&ai.tags||j.labels||[]).map(t=>`<span class="badge badge-primary">${t}</span>`).join('')}
+                ${j.kicpaCondition==='REQUIRED'?'<span class="badge badge-red">#KICPA필수</span>':''}
+                ${j.traineeStatus==='AVAILABLE'?'<span class="badge badge-primary">#수습가능</span>':''}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;margin-bottom:16px">
+          <div style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:14px">공고 정보</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            ${[['회사명',j.companyName],['공고명',j.title],['직무군',jfLabel],['고용형태',etLabel],['요구 경력',expText],['KICPA 조건',kLabel],['수습 CPA 가능 여부',trLabel],['마감일',(j.deadline||'-')+(j.deadlineType==='FIXED_DATE'&&j.dDay>=0?` <span class="dday ${dd.cls}" style="font-size:11px;margin-left:6px">${dd.text}</span>`:'')],['마감 유형',dtLabel],['출처',j.sourceName||''],['최종 수집 시각',(j.lastCheckedAt||'').slice(0,10)]].map((r,i)=>`<div style="padding:10px 14px;${i%2===0?'border-right:1px solid var(--border);':''};border-bottom:${i<10?'1px solid var(--border)':'none'};background:${i%4<2?'white':'var(--gray-50)'}"><div style="font-size:11px;font-weight:600;color:var(--gray-400);margin-bottom:3px">${r[0]}</div><div style="font-size:13.5px;font-weight:600;color:var(--gray-800)">${r[1]}</div></div>`).join('')}
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;margin-bottom:16px">
+          <div style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:14px">공고 내용</div>
+          <div>${descHtml||'<span style="color:var(--gray-400)">상세 내용이 없습니다.</span>'}</div>
+          <div style="font-size:11.5px;color:var(--gray-400);margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">※ 상세 내용은 원문 링크를 통해 확인해주세요.</div>
+        </div>
+      </div>
+
+      <div style="position:sticky;top:76px;display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="padding:18px">
+          <a href="${j.originalUrl||'#'}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--primary);color:white;font-size:14px;font-weight:700;border-radius:8px;text-decoration:none;transition:background .15s" onmouseover="this.style.background='var(--primary-dark)'" onmouseout="this.style.background='var(--primary)'">
+            원문에서 지원하기
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+        </div>
+        <div class="card" style="padding:18px">
+          <div style="font-size:12px;font-weight:700;color:var(--gray-500);margin-bottom:12px">${j.companyName} <span class="badge ${compTypeStyle(j.companyType)}" style="margin-left:4px">${ctLabel}</span></div>
+          <button onclick="openCompanyFromDetail('${j.companyId}')" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">회사 소개 바로가기 →</button>
+        </div>
+      </div>
+    </div>`;
+}
+function openCompanyFromDetail(companyId) { nav('companies'); setTimeout(()=>showCompanyDetail(companyId),100); }
+
+// ── DASHBOARD ──────────────────────────────────────────────────
+async function renderDashboard() {
+  try {
+    const [allRes, weekRes, urgentRes, traineeRes] = await Promise.all([
+      fetch(`${API_BASE}/jobs?pageSize=1`),
+      fetch(`${API_BASE}/jobs?deadlineWithinDays=7&pageSize=6&sort=deadlineAsc`),
+      fetch(`${API_BASE}/jobs?deadlineWithinDays=1&pageSize=10&sort=deadlineAsc`),
+      fetch(`${API_BASE}/jobs?traineeStatus=AVAILABLE&pageSize=1`),
+    ]);
+    const allData    = allRes.ok    ? await allRes.json()    : {total:0,items:[]};
+    const weekData   = weekRes.ok   ? await weekRes.json()   : {total:0,items:[]};
+    const urgData    = urgentRes.ok ? await urgentRes.json() : {total:0,items:[]};
+    const trainData  = traineeRes.ok? await traineeRes.json(): {total:0,items:[]};
+
+    const setEl = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+    setEl('stat-total',   allData.total);
+    setEl('stat-week',    weekData.total);
+    setEl('stat-urgent',  urgData.total);
+    setEl('stat-trainee', trainData.total);
+    setEl('stat-new',     '');
+    setEl('sidebar-week-count', weekData.total);
+
+    const trending = weekData.items.slice(0,6);
+    document.getElementById('dash-trending').innerHTML = trending.length ? trending.map(j=>{
+      const dd=ddayLabel(j);
+      const logoCls=getLogoClass(j.companyName);
+      return `<div class="trending-card" onclick="openDetail('${j.id}')">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="company-logo ${logoCls}" style="width:38px;height:38px;border-radius:8px;font-size:11px">${logoInitials(j.companyName)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:var(--gray-400);font-weight:500">${j.companyName}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.title}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap">
+          <span class="badge badge-gray" style="font-size:10.5px">${JOB_FAMILY_LABEL[j.jobFamily]||j.jobFamily}</span>
+          ${j.traineeStatus==='AVAILABLE'?'<span class="badge badge-primary" style="font-size:10.5px">수습가능</span>':''}
+          <span class="badge ${kicpaStyle(j.kicpaCondition)}" style="font-size:10.5px">KICPA ${KICPA_LABEL[j.kicpaCondition]||j.kicpaCondition}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;color:var(--gray-400)">${j.dDay!==null?'D-'+j.dDay:'상시'}</span>
+          <span class="dday ${dd.cls}" style="font-size:10.5px">${dd.text}</span>
+        </div>
+      </div>`;
+    }).join('') : '<div style="color:var(--gray-400);font-size:13px">공고 없음</div>';
+
+    const urg = urgData.items;
+    document.getElementById('dash-urgent').innerHTML = urg.length ? urg.map(j=>{
+      const dd=ddayLabel(j);
+      return `<div class="deadline-row" onclick="openDetail('${j.id}')">
+        <div style="font-size:13.5px;font-weight:600;color:var(--gray-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.title}</div>
+        <div style="font-size:12.5px;color:var(--gray-500);white-space:nowrap">${j.companyName}</div>
+        <div style="font-size:12.5px;color:var(--gray-400);white-space:nowrap">${JOB_FAMILY_LABEL[j.jobFamily]||j.jobFamily}</div>
+        <span class="dday ${dd.cls}">${dd.text}</span>
+      </div>`;
+    }).join('') : '<div style="padding:16px;text-align:center;color:var(--gray-400);font-size:13px">마감 임박 공고가 없습니다</div>';
+
+    const top5 = weekData.items.slice(0,5);
+    document.getElementById('dash-top5').innerHTML = top5.length ? top5.map((j,i)=>{
+      const dd=ddayLabel(j);
+      const nc=['n1','n2','n3','n4','n5'][i];
+      return `<div class="top-item" onclick="openDetail('${j.id}')">
+        <div class="top-num ${nc}">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.title}</div>
+          <div style="font-size:11.5px;color:var(--gray-400)">${j.companyName}</div>
+        </div>
+        <span class="dday ${dd.cls}" style="font-size:10.5px">${dd.text}</span>
+      </div>`;
+    }).join('') : '<div style="font-size:13px;color:var(--gray-400)">이번 주 마감 공고가 없습니다</div>';
+  } catch { }
+  renderCalendar();
+}
+
+// ── CALENDAR (dashboard mini) ──────────────────────────────────
+let _dashCalJobs = [];
+async function renderCalendar() {
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  document.getElementById('cal-title').textContent = `${y}년 ${m+1}월`;
+  const from=`${y}-${String(m+1).padStart(2,'0')}-01`;
+  const lastDay=new Date(y,m+1,0).getDate();
+  const to=`${y}-${String(m+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  try {
+    const res = await fetch(`${API_BASE}/jobs/calendar?from=${from}&to=${to}`);
+    if (res.ok) {
+      const data = await res.json();
+      _dashCalJobs = (data.days||[]).flatMap(day=>day.jobs.map(j=>({...j,deadline:day.date})));
+    }
+  } catch { }
+  const deadlineMap={};
+  _dashCalJobs.forEach(j=>{ if(j.deadline){ const d=parseInt(j.deadline.slice(8)); if(!deadlineMap[d])deadlineMap[d]=[]; deadlineMap[d].push(j); } });
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const todayD=TODAY.getDate(),todayM=TODAY.getMonth(),todayY=TODAY.getFullYear();
+  let cells='';
+  for(let i=0;i<firstDay;i++) cells+=`<div class="cal-cell other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=new Date(y,m,d);
+    const isToday=d===todayD&&m===todayM&&y===todayY;
+    const jobs=deadlineMap[d]||[];
+    const dft=Math.ceil((dt-new Date(todayY,todayM,todayD))/86400000);
+    let cls='cal-cell';
+    if(isToday) cls+=' today-cal';
+    else if(jobs.length){ if(dft<=3)cls+=' has-d3'; else if(dft<=7)cls+=' has-d7'; else cls+=' has-d30'; }
+    const onclick=jobs.length?`calClick(${d},${y},${m})`:'';
+    cells+=`<div class="${cls}" ${onclick?`onclick="${onclick}" title="${jobs.length}건 마감"`:''}>${d}${jobs.length&&!isToday?`<span class="cal-dot" style="background:${dft<=3?'var(--red)':dft<=7?'var(--orange)':'var(--primary)'}"></span>`:''}${isToday&&jobs.length?`<span class="cal-dot"></span>`:''}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=cells;
+}
+function calClick(d,y,m){
+  const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const jobs=_dashCalJobs.filter(j=>j.deadline===dateStr);
+  document.getElementById('modal-cal-title').textContent=`${y}년 ${m+1}월 ${d}일 마감 공고 ${jobs.length}건`;
+  document.getElementById('modal-cal-body').innerHTML=jobs.map(j=>`
+    <div onclick="openDetail('${j.id}');closeModal('modal-cal')" class="card" style="padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:12px;color:var(--gray-400)">${j.companyName}</div>
+      <div style="font-size:14px;font-weight:700;color:var(--gray-900)">${j.title}</div>
+    </div>
+  `).join('');
+  openModal('modal-cal');
+}
+function calPrev(){calDate.setMonth(calDate.getMonth()-1);renderCalendar();}
+function calNext(){calDate.setMonth(calDate.getMonth()+1);renderCalendar();}
+
+// ── COMPANIES ──────────────────────────────────────────────────
+// ── COMPANIES ──────────────────────────────────────────────────
+async function renderCompanies() {
+  const q = (document.getElementById('co-search')?.value||'').trim();
+  const sortRaw = document.getElementById('co-sort')?.value||'name';
+  const sortVal = sortRaw === 'jobs' ? 'employeeCountDesc' : 'name';
+  const typeChecked = [...document.querySelectorAll('.co-type-f:checked')].map(c=>c.value);
+
+  const params = new URLSearchParams();
+  params.set('sort', sortVal);
+  if (q) params.set('search', q);
+  if (typeChecked.length === 1) params.set('companyType', COMPANY_TYPE_MAP[typeChecked[0]] || typeChecked[0]);
+
+  const grid = document.getElementById('company-grid');
+  const totalEl = document.getElementById('co-total');
+  if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--gray-400)">불러오는 중...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/companies?${params.toString()}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const items = data.items || [];
+    if (totalEl) totalEl.textContent = data.total || items.length;
+    if (!grid) return;
+    if (!items.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--gray-400)">조건에 맞는 회사가 없습니다</div>'; return; }
+    grid.innerHTML = items.map(c => {
+      const ctLabel = COMPANY_TYPE_LABEL[c.type] || c.type;
+      return `<div class="card" style="padding:0;cursor:pointer;overflow:hidden;transition:box-shadow .2s,transform .15s" onclick="showCompanyDetail('${c.id}')" onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='var(--shadow-sm)';this.style.transform='none'">
+        <div style="height:140px;background:linear-gradient(135deg,${logoBgColor(c.name)} 0%,${logoBgColor2(c.name)} 100%);position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="font-size:36px;font-weight:900;color:rgba(255,255,255,.5);letter-spacing:-0.02em">${logoInitials(c.name)}</div>
+        </div>
+        <div style="padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="font-size:15px;font-weight:700;color:var(--gray-900)">${c.name}</div>
+            <span class="badge ${compTypeStyle(c.type)}">${ctLabel}</span>
+          </div>
+          <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px;line-height:1.55">${c.description||''}</p>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--primary);font-size:12.5px;font-weight:600">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+            진행 중인 공고 ${c.openJobCount||0}개
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch {
+    if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--red)">회사 목록을 불러오지 못했습니다.</div>';
+  }
+}
+
+function coToggleAll(el) { document.querySelectorAll('.co-type-f').forEach(c=>c.checked=false); renderCompanies(); }
+function coTagToggleAll(el) { document.querySelectorAll('.co-tag-f').forEach(c=>c.checked=false); renderCompanies(); }
+function coAgeToggleAll(el) { document.querySelectorAll('.co-age-f').forEach(c=>c.checked=false); renderCompanies(); }
+function clearCoFilters() {
+  document.querySelectorAll('.co-type-f,.co-tag-f,.co-age-f').forEach(c=>c.checked=false);
+  ['co-all','co-tag-all','co-age-all'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=true;});
+  const cs=document.getElementById('co-search');if(cs)cs.value='';
+  renderCompanies();
+}
+function filterCompanies(type,el){ renderCompanies(); }
+
+async function showCompanyDetail(companyId) {
+  document.getElementById('company-list-view').style.display='none';
+  document.getElementById('company-detail').style.display='block';
+  document.getElementById('company-detail-content').innerHTML='<div style="text-align:center;padding:80px;color:var(--gray-400)">불러오는 중...</div>';
+  let c;
+  try {
+    const res = await fetch(`${API_BASE}/companies/${companyId}`);
+    if (!res.ok) throw new Error();
+    c = await res.json();
+  } catch {
+    document.getElementById('company-detail-content').innerHTML='<div style="text-align:center;padding:80px;color:var(--red)">회사 정보를 불러오지 못했습니다.</div>';
+    return;
+  }
+  const name = c.name;
+  const ctLabel = COMPANY_TYPE_LABEL[c.type] || c.type;
+  const age = c.foundedYear ? (new Date().getFullYear() - c.foundedYear) : null;
+  const activeJobs = c.openJobs || [];
+  document.getElementById('company-detail-content').innerHTML=`
+    <div style="border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;position:relative">
+      <div style="height:200px;background:linear-gradient(135deg,${logoBgColor(name)} 0%,${logoBgColor2(name)} 100%);position:relative">
+        <div style="position:absolute;right:40px;top:50%;transform:translateY(-50%);font-size:80px;font-weight:900;color:rgba(255,255,255,.15);letter-spacing:-0.02em">${logoInitials(name)}</div>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:20px 28px;background:linear-gradient(to top,rgba(0,0,0,.5),transparent)">
+        <div style="display:flex;align-items:flex-end;gap:16px">
+          <div style="width:70px;height:70px;border-radius:12px;background:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:${logoBgColor(name)};flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.2)">${logoInitials(name)}</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:22px;font-weight:800;color:white">${name}</span>
+              <span class="badge ${compTypeStyle(c.type)}">${ctLabel}</span>
+            </div>
+            <p style="font-size:13.5px;color:rgba(255,255,255,.8);margin-top:4px">${c.description||''}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card" style="padding:28px">
+        <div style="font-size:15px;font-weight:700;color:var(--gray-900);margin-bottom:12px">회사 소개</div>
+        <p style="font-size:14px;color:var(--gray-600);line-height:1.75;margin-bottom:20px">${c.description||'-'}</p>
+        ${c.tags&&c.tags.length?`<div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:8px">회사 태그</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px">${c.tags.map(t=>`<span class="badge badge-gray">${t}</span>`).join('')}</div>`:''}
+        <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:12px">회사 기본 정보</div>
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr">
+            ${[['회사 유형',ctLabel],['설립연도',c.foundedYear?c.foundedYear+'년':'-'],['직원 수',c.employeeCount?c.employeeCount.toLocaleString()+'명':'-'],['업력',age?age+'년+':'-']].map((r,i)=>`
+            <div style="padding:16px 20px;${i<3?'border-right:1px solid var(--border);':''}">
+              <div style="font-size:11px;color:var(--gray-400);margin-bottom:4px">${r[0]}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--gray-800)">${r[1]}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:20px 24px">
+        <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:12px">외부 리뷰</div>
+        <div style="display:flex;gap:10px">
+          <a href="#" style="font-size:13px;color:var(--gray-700);text-decoration:none;padding:10px 18px;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:6px" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">잡플래닛 리뷰 <span style="color:var(--primary)">↗</span></a>
+          <a href="#" style="font-size:13px;color:var(--gray-700);text-decoration:none;padding:10px 18px;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:6px" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">블라인드 리뷰 <span style="color:var(--primary)">↗</span></a>
+        </div>
+      </div>
+      <div class="card" style="padding:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-size:14px;font-weight:700;color:var(--gray-800)">현재 진행 중인 공고 (${activeJobs.length}건)</div>
+          <button onclick="nav('jobs')" style="font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:600">전체 공고 보기 →</button>
+        </div>
+        ${activeJobs.length?activeJobs.map(j=>{
+          const dd=ddayLabel(j);
+          return `<div onclick="openDetail('${j.id}')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+            <span class="badge ${compTypeStyle(j.companyType)}" style="min-width:40px;text-align:center">${JOB_FAMILY_LABEL[j.jobFamily]||j.jobFamily}</span>
+            <div style="flex:1;font-size:14px;font-weight:600;color:var(--gray-900)">${j.title}</div>
+            <span class="badge badge-gray" style="font-size:10.5px">${EMPLOYMENT_TYPE_LABEL[j.employmentType]||j.employmentType}</span>
+            <span class="badge ${kicpaStyle(j.kicpaCondition)}" style="font-size:10.5px">KICPA ${KICPA_LABEL[j.kicpaCondition]||j.kicpaCondition}</span>
+            ${j.traineeStatus==='AVAILABLE'?'<span class="badge badge-primary" style="font-size:10.5px">수습가능</span>':''}
+            <span style="font-size:12px;color:var(--gray-500);white-space:nowrap">${j.deadline||'-'}</span>
+            <span class="dday ${dd.cls}" style="font-size:11px">${dd.text}</span>
+            <svg width="14" height="14" fill="none" stroke="var(--gray-300)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>`;
+        }).join(''):'<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px">현재 진행 중인 공고가 없습니다</div>'}
+      </div>
+    </div>`;
+}
+
+// ── ADMIN ──────────────────────────────────────────────────────
+async function renderAdminTable(){
+  const q=(document.getElementById('admin-search')?.value||'').trim();
+  const st=document.getElementById('admin-filter-status')?.value||'';
+  const params=new URLSearchParams({pageSize:'50'});
+  if(q) params.set('search',q);
+  const tbody=document.getElementById('admin-tbody'); if(!tbody)return;
+  try {
+    const res=await fetch(`${API_BASE}/jobs?${params.toString()}`,{credentials:'include'});
+    if(!res.ok) throw new Error();
+    const data=await res.json();
+    let jobs=data.items||[];
+    if(st==='active') jobs=jobs.filter(j=>j.deadlineType!=='FIXED_DATE'||(j.dDay!==null&&j.dDay>=0));
+    if(st==='closed') jobs=jobs.filter(j=>j.deadlineType==='FIXED_DATE'&&j.dDay!==null&&j.dDay<0);
+    tbody.innerHTML=jobs.map(j=>{
+      const isClosed=j.deadlineType==='FIXED_DATE'&&j.dDay!==null&&j.dDay<0;
+      const dd=ddayLabel(j);
+      return `<tr style="${isClosed?'opacity:.5':''}">
+        <td style="font-size:11.5px;color:var(--gray-400);font-weight:600">${j.id.slice(0,8)}…</td>
+        <td style="font-weight:600;color:var(--gray-800)">${j.companyName}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-700)">${j.title}</td>
+        <td><span class="badge badge-gray">${JOB_FAMILY_LABEL[j.jobFamily]||j.jobFamily}</span></td>
+        <td><span class="dday ${dd.cls}" style="font-size:10.5px">${dd.text}</span></td>
+        <td>${isClosed?'<span class="badge badge-red">마감</span>':'<span class="badge badge-primary">진행중</span>'}</td>
+        <td><span class="badge ${kicpaStyle(j.kicpaCondition)}">${KICPA_LABEL[j.kicpaCondition]||j.kicpaCondition}</span></td>
+        <td>${j.traineeStatus==='AVAILABLE'?'<span class="badge badge-primary">가능</span>':'<span class="badge badge-gray">불가</span>'}</td>
+        <td style="font-size:11.5px;color:var(--gray-400)">${(j.lastCheckedAt||'').slice(0,10)}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-outline btn-xs" onclick="showToast('수정 기능 준비중')">수정</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  } catch { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--gray-400);padding:24px">데이터를 불러오지 못했습니다</td></tr>'; }
+}
+
+function switchAdminTab(tab){
+  ['list','sources','tags'].forEach(t=>{
+    document.getElementById(`atab-${t}`).classList.toggle('active',t===tab);
+    document.getElementById(`atab-content-${t}`).style.display=t===tab?'block':'none';
+  });
+}
+
+function renderTagReview(){
+  const items=[
+    {id:3,company:'안진회계법인',title:'FAS팀 Deal Advisory 신입 채용',aiTags:['#Big4','#FAS','#신입','#수습가능','#기업가치평가','#M&A']},
+    {id:10,company:'딜로이트 안진',title:'FAS 기업재무자문 수습회계사',aiTags:['#Big4','#FAS','#수습가능','#재무모델링','#신입환영']},
+    {id:12,company:'대주회계법인',title:'감사/세무 신입 회계사 모집',aiTags:['#중소법인','#수습인정','#신입','#실무수습','#감사','#세무']},
+  ];
+  document.getElementById('tag-review-list').innerHTML=items.map(it=>`
+    <div class="card" style="padding:16px 18px">
+      <div style="font-size:11.5px;color:var(--gray-400);margin-bottom:4px">#${it.id} · ${it.company}</div>
+      <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:10px">${it.title}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+        ${it.aiTags.map(t=>`<span class="badge badge-gray">${t}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="approveTag(${it.id},this)">전체 승인</button>
+        <button class="btn btn-outline btn-sm" onclick="rejectTag(${it.id},this)">거절</button>
+        <button class="btn btn-outline btn-sm" onclick="showToast('태그 직접 수정 기능 (준비중)')">직접 수정</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function approveTag(id,btn){const c=btn.closest('.card');c.style.opacity='.4';showToast('✓ 태그가 승인되었습니다');}
+function rejectTag(id,btn){const c=btn.closest('.card');c.style.opacity='.4';showToast('✗ 태그가 거절되었습니다');}
+function editJob(id){ showToast('공고 수정 기능 준비중'); }
+function closeJob(id){ showToast('마감 처리 기능 준비중'); }
+function deleteJob(id){ showToast('삭제 기능 준비중'); }
+function submitJobForm(){ showToast('공고 등록 기능 준비중'); closeModal('modal-create'); }
+function formatNow(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;}
+
+// ── MODAL ──────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='modal-create'){document.getElementById('f-edit-id').value='';document.getElementById('modal-title').textContent='공고 등록';['f-title','f-company','f-link','f-tags','f-desc'].forEach(f=>document.getElementById(f).value='');}
+}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ── TOAST ──────────────────────────────────────────────────────
+function showToast(msg,type='green'){
+  const t=document.getElementById('toast');
+  const item=document.createElement('div');
+  item.className='toast-item';
+  if(type==='red') item.style.background='var(--red)';
+  item.textContent=msg;
+  t.appendChild(item);
+  setTimeout(()=>item.remove(),3000);
+}
+
+// ── HASH ROUTING ───────────────────────────────────────────────
+// ── HERO SEARCH ────────────────────────────────────────────────
+function searchFromHero(){
+  const kw=document.getElementById('hero-search').value.trim();
+  nav('jobs');
+  setTimeout(()=>{
+    const si=document.getElementById('search-input');
+    if(si){si.value=kw;}
+    applyFilters();
+  },80);
+}
+
+// ── LOGIN / SIGNUP ──────────────────────────────────────────────
+async function handleLogin(){
+  const un=document.getElementById('login-email')?.value.trim();
+  const pw=document.getElementById('login-password')?.value;
+  if(!un||!pw){showToast('아이디와 비밀번호를 입력해주세요','red');return;}
+  try {
+    const res=await fetch(`${API_BASE}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({username:un,password:pw})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'로그인에 실패했습니다.');
+    await checkAuth();
+    showToast('로그인되었습니다 ✓');
+    nav('dashboard');
+  } catch(e){ showToast(e.message,'red'); }
+}
+
+async function handlePersonalSignup(){
+  const un=document.getElementById('signup-username')?.value.trim();
+  const pw=document.getElementById('signup-password')?.value;
+  const pwc=document.getElementById('signup-password-confirm')?.value;
+  const dn=document.getElementById('signup-displayname')?.value.trim();
+  if(!un||!pw||!dn){showToast('모든 항목을 입력해주세요','red');return;}
+  if(pw!==pwc){showToast('비밀번호가 일치하지 않습니다','red');return;}
+  try {
+    const res=await fetch(`${API_BASE}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({username:un,password:pw,displayName:dn,role:'JOB_SEEKER'})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'회원가입에 실패했습니다.');
+    await checkAuth();
+    showToast('회원가입이 완료되었습니다 ✓');
+    nav('dashboard');
+  } catch(e){ showToast(e.message,'red'); }
+}
+
+async function handleLogout(){
+  try {
+    await fetch(`${API_BASE}/auth/logout`,{method:'POST',credentials:'include'});
+  } catch(e){}
+  currentUser=null;
+  updateNavAuth();
+  showToast('로그아웃되었습니다');
+  nav('dashboard');
+}
+
+function showSignupForm(type){
+  document.getElementById('signup-step-1').style.display='none';
+  document.getElementById('signup-form-personal').style.display=type==='personal'?'block':'none';
+  document.getElementById('signup-form-corporate').style.display=type==='corporate'?'block':'none';
+}
+
+function showCorporateApproval(){
+  document.getElementById('signup-form-corporate').style.display='none';
+  document.getElementById('signup-approval').style.display='block';
+}
+
+// ── MINI CALENDAR (jobs sidebar) ───────────────────────────────
+let miniCalDate = new Date(TODAY);
+let miniCalSelectedDate = null;
+let _miniCalLastJobs = null;
+
+function renderMiniCalendar(filteredJobs){
+  const jobs = (filteredJobs !== undefined) ? filteredJobs : (_miniCalLastJobs || _lastFilteredJobs || []);
+  if(filteredJobs !== undefined) _miniCalLastJobs = filteredJobs;
+  const el=document.getElementById('mini-cal-grid');
+  const lbl=document.getElementById('mini-cal-title');
+  if(!el)return;
+  const y=miniCalDate.getFullYear(), m=miniCalDate.getMonth();
+  lbl.textContent=`${y}년 ${m+1}월`;
+  const jobsByDate={};
+  jobs.forEach(j=>{
+    if(j.deadline){
+      const d=new Date(j.deadline);
+      if(d.getFullYear()===y&&d.getMonth()===m){
+        const k=d.getDate();
+        if(!jobsByDate[k])jobsByDate[k]=[];
+        jobsByDate[k].push(j);
+      }
+    }
+  });
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  const todayD=TODAY.getDate(),todayM=TODAY.getMonth(),todayY=TODAY.getFullYear();
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div style="aspect-ratio:1"></div>`;
+  for(let d=1;d<=days;d++){
+    const isToday=d===todayD&&m===todayM&&y===todayY;
+    const dayJobs=jobsByDate[d]||[];
+    const count=dayJobs.length;
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isSel=miniCalSelectedDate===dateStr;
+    const bg=isToday?'var(--primary)':isSel?'var(--primary-light)':'transparent';
+    const color=isToday?'white':isSel?'var(--primary-dark)':'var(--gray-700)';
+    html+=`<div data-date="${dateStr}" onclick="miniCalDayClick(${y},${m},${d},'${dateStr}')" style="aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;background:${bg};transition:background .12s">
+      <span style="font-size:11px;font-weight:${isToday||isSel?700:400};color:${color};line-height:1">${d}</span>
+      ${count>0?`<span style="font-size:9px;font-weight:700;color:${isToday?'rgba(255,255,255,.9)':'var(--primary)'};line-height:1;margin-top:1px">${count}</span>`:''}
+    </div>`;
+  }
+  el.innerHTML=html;
+  el._filteredJobs=jobs;
+}
+function miniCalPrev(){miniCalDate.setMonth(miniCalDate.getMonth()-1);renderMiniCalendar();}
+function miniCalNext(){miniCalDate.setMonth(miniCalDate.getMonth()+1);renderMiniCalendar();}
+function miniCalDayClick(y,m,d,dateStr){
+  miniCalSelectedDate=dateStr;
+  renderMiniCalendar();
+  const gridEl=document.getElementById('mini-cal-grid');
+  const jobs=gridEl?._filteredJobs||jobsDB;
+  const dayJobs=jobs.filter(j=>j.deadline===dateStr);
+  const popup=document.getElementById('mini-cal-day-popup');
+  const popupDate=document.getElementById('mini-cal-popup-date');
+  const popupList=document.getElementById('mini-cal-popup-list');
+  if(!popup){return;}
+  if(!dayJobs.length){popup.style.display='none';return;}
+  popupDate.textContent=`${y}년 ${m+1}월 ${d}일 — 총 ${dayJobs.length}건`;
+  popupList.innerHTML=dayJobs.map(j=>{
+    const dd=ddayLabel(j);
+    return `<div onclick="openDetail('${j.id}')" style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+      <span style="font-size:10px;font-weight:700;color:white;background:var(--primary);border-radius:3px;padding:1px 5px;white-space:nowrap;flex-shrink:0">${dd.text}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--gray-800)">${j.companyName}</div>
+        <div style="font-size:10px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.title}</div>
+      </div>
+    </div>`;
+  }).join('');
+  popup.style.display='block';
+}
+
+// ── SIDEBAR URGENT LIST ─────────────────────────────────────────
+function renderSidebarUrgent(filteredJobs){
+  const jobs=(filteredJobs !== undefined)?filteredJobs:(_lastFilteredJobs||[]);
+  const el=document.getElementById('sidebar-urgent-list');
+  if(!el)return;
+  const urgent=jobs.filter(j=>{
+    const d=j.dDay!==null&&j.dDay!==undefined?j.dDay:daysFromToday(j.deadline);
+    return d!==null&&d>=0&&d<=7;
+  }).sort((a,b)=>{
+    const da=a.dDay!==null&&a.dDay!==undefined?a.dDay:daysFromToday(a.deadline);
+    const db=b.dDay!==null&&b.dDay!==undefined?b.dDay:daysFromToday(b.deadline);
+    return da-db;
+  }).slice(0,6);
+  if(!urgent.length){el.innerHTML='<div style="color:var(--gray-400);font-size:12px;text-align:center;padding:12px 0">마감임박 공고 없음</div>';return;}
+  el.innerHTML=urgent.map(j=>{
+    const d=j.dDay!==null&&j.dDay!==undefined?j.dDay:daysFromToday(j.deadline);
+    return `<div onclick="openDetail('${j.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+      <div style="flex:1;min-width:0;padding-right:8px">
+        <div style="font-size:12px;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.companyName}</div>
+        <div style="font-size:11px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">${JOB_FAMILY_LABEL[j.jobFamily]||j.jobFamily} | ${EMPLOYMENT_TYPE_LABEL[j.employmentType]||j.employmentType} | KICPA ${KICPA_LABEL[j.kicpaCondition]||j.kicpaCondition}</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:var(--primary);flex-shrink:0">D-${d}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── JOB LIST ITEM (list view) ───────────────────────────────────
+function jobListItem(j, kw=''){
+  const dd=ddayLabel(j);
+  const [bg1,bg2]=logoBgPair(j.companyName);
+  const ctLabel=COMPANY_TYPE_LABEL[j.companyType]||j.companyType||'';
+  return `<div onclick="openDetail('${j.id}')" style="display:flex;align-items:center;gap:16px;padding:14px 16px;background:white;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='none'">
+    <div style="width:48px;height:48px;min-width:48px;border-radius:10px;background:linear-gradient(135deg,${bg1},${bg2});display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white">${logoInitials(j.companyName)}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:var(--gray-800);margin-bottom:2px">${highlight(j.title,kw)}</div>
+      <div style="font-size:12px;color:var(--gray-500)">${highlight(j.companyName,kw)} · ${ctLabel}</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:200px">
+      ${(j.labels||[]).slice(0,3).map(t=>`<span style="font-size:10px;padding:2px 7px;background:var(--primary-light);color:var(--primary);border-radius:20px">${t}</span>`).join('')}
+    </div>
+    <div style="text-align:right;min-width:64px">
+      <span style="font-size:11px;font-weight:700;color:var(--primary);display:block">${dd.text}</span>
+      <span style="font-size:10px;color:var(--gray-400)">${j.deadline||''}</span>
+    </div>
+  </div>`;
+}
+
+// ── FULL CALENDAR ───────────────────────────────────────────────
+let fullCalDate = new Date(TODAY);
+let calViewMode = 'monthly';
+
+function getCalParams(){
+  const cats=[...document.querySelectorAll('.cal-f-cat:checked')].map(c=>JOB_FAMILY_MAP[c.value]).filter(Boolean);
+  const cts=[...document.querySelectorAll('.cal-f-ct:checked')].map(c=>COMPANY_TYPE_MAP[c.value]).filter(Boolean);
+  const ets=[...document.querySelectorAll('.cal-f-et:checked')].map(c=>EMPLOYMENT_TYPE_MAP[c.value]).filter(Boolean);
+  const kicpas=[...document.querySelectorAll('.cal-f-kicpa:checked')].map(c=>KICPA_MAP[c.value]).filter(Boolean);
+  const dts=[...document.querySelectorAll('.cal-f-dt:checked')].map(c=>DEADLINE_TYPE_MAP[c.value]).filter(Boolean);
+  const trs=[...document.querySelectorAll('.cal-f-tr:checked')].map(c=>TRAINEE_MAP[c.value]).filter(Boolean);
+  const expMax=parseInt(document.getElementById('cal-f-exp')?.value||15);
+  const params=new URLSearchParams();
+  if(cats.length===1) params.set('jobFamily',cats[0]);
+  if(cts.length===1) params.set('companyType',cts[0]);
+  if(ets.length===1) params.set('employmentType',ets[0]);
+  if(kicpas.length===1) params.set('kicpaCondition',kicpas[0]);
+  if(dts.length===1) params.set('deadlineType',dts[0]);
+  if(trs.length===1) params.set('traineeStatus',trs[0]);
+  if(expMax<15) params.set('maxExperienceYears',String(expMax));
+  return params;
+}
+
+function setCalView(mode){
+  calViewMode=mode;
+  const btnM=document.getElementById('cal-btn-monthly');
+  const btnL=document.getElementById('cal-btn-list');
+  if(btnM){btnM.style.background=mode==='monthly'?'var(--primary)':'white';btnM.style.color=mode==='monthly'?'white':'var(--gray-600)';btnM.style.border=mode==='monthly'?'none':'1px solid var(--border)';}
+  if(btnL){btnL.style.background=mode==='list'?'var(--primary)':'white';btnL.style.color=mode==='list'?'white':'var(--gray-600)';btnL.style.border=mode==='list'?'none':'1px solid var(--border)';}
+  const header=document.getElementById('cal-dow-header');
+  if(header)header.style.display=mode==='monthly'?'grid':'none';
+  renderFullCalendar();
+}
+
+async function renderFullCalendar(){
+  const el=document.getElementById('full-cal-grid');
+  const lbl=document.getElementById('full-cal-title');
+  if(!el)return;
+  const y=fullCalDate.getFullYear(),m=fullCalDate.getMonth();
+  const from=`${y}-${String(m+1).padStart(2,'0')}-01`;
+  const lastDay=new Date(y,m+1,0).getDate();
+  const to=`${y}-${String(m+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  lbl.textContent=`${y}년 ${m+1}월`;
+  el.innerHTML='<div style="text-align:center;padding:48px;color:var(--gray-400)">로딩중...</div>';
+  try {
+    const params=getCalParams();
+    params.set('from',from);
+    params.set('to',to);
+    const res=await fetch(`${API_BASE}/jobs/calendar?${params.toString()}`,{cache:'no-store'});
+    if(!res.ok) throw new Error('캘린더를 불러오지 못했습니다.');
+    const data=await res.json();
+    if(calViewMode==='list'){
+      const allJobs=[];
+      (data.days||[]).forEach(day=>day.jobs.forEach(j=>allJobs.push(j)));
+      renderCalList(allJobs,el,lbl);
+      return;
+    }
+    const jobsByDate={};
+    (data.days||[]).forEach(day=>{ jobsByDate[day.date]=day.jobs; });
+    const first=new Date(y,m,1).getDay();
+    const days=new Date(y,m+1,0).getDate();
+    const todayStr=`${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+    let cells='';
+    for(let i=0;i<first;i++){
+      cells+=`<div style="border:1px solid var(--border);border-top:none;border-left:none;min-height:110px;background:var(--gray-50)"></div>`;
+    }
+    for(let d=1;d<=days;d++){
+      const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday=dateStr===todayStr;
+      const dayJobs=jobsByDate[dateStr]||[];
+      const dow=(first+d-1)%7;
+      const numColor=isToday?'white':dow===0?'var(--primary)':dow===6?'var(--gray-500)':'var(--gray-700)';
+      const numBg=isToday?'var(--primary)':'transparent';
+      cells+=`<div style="border:1px solid var(--border);border-top:none;border-left:none;min-height:110px;padding:8px 10px;background:${dayJobs.length>0&&!isToday?'white':'var(--gray-50)'};${isToday?'background:var(--primary-light)':''}">
+        <div style="margin-bottom:5px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${numBg};font-size:12px;font-weight:${isToday?'700':'500'};color:${numColor}">${d}</span>
+        </div>
+        ${dayJobs.length===0?'<div style="font-size:11px;color:var(--gray-300);padding:2px 0">-</div>':''}
+        ${dayJobs.slice(0,4).map(j=>`
+          <div onclick="openDetail('${j.id}')" style="display:flex;align-items:flex-start;gap:4px;padding:2px 0;cursor:pointer;border-radius:3px" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background='transparent'">
+            <span style="color:var(--primary);font-size:11px;flex-shrink:0;margin-top:1px">•</span>
+            <span style="font-size:11px;color:var(--gray-700);line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${j.companyName} ${j.title}</span>
+          </div>`).join('')}
+        ${dayJobs.length>4?`<div onclick="fullCalDayExpand('${dateStr}',${y},${m},${d})" style="font-size:10px;color:var(--primary);cursor:pointer;margin-top:2px;font-weight:600">+${dayJobs.length-4}건 더 보기</div>`:''}
+      </div>`;
+    }
+    el.innerHTML=cells;
+  } catch(e){
+    el.innerHTML=`<div style="text-align:center;padding:48px;color:var(--red)">${e.message}</div>`;
+  }
+}
+
+function renderCalList(jobs,el,lbl){
+  const y=fullCalDate.getFullYear(),m=fullCalDate.getMonth();
+  lbl.textContent=`${y}년 ${m+1}월 목록`;
+  // Hide day-of-week header in list mode
+  const header=document.getElementById('cal-dow-header');
+  if(header)header.style.display='none';
+  const monthJobs=jobs.filter(j=>{
+    if(!j.deadline)return false;
+    const d=new Date(j.deadline);
+    return d.getFullYear()===y&&d.getMonth()===m;
+  }).sort((a,b)=>a.deadline.localeCompare(b.deadline));
+  if(!monthJobs.length){
+    el.innerHTML='<div style="text-align:center;padding:48px;color:var(--gray-400)">이 달의 마감 공고가 없습니다</div>';
+    return;
+  }
+  // Group by date
+  const byDate={};
+  monthJobs.forEach(j=>{if(!byDate[j.deadline])byDate[j.deadline]=[];byDate[j.deadline].push(j);});
+  let html='';
+  Object.keys(byDate).sort().forEach(dateStr=>{
+    const date=new Date(dateStr);
+    const dday=daysFromToday(dateStr);
+    const dow=['일','월','화','수','목','금','토'][date.getDay()];
+    html+=`<div style="border-bottom:2px solid var(--border);padding:16px 0">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:700;color:var(--gray-800)">${dateStr.slice(5).replace('-','월 ')}일 (${dow})</span>
+        ${dday!==null&&dday>=0?`<span style="font-size:12px;font-weight:700;color:${dday<=3?'var(--primary)':'var(--primary)'};background:${dday<=3?'var(--primary-light)':'var(--primary-light)'};padding:2px 8px;border-radius:4px">D-${dday}</span>`:''}
+        <span style="font-size:12px;color:var(--gray-400)">${byDate[dateStr].length}건</span>
+      </div>
+      ${byDate[dateStr].map(j=>`
+        <div onclick="openDetail('${j.id}')" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='none'">
+          <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,${logoBgPair(j.companyName)[0]},${logoBgPair(j.companyName)[1]});display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0">${logoInitials(j.companyName)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.companyName}</div>
+            <div style="font-size:12px;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.title}</div>
+          </div>
+          <div style="display:flex;gap:5px;flex-shrink:0">
+            <span class="badge ${compTypeStyle(j.companyType)}" style="font-size:10.5px">${COMPANY_TYPE_LABEL[j.companyType]||j.companyType}</span>
+            <span class="badge ${kicpaStyle(j.kicpaCondition)}" style="font-size:10.5px">KICPA ${KICPA_LABEL[j.kicpaCondition]||j.kicpaCondition}</span>
+          </div>
+          <svg width="14" height="14" fill="none" stroke="var(--gray-300)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>`).join('')}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function fullCalPrev(){fullCalDate.setMonth(fullCalDate.getMonth()-1);renderFullCalendar();}
+function fullCalNext(){fullCalDate.setMonth(fullCalDate.getMonth()+1);renderFullCalendar();}
+function fullCalDayExpand(dateStr){
+  setCalView('list');
+}
+
+function calToggleAll(type,el){
+  document.querySelectorAll(`.cal-f-${type}`).forEach(c=>c.checked=el.checked);
+  renderFullCalendar();
+}
+
+function clearCalFilters(){
+  ['cat','ct','et','kicpa','dt','tr'].forEach(type=>{
+    document.querySelectorAll(`.cal-f-${type}`).forEach(c=>c.checked=false);
+    const allEl=document.getElementById(`cal-f-all-${type}`);
+    if(allEl)allEl.checked=true;
+  });
+  const expEl=document.getElementById('cal-f-exp');
+  if(expEl){expEl.value=15;document.getElementById('cal-exp-label').textContent='15년+';}
+  renderFullCalendar();
+}
+
+function initRoute(){
+  const h=window.location.hash;
+  if(h==='#/jobs') nav('jobs');
+  else if(h==='#/companies') nav('companies');
+  else if(h==='#/calendar') nav('calendar');
+  else if(h==='#/login') nav('login');
+  else if(h==='#/signup') nav('signup');
+  else if(h==='#/admin') nav('admin');
+  else nav('dashboard');
+}
+window.addEventListener('hashchange',()=>{
+  const h=window.location.hash;
+  if(h==='#/dashboard') nav('dashboard');
+  else if(h==='#/jobs') nav('jobs');
+  else if(h==='#/companies') nav('companies');
+  else if(h==='#/calendar') nav('calendar');
+  else if(h==='#/login') nav('login');
+  else if(h==='#/signup') nav('signup');
+  else if(h==='#/admin') nav('admin');
+});
+
+// ── INIT ───────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',async ()=>{
+  await checkAuth();
+  initRoute();
+  const deadlineEl=document.getElementById('f-deadline');
+  if(deadlineEl){
+    const d=new Date(TODAY);
+    d.setMonth(d.getMonth()+1);
+    deadlineEl.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-15`;
+  }
+});
+</script>
+</body>
+</html>

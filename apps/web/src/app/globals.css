@@ -6,12 +6,16 @@
 
 :root {
   --app-surface: #ffffff;
-  --app-line: #deded7;
-  --brand: #0f766e;
-  --brand-strong: #115e59;
-  --app-muted: #66665f;
+  --app-line: #EBEBEB;
+  --brand: #E8457A;
+  --brand-strong: #D03368;
+  --app-muted: #6B7280;
   --accent: oklch(0.97 0 0);
-  --background: #f7f7f4;
+  --background: #F7F7F7;
+  --proto-brand: #E8457A;
+  --proto-brand-dark: #D03368;
+  --proto-brand-light: #fff0f5;
+  --proto-brand-mid: #ffd6e5;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

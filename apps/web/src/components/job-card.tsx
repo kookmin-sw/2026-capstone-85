@@ -12,24 +12,24 @@ import {
 
 export function JobCard({ job }: { job: JobListItem }) {
   return (
-    <article className="border border-[var(--app-line)] bg-[var(--app-surface)] p-4">
+    <article className="rounded-2xl bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_6px_24px_rgba(0,0,0,0.10)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge tone="teal">{deadlineText(job)}</Badge>
+            <Badge tone="pink">{deadlineText(job)}</Badge>
             <Badge>{companyTypeLabels[job.companyType]}</Badge>
             <Badge>{jobFamilyLabels[job.jobFamily]}</Badge>
           </div>
-          <h3 className="text-lg font-semibold">{job.title}</h3>
-          <p className="mt-1 flex items-center gap-2 text-sm text-[var(--app-muted)]">
-            <BriefcaseBusiness size={15} />
+          <h3 className="text-base font-semibold leading-snug text-gray-900">{job.title}</h3>
+          <p className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+            <BriefcaseBusiness size={14} />
             {job.companyName} · {employmentLabels[job.employmentType]}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/jobs/${job.id}`}
-            className="inline-flex items-center justify-center rounded-md bg-[var(--brand)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-strong)]"
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
             상세 보기
           </Link>
@@ -37,10 +37,10 @@ export function JobCard({ job }: { job: JobListItem }) {
             href={job.originalUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--app-line)] px-3 py-2 text-sm font-medium"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--app-line)] px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300"
           >
             원문
-            <ExternalLink size={15} />
+            <ExternalLink size={14} />
           </a>
         </div>
       </div>
@@ -64,15 +64,15 @@ export function JobCard({ job }: { job: JobListItem }) {
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--app-muted)]">
-        <CalendarDays size={14} />
+      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+        <CalendarDays size={13} />
         출처: {job.sourceName}
         <span>·</span>
         최종 확인: {new Date(job.lastCheckedAt).toLocaleString("ko-KR")}
         {job.labels.map((label) => (
           <span
             key={label}
-            className="rounded border border-[var(--app-line)] px-2 py-1"
+            className="rounded-md border border-[var(--app-line)] px-2 py-0.5"
           >
             #{label}
           </span>
@@ -82,23 +82,110 @@ export function JobCard({ job }: { job: JobListItem }) {
   );
 }
 
+export function JobGridCard({ job }: { job: JobListItem }) {
+  const initial = job.companyName.charAt(0);
+  const dDay = job.dDay;
+  const dDayLabel =
+    dDay === null
+      ? null
+      : dDay < 0
+        ? "마감"
+        : dDay === 0
+          ? "D-Day"
+          : `D-${dDay}`;
+  const isUrgent = dDay !== null && dDay >= 0 && dDay <= 7;
+
+  return (
+    <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.07)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+      {/* 배너 — 흰색 계열 통일 */}
+      <div className="relative flex h-28 items-end bg-gray-50 px-5 pb-3">
+        {dDayLabel && (
+          <span
+            className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold text-white"
+            style={{
+              background: isUrgent ? "#E8457A" : "rgba(0,0,0,0.30)",
+            }}
+          >
+            {dDayLabel}
+          </span>
+        )}
+        <div
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-black text-white shadow-md"
+          style={{ background: "var(--proto-brand)" }}
+        >
+          {job.companyLogoUrl ? (
+            <img
+              src={job.companyLogoUrl}
+              alt={job.companyName}
+              className="h-full w-full rounded-xl object-cover"
+            />
+          ) : (
+            initial
+          )}
+        </div>
+        <div className="ml-3 min-w-0">
+          <p className="truncate text-sm font-semibold text-gray-800">
+            {job.companyName}
+          </p>
+          <p className="text-xs text-gray-400">
+            {companyTypeLabels[job.companyType]}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-2.5 flex flex-wrap gap-1.5">
+          <Badge tone="pink">{jobFamilyLabels[job.jobFamily]}</Badge>
+          <Badge>{employmentLabels[job.employmentType]}</Badge>
+        </div>
+        <h3 className="mb-3 line-clamp-2 text-sm font-semibold leading-relaxed text-gray-900">
+          {job.title}
+        </h3>
+        <div className="mt-auto grid grid-cols-2 gap-1.5 text-xs text-gray-500">
+          <span className="truncate">📍 {job.location ?? "지역 불명확"}</span>
+          <span className="truncate">🎓 {kicpaLabels[job.kicpaCondition]}</span>
+          <span className="truncate">👤 {traineeLabels[job.traineeStatus]}</span>
+          <span className="truncate">📅 {experienceText(job)}</span>
+        </div>
+        <div className="mt-4 flex gap-2">
+          <Link
+            href={`/jobs/${job.id}`}
+            className="flex-1 rounded-xl py-2 text-center text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: "var(--proto-brand)" }}
+          >
+            상세 보기
+          </Link>
+          <a
+            href={job.originalUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center rounded-xl border border-[var(--app-line)] px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:border-gray-300"
+          >
+            <ExternalLink size={13} />
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export function CompactJobRow({ job }: { job: JobListItem }) {
   return (
-    <div className="grid gap-2 border border-[var(--app-line)] bg-white p-3 md:grid-cols-[1fr_auto] md:items-center">
+    <div className="grid gap-3 rounded-xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md md:grid-cols-[1fr_auto] md:items-center">
       <div>
-        <div className="mb-1 flex flex-wrap gap-2">
-          <Badge tone="teal">{deadlineText(job)}</Badge>
+        <div className="mb-1.5 flex flex-wrap gap-1.5">
+          <Badge tone="pink">{deadlineText(job)}</Badge>
           <Badge>{jobFamilyLabels[job.jobFamily]}</Badge>
           <Badge>{employmentLabels[job.employmentType]}</Badge>
         </div>
-        <p className="font-semibold">{job.title}</p>
-        <p className="text-sm text-[var(--app-muted)]">
+        <p className="font-semibold text-gray-900">{job.title}</p>
+        <p className="mt-0.5 text-sm text-gray-500">
           {job.companyName} · {job.location ?? "지역 불명확"}
         </p>
       </div>
       <Link
         href={`/jobs/${job.id}`}
-        className="inline-flex items-center justify-center rounded-md bg-[var(--brand)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-strong)]"
+        className="inline-flex items-center justify-center rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
       >
         상세 보기
       </Link>
@@ -111,14 +198,14 @@ export function Badge({
   tone,
 }: {
   children: React.ReactNode;
-  tone?: "teal";
+  tone?: "pink";
 }) {
   return (
     <span
       className={
-        tone === "teal"
-          ? "rounded bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-800"
-          : "rounded bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700"
+        tone === "pink"
+          ? "rounded-md bg-[#FFF0F5] px-2.5 py-0.5 text-xs font-semibold text-[#E8457A]"
+          : "rounded-md bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600"
       }
     >
       {children}
@@ -128,9 +215,9 @@ export function Badge({
 
 export function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[var(--app-line)] bg-[#fbfbf8] px-3 py-2">
-      <p className="text-xs text-[var(--app-muted)]">{label}</p>
-      <p className="mt-1 font-medium">{value}</p>
+    <div className="rounded-lg bg-gray-50 px-3 py-2.5">
+      <p className="text-xs text-gray-400">{label}</p>
+      <p className="mt-0.5 text-sm font-medium text-gray-800">{value}</p>
     </div>
   );
 }
