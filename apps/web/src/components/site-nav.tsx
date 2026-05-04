@@ -47,8 +47,7 @@ export function SiteNav() {
         <div className="ml-auto">
           <Link
             href="/login"
-            className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: "var(--proto-brand)" }}
+            className="rounded-xl bg-[var(--proto-brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--proto-brand-dark)] hover:shadow-md"
           >
             로그인 / 회원가입
           </Link>

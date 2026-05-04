@@ -180,7 +180,7 @@ export function MiniDeadlineCalendar({
             ))}
           </div>
         ) : (
-          <p className="border border-dashed border-[var(--app-line)] bg-[#fbfbf8] p-4 text-sm text-[var(--app-muted)]">
+          <p className="rounded-xl bg-gray-50 p-5 text-center text-sm text-gray-400">
             이번 주에 고정 마감일이 있는 공고가 없습니다.
           </p>
         )}
@@ -558,7 +558,7 @@ function CalendarDayModal({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-lg bg-white shadow-xl">
+      <div className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-[var(--app-line)] px-5 py-4">
           <div>
             <h2 className="text-xl font-semibold">{formatModalDate(date)}</h2>
@@ -570,7 +570,7 @@ function CalendarDayModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-2 hover:bg-neutral-100"
+            className="rounded-xl p-2 transition-colors hover:bg-[var(--proto-brand-light)] hover:text-[var(--proto-brand)]"
             aria-label="닫기"
           >
             <X size={24} />
@@ -586,7 +586,7 @@ function CalendarDayModal({
               />
             ))
           ) : (
-            <p className="border border-dashed border-[var(--app-line)] bg-[#fbfbf8] p-5 text-sm text-[var(--app-muted)]">
+            <p className="rounded-xl bg-gray-50 p-6 text-center text-sm text-gray-400">
               이 날짜에 표시할 채용 일정이 없습니다.
             </p>
           )}
@@ -600,7 +600,7 @@ function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
   const meta = calendarEventMeta[event.type];
 
   return (
-    <article className={`grid gap-3 border p-3 ${meta.barClassName}`}>
+    <article className={`grid gap-3 rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${meta.barClassName}`}>
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={meta.badgeTone}>{meta.label}</Badge>
         <Badge>{deadlineText(event.job)}</Badge>

@@ -12,24 +12,24 @@ import {
 
 export function JobCard({ job }: { job: JobListItem }) {
   return (
-    <article className="rounded-2xl bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_6px_24px_rgba(0,0,0,0.10)]">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
+    <article className="rounded-2xl bg-white p-5 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0 flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Badge tone="pink">{deadlineText(job)}</Badge>
             <Badge>{companyTypeLabels[job.companyType]}</Badge>
             <Badge>{jobFamilyLabels[job.jobFamily]}</Badge>
           </div>
           <h3 className="text-base font-semibold leading-snug text-gray-900">{job.title}</h3>
-          <p className="mt-1 flex items-center gap-2 text-sm text-gray-500">
-            <BriefcaseBusiness size={14} />
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-500">
+            <BriefcaseBusiness size={14} className="shrink-0" />
             {job.companyName} · {employmentLabels[job.employmentType]}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           <Link
             href={`/jobs/${job.id}`}
-            className="inline-flex items-center justify-center rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--brand-strong)] hover:shadow-md"
           >
             상세 보기
           </Link>
@@ -37,7 +37,7 @@ export function JobCard({ job }: { job: JobListItem }) {
             href={job.originalUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--app-line)] px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--brand)] px-4 py-2 text-sm font-semibold text-[var(--brand)] transition-all hover:bg-[var(--proto-brand-light)] hover:shadow-sm"
           >
             원문
             <ExternalLink size={14} />
@@ -65,7 +65,7 @@ export function JobCard({ job }: { job: JobListItem }) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-        <CalendarDays size={13} />
+        <CalendarDays size={13} className="shrink-0" />
         출처: {job.sourceName}
         <span>·</span>
         최종 확인: {new Date(job.lastCheckedAt).toLocaleString("ko-KR")}
@@ -96,15 +96,17 @@ export function JobGridCard({ job }: { job: JobListItem }) {
   const isUrgent = dDay !== null && dDay >= 0 && dDay <= 7;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.07)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
-      {/* 배너 — 흰색 계열 통일 */}
+    <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
+      {/* 배너 */}
       <div className="relative flex h-28 items-end bg-gray-50 px-5 pb-3">
         {dDayLabel && (
           <span
-            className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold text-white"
-            style={{
-              background: isUrgent ? "#E8457A" : "rgba(0,0,0,0.30)",
-            }}
+            className={[
+              "absolute right-3 top-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+              isUrgent
+                ? "bg-pink-50 text-pink-600"
+                : "bg-gray-100 text-gray-500",
+            ].join(" ")}
           >
             {dDayLabel}
           </span>
@@ -124,7 +126,7 @@ export function JobGridCard({ job }: { job: JobListItem }) {
           )}
         </div>
         <div className="ml-3 min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">
+          <p className="truncate text-sm font-semibold text-gray-900">
             {job.companyName}
           </p>
           <p className="text-xs text-gray-400">
@@ -150,8 +152,14 @@ export function JobGridCard({ job }: { job: JobListItem }) {
         <div className="mt-4 flex gap-2">
           <Link
             href={`/jobs/${job.id}`}
-            className="flex-1 rounded-xl py-2 text-center text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            className="flex-1 rounded-xl py-2 text-center text-xs font-semibold text-white shadow-sm transition-all hover:shadow-md"
             style={{ background: "var(--proto-brand)" }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "var(--proto-brand-dark)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "var(--proto-brand)";
+            }}
           >
             상세 보기
           </Link>
@@ -159,7 +167,7 @@ export function JobGridCard({ job }: { job: JobListItem }) {
             href={job.originalUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-center rounded-xl border border-[var(--app-line)] px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:border-gray-300"
+            className="flex items-center justify-center rounded-xl border border-[var(--brand)] px-3 py-2 text-xs font-semibold text-[var(--brand)] transition-all hover:bg-[var(--proto-brand-light)] hover:shadow-sm"
           >
             <ExternalLink size={13} />
           </a>
@@ -171,7 +179,7 @@ export function JobGridCard({ job }: { job: JobListItem }) {
 
 export function CompactJobRow({ job }: { job: JobListItem }) {
   return (
-    <div className="grid gap-3 rounded-xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md md:grid-cols-[1fr_auto] md:items-center">
+    <div className="grid gap-3 rounded-xl bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[1fr_auto] md:items-center">
       <div>
         <div className="mb-1.5 flex flex-wrap gap-1.5">
           <Badge tone="pink">{deadlineText(job)}</Badge>
@@ -185,7 +193,7 @@ export function CompactJobRow({ job }: { job: JobListItem }) {
       </div>
       <Link
         href={`/jobs/${job.id}`}
-        className="inline-flex items-center justify-center rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        className="inline-flex items-center justify-center rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--brand-strong)] hover:shadow-md"
       >
         상세 보기
       </Link>
@@ -204,8 +212,8 @@ export function Badge({
     <span
       className={
         tone === "pink"
-          ? "rounded-md bg-[#FFF0F5] px-2.5 py-0.5 text-xs font-semibold text-[#E8457A]"
-          : "rounded-md bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600"
+          ? "rounded-full bg-pink-50 px-2.5 py-0.5 text-xs font-semibold text-pink-600"
+          : "rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600"
       }
     >
       {children}
@@ -217,7 +225,7 @@ export function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-gray-50 px-3 py-2.5">
       <p className="text-xs text-gray-400">{label}</p>
-      <p className="mt-0.5 text-sm font-medium text-gray-800">{value}</p>
+      <p className="mt-0.5 text-sm font-semibold text-gray-800">{value}</p>
     </div>
   );
 }

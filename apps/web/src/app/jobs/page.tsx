@@ -74,7 +74,7 @@ function JobsSidebarCalendar({
   return (
     <div className="flex flex-col gap-4">
       {/* 캘린더 카드 */}
-      <div className="rounded-2xl border border-[var(--app-line)] bg-white p-4 shadow-sm">
+      <div className="rounded-2xl bg-white p-5 shadow-md">
         {/* 제목 */}
         <div className="mb-3 flex items-baseline gap-1.5">
           <span className="text-sm font-bold text-gray-900">마감일 캘린더</span>
@@ -89,7 +89,7 @@ function JobsSidebarCalendar({
                 new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1),
               )
             }
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-[var(--proto-brand-light)] hover:text-[var(--proto-brand)]"
             aria-label="이전 달"
           >
             <ChevronLeft size={16} />
@@ -104,7 +104,7 @@ function JobsSidebarCalendar({
                 new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1),
               )
             }
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-[var(--proto-brand-light)] hover:text-[var(--proto-brand)]"
             aria-label="다음 달"
           >
             <ChevronRight size={16} />
@@ -196,7 +196,7 @@ function JobsSidebarCalendar({
 
       {/* 선택된 날짜 공고 카드 */}
       {selectedDate && dayMap[selectedDate] && (
-        <div className="rounded-2xl border border-[var(--app-line)] bg-white p-4 shadow-sm">
+        <div className="rounded-2xl bg-white p-5 shadow-md">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-bold text-gray-900">
               {(() => {
@@ -220,7 +220,7 @@ function JobsSidebarCalendar({
               <Link
                 key={job.id}
                 href={`/jobs/${job.id}`}
-                className="flex items-center justify-between gap-2 py-2.5 hover:opacity-80"
+                className="flex items-center justify-between gap-2 rounded-lg px-1 py-2.5 transition-colors hover:bg-gray-50"
               >
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-gray-900">
@@ -240,7 +240,7 @@ function JobsSidebarCalendar({
       )}
 
       {/* D-7 마감 임박 카드 */}
-      <div className="rounded-2xl border border-[var(--app-line)] bg-white p-4 shadow-sm">
+      <div className="rounded-2xl bg-white p-5 shadow-md">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-bold text-gray-900">
             D-7 마감 임박 공고
@@ -260,7 +260,7 @@ function JobsSidebarCalendar({
               <Link
                 key={job.id}
                 href={`/jobs/${job.id}`}
-                className="flex items-center justify-between gap-2 py-2.5 hover:opacity-80"
+                className="flex items-center justify-between gap-2 rounded-lg px-1 py-2.5 transition-colors hover:bg-gray-50"
               >
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-gray-900">
@@ -513,8 +513,7 @@ export default function JobsPage() {
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: "var(--proto-brand)" }}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--proto-brand)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--brand-strong)] hover:shadow-md"
             >
               <Search size={15} />
               검색

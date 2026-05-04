@@ -97,15 +97,14 @@ export default function Home() {
             <div className="flex gap-3">
               <Link
                 href="/jobs"
-                className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                style={{ background: "var(--proto-brand)" }}
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--proto-brand)] px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--proto-brand-dark)] hover:shadow-md"
               >
                 공고 보기
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/companies"
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-6 py-3.5 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-400"
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--brand)] bg-white px-6 py-3.5 text-sm font-semibold text-[var(--brand)] transition-all hover:bg-[var(--proto-brand-light)] hover:shadow-sm"
               >
                 회사 탐색
               </Link>

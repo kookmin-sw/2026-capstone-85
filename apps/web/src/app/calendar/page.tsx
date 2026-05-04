@@ -190,8 +190,7 @@ export default function CalendarPage() {
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: "var(--proto-brand)" }}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--proto-brand)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--brand-strong)] hover:shadow-md"
             >
               <Search size={15} />
               검색

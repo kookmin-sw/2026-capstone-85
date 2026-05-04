@@ -127,8 +127,7 @@ export default function CompaniesPage() {
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: "var(--proto-brand)" }}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--proto-brand)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--brand-strong)] hover:shadow-md"
             >
               <Search size={15} />
               검색
@@ -396,7 +395,7 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
   const hasJobs = company.openJobCount > 0;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.07)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+    <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
       {/* Banner */}
       <div
         className="relative flex h-24 items-end px-5 pb-3"
@@ -404,14 +403,13 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
       >
         {hasJobs && (
           <span
-            className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold text-white"
-            style={{ background: "var(--proto-brand)" }}
+            className="absolute right-3 top-3 rounded-full bg-pink-50 px-2.5 py-0.5 text-[11px] font-bold text-pink-600"
           >
             채용 중 {company.openJobCount}
           </span>
         )}
         <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-black text-white shadow"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-black text-white shadow-md"
           style={{ background: "var(--proto-brand)" }}
         >
           {company.logoUrl ? (
@@ -428,7 +426,7 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
 
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2.5">
-          <span className="rounded-md bg-[#FFF0F5] px-2.5 py-0.5 text-xs font-semibold text-[#E8457A]">
+          <span className="rounded-full bg-pink-50 px-2.5 py-0.5 text-xs font-semibold text-pink-600">
             {companyTypeLabels[company.type]}
           </span>
         </div>
@@ -464,8 +462,7 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
 
         <Link
           href={`/companies/${company.id}`}
-          className="mt-auto inline-flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: "var(--proto-brand)" }}
+          className="mt-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-[var(--proto-brand)] py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[var(--proto-brand-dark)] hover:shadow-md"
         >
           상세 보기
           <ArrowRight size={13} />
