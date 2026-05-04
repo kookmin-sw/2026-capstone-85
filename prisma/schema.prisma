@@ -81,6 +81,7 @@ model User {
   displayName  String?
   role         UserRole
   companyId    String?
+  jobFilterPreference Json?
   company      Company?  @relation(fields: [companyId], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -93,11 +94,16 @@ model Company {
   name           String      @unique
   type           CompanyType
   websiteUrl     String?
+  logoUrl        String?
+  description    String?
+  businessNumber String?
+  employeeTrend  Json?
   externalLinks  String[]    @default([])
   tags           String[]    @default([])
   employeeCount  Int?
   averageSalary  Int?
   foundedYear    Int?
+  recentAttritionRate Float?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 

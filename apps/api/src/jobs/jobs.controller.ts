@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ListJobCalendarDto } from './dto/list-job-calendar.dto';
 import { ListJobsDto } from './dto/list-jobs.dto';
 import { JobsService } from './jobs.service';
 
@@ -11,6 +12,11 @@ export class JobsController {
   @Get()
   list(@Query() query: ListJobsDto) {
     return this.jobsService.list(query);
+  }
+
+  @Get('calendar')
+  calendar(@Query() query: ListJobCalendarDto) {
+    return this.jobsService.calendar(query);
   }
 
   @Get(':id')
