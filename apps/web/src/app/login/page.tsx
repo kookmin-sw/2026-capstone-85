@@ -2,14 +2,26 @@
 
 import { Building2, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useState } from "react";
 import { ActionButton } from "@/components/ui/action-button";
 import { authRequest, type AuthUser } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import styles from "./login-page.module.css";
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  return (
+    <Suspense fallback={<main className={styles.page} />}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
+  const searchParams = useSearchParams();
+  const [mode, setMode] = useState<"login" | "register">(
+    searchParams.get("mode") === "register" ? "register" : "login",
+  );
   const [role, setRole] = useState<AuthUser["role"]>("JOB_SEEKER");
   const [username, setUsername] = useState("jobseeker");
   const [password, setPassword] = useState("password123");

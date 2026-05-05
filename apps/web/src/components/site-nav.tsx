@@ -1,6 +1,5 @@
 "use client";
 
-import { LogIn } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ActionLink } from "@/components/ui/action-button";
@@ -14,8 +13,13 @@ const navItems = [
   { href: "/calendar", label: "마감일 캘린더", key: "calendar" },
 ] as const;
 
-export function SiteNav() {
+type SiteNavProps = {
+  variant?: "app" | "landing";
+};
+
+export function SiteNav({ variant = "app" }: SiteNavProps) {
   const pathname = usePathname();
+  const isLanding = variant === "landing";
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
@@ -23,10 +27,13 @@ export function SiteNav() {
   }
 
   return (
-    <nav className={styles.nav}>
+    <nav className={cn(styles.nav, isLanding && styles.landingNav)}>
       <div className={styles.inner}>
         <Link href="/" className={styles.logo}>
-          Account<span className={styles.logoAccent}>it</span>
+          <span className={styles.logoMark} aria-hidden="true" />
+          <span>
+            Account<span className={styles.logoAccent}>it</span>
+          </span>
         </Link>
         <div className={styles.links}>
           {navItems.map((item) => {
@@ -43,13 +50,20 @@ export function SiteNav() {
           })}
         </div>
         <div className={styles.spacer}>
-          <ActionLink
-            href="/login"
-            size="sm"
-            iconEnd={<LogIn size={14} />}
-          >
-            로그인 / 회원가입
-          </ActionLink>
+          {isLanding ? (
+            <div className={styles.landingActions}>
+              <Link href="/login" className={styles.loginLink}>
+                로그인
+              </Link>
+              <ActionLink href="/login?mode=register" size="sm">
+                회원가입
+              </ActionLink>
+            </div>
+          ) : (
+            <ActionLink href="/login" size="sm">
+              로그인 / 회원가입
+            </ActionLink>
+          )}
         </div>
       </div>
     </nav>

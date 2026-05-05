@@ -8,22 +8,66 @@
   backdrop-filter: blur(12px);
 }
 
+.landingNav {
+  background: rgba(255, 255, 255, 0.94);
+}
+
 .inner {
   display: flex;
   align-items: center;
   gap: 1.5rem;
   max-width: 80rem;
+  width: 100%;
   margin: 0 auto;
-  padding: 0.75rem 1.5rem;
+  min-height: 4.25rem;
+  padding: 0.65rem 1.5rem;
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.08rem;
   flex: none;
   color: var(--gray-900);
   font-size: 1.25rem;
   font-weight: 900;
   letter-spacing: 0;
   text-decoration: none;
+}
+
+.logoMark {
+  position: relative;
+  display: inline-block;
+  width: 1.15rem;
+  height: 1.45rem;
+  margin-right: 0.03rem;
+}
+
+.logoMark::before,
+.logoMark::after {
+  position: absolute;
+  bottom: 0;
+  content: "";
+}
+
+.logoMark::before {
+  left: 0;
+  width: 0.58rem;
+  height: 1.42rem;
+  border-radius: 0.18rem 0.18rem 0.05rem 0.05rem;
+  background: linear-gradient(180deg, #ff6f9f 0%, var(--brand) 100%);
+  transform: skewX(-18deg);
+  transform-origin: bottom left;
+}
+
+.logoMark::after {
+  right: 0.06rem;
+  width: 0.62rem;
+  height: 0.42rem;
+  border-radius: 0.08rem;
+  background: #202738;
+  transform: skewX(18deg);
+  transform-origin: bottom right;
 }
 
 .logoAccent {
@@ -60,6 +104,24 @@
 
 .spacer {
   margin-left: auto;
+}
+
+.landingActions {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.loginLink {
+  color: #202738;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.loginLink:hover {
+  color: var(--brand);
 }
 
 @media (max-width: 720px) {
