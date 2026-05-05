@@ -17,8 +17,14 @@ npm install
 cp .env.example .env
 docker compose up -d
 npm run prisma:migrate
-npm run prisma:seed
 npm run dev
+```
+
+`npm run prisma:seed` intentionally inserts no rows. To insert demo
+accounts and mock job data, run:
+
+```bash
+npm run prisma:mock
 ```
 
 Local URLs:
@@ -27,11 +33,11 @@ Local URLs:
 - API: http://localhost:4000
 - Swagger: http://localhost:4000/docs
 
-Seed accounts use `password123`.
+Mock accounts use `password123` after `npm run prisma:mock`.
 
-- `admin`
-- `jobseeker`
-- `company`
+- `test001` (`ADMIN`)
+- `test002` (`JOB_SEEKER`)
+- `test003` through `test077` (`COMPANY`)
 
 ## Commands
 
@@ -44,6 +50,7 @@ npm run build
 npm run prisma:generate
 npm run prisma:migrate
 npm run prisma:seed
+npm run prisma:mock
 ```
 
 ## Codex Setup

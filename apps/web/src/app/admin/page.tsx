@@ -28,7 +28,7 @@ export default function AdminPage() {
           관리자 권한 확인
         </h1>
         <p className="mt-2 text-sm text-[var(--app-muted)]">
-          `admin / password123` 계정으로 로그인한 뒤 관리자 API가 열리는지 확인합니다.
+          `test001 / password123` 계정으로 로그인한 뒤 관리자 API가 열리는지 확인합니다.
         </p>
         <button
           className="mt-5 rounded-md bg-[var(--brand)] px-4 py-3 font-semibold text-white"

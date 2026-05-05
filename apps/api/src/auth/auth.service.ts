@@ -11,10 +11,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
-type SafeUser = Pick<
-  User,
-  'id' | 'username' | 'displayName' | 'role' | 'companyId'
->;
+type SafeUser = Pick<User, 'id' | 'username' | 'displayName' | 'role'> & {
+  ownedCompany?: { id: string } | null;
+};
 
 @Injectable()
 export class AuthService {
@@ -31,38 +30,58 @@ export class AuthService {
       throw new ConflictException('이미 사용 중인 아이디입니다.');
     }
 
-    let companyId: string | undefined;
+    const passwordHash = await argon2.hash(dto.password);
+
     if (dto.role === UserRole.COMPANY) {
       if (!dto.companyName) {
         throw new BadRequestException('기업회원은 회사명이 필요합니다.');
       }
-      const company = await this.prisma.company.upsert({
+      const existingCompany = await this.prisma.company.findUnique({
         where: { name: dto.companyName },
-        update: {},
-        create: {
-          name: dto.companyName,
-          type: dto.companyType ?? CompanyType.LOCAL_ACCOUNTING_FIRM,
-        },
       });
-      companyId = company.id;
+      if (existingCompany) {
+        throw new ConflictException('이미 등록된 회사명입니다.');
+      }
+
+      const user = await this.prisma.$transaction(async (tx) => {
+        const createdUser = await tx.user.create({
+          data: {
+            username: dto.username,
+            passwordHash,
+            displayName: dto.displayName,
+            role: dto.role,
+          },
+        });
+        const company = await tx.company.create({
+          data: {
+            name: dto.companyName!,
+            type: dto.companyType ?? CompanyType.LOCAL_ACCOUNTING_FIRM,
+            ownerUserId: createdUser.id,
+          },
+        });
+
+        return { ...createdUser, ownedCompany: { id: company.id } };
+      });
+
+      return this.toAuthResponse(user);
     }
 
     const user = await this.prisma.user.create({
       data: {
         username: dto.username,
-        passwordHash: await argon2.hash(dto.password),
+        passwordHash,
         displayName: dto.displayName,
         role: dto.role,
-        companyId,
       },
     });
 
-    return this.toAuthResponse(user);
+    return this.toAuthResponse({ ...user, ownedCompany: null });
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { username: dto.username },
+      include: { ownedCompany: { select: { id: true } } },
     });
     if (!user || !(await argon2.verify(user.passwordHash, dto.password))) {
       throw new UnauthorizedException(
@@ -81,24 +100,25 @@ export class AuthService {
         username: true,
         displayName: true,
         role: true,
-        companyId: true,
+        ownedCompany: { select: { id: true } },
       },
     });
   }
 
   private toAuthResponse(user: SafeUser) {
+    const companyId = user.ownedCompany?.id ?? null;
     const safeUser = {
       id: user.id,
       username: user.username,
       displayName: user.displayName,
       role: user.role,
-      companyId: user.companyId,
+      companyId,
     };
     const accessToken = this.jwtService.sign({
       sub: user.id,
       username: user.username,
       role: user.role,
-      companyId: user.companyId,
+      companyId,
     });
 
     return { user: safeUser, accessToken };

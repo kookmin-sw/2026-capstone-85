@@ -21,7 +21,8 @@
     "test": "npm run test --workspaces --if-present",
     "prisma:generate": "prisma generate --schema=prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=prisma/schema.prisma",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:mock": "tsx prisma/mock.ts"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
