@@ -80,12 +80,11 @@ model User {
   passwordHash String
   displayName  String?
   role         UserRole
-  companyId    String?
   jobFilterPreference Json?
-  company      Company?  @relation(fields: [companyId], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  ownedCompany Company? @relation("CompanyOwner")
   jobSubmissions JobSubmission[]
 }
 
@@ -104,10 +103,11 @@ model Company {
   averageSalary  Int?
   foundedYear    Int?
   recentAttritionRate Float?
+  ownerUserId    String      @unique
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
-  users          User[]
+  owner          User        @relation("CompanyOwner", fields: [ownerUserId], references: [id])
   jobs           Job[]
   jobSubmissions JobSubmission[]
 }

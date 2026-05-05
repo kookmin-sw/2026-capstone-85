@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 
 export class RegisterDto {
-  @ApiProperty({ example: 'jobseeker' })
+  @ApiProperty({ example: 'test002' })
   @IsString()
   @MinLength(3)
   @MaxLength(40)

@@ -8,7 +8,7 @@ import { authRequest, type AuthUser } from "@/lib/api";
 export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [role, setRole] = useState<AuthUser["role"]>("JOB_SEEKER");
-  const [username, setUsername] = useState("jobseeker");
+  const [username, setUsername] = useState("test002");
   const [password, setPassword] = useState("password123");
   const [displayName, setDisplayName] = useState("");
   const [companyName, setCompanyName] = useState("");
