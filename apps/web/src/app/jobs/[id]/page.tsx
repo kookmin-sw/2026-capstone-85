@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { CompanyLogo } from "@/components/company-logo";
+import { SiteNav } from "@/components/site-nav";
 import { fetchJobDetail } from "@/lib/api";
 import {
   companyTypeLabels,
@@ -54,9 +54,12 @@ export default function JobDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--background)] px-5 py-8">
-        <div className="mx-auto max-w-5xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 text-sm text-[var(--app-muted)]">
-          공고 상세를 불러오는 중입니다.
+      <main className="min-h-screen bg-[var(--background)]">
+        <SiteNav />
+        <div className="mx-auto max-w-5xl px-5 py-8">
+          <div className="animate-pulse rounded-2xl border border-[var(--app-line)] bg-white p-6 text-sm text-[var(--app-muted)]">
+            공고 상세를 불러오는 중입니다.
+          </div>
         </div>
       </main>
     );
@@ -64,21 +67,24 @@ export default function JobDetailPage() {
 
   if (error || !job) {
     return (
-      <main className="min-h-screen bg-[var(--background)] px-5 py-8">
-        <div className="mx-auto max-w-5xl border border-red-200 bg-red-50 p-6">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-red-700"
-          >
-            <ArrowLeft size={16} />
-            목록으로 돌아가기
-          </Link>
-          <h1 className="mt-4 text-2xl font-semibold text-red-900">
-            공고를 찾을 수 없습니다.
-          </h1>
-          <p className="mt-2 text-sm text-red-700">
-            {error || "요청한 공고가 없거나 더 이상 공개되지 않았습니다."}
-          </p>
+      <main className="min-h-screen bg-[var(--background)]">
+        <SiteNav />
+        <div className="mx-auto max-w-5xl px-5 py-8">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <Link
+              href="/jobs"
+              className="inline-flex items-center gap-2 text-sm font-medium text-red-700"
+            >
+              <ArrowLeft size={16} />
+              목록으로 돌아가기
+            </Link>
+            <h1 className="mt-4 text-2xl font-semibold text-red-900">
+              공고를 찾을 수 없습니다.
+            </h1>
+            <p className="mt-2 text-sm text-red-700">
+              {error || "요청한 공고가 없거나 더 이상 공개되지 않았습니다."}
+            </p>
+          </div>
         </div>
       </main>
     );
@@ -88,7 +94,9 @@ export default function JobDetailPage() {
 }
 
 function JobDetail({ job }: { job: JobDetailItem }) {
-  const deadlineText =
+  const initial = job.companyName.charAt(0);
+
+  const dDayLabel =
     job.dDay === null
       ? deadlineTypeLabels[job.deadlineType]
       : job.dDay < 0
@@ -96,6 +104,8 @@ function JobDetail({ job }: { job: JobDetailItem }) {
         : job.dDay === 0
           ? "오늘 마감"
           : `D-${job.dDay}`;
+
+  const isUrgent = job.dDay !== null && job.dDay >= 0 && job.dDay <= 7;
 
   const experienceText = useMemo(() => {
     if (job.minExperienceYears === null && job.maxExperienceYears === null)
@@ -110,63 +120,105 @@ function JobDetail({ job }: { job: JobDetailItem }) {
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
-      <header className="border-b border-[var(--app-line)] bg-[var(--app-surface)]">
-        <div className="mx-auto max-w-6xl px-5 py-5">
+      <SiteNav />
+
+      {/* Pink gradient hero banner */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(135deg,#fff0f5 0%,#ffd6e5 50%,#ffb3cc 100%)",
+          minHeight: "200px",
+        }}
+      >
+        <div
+          className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full opacity-40"
+          style={{
+            background:
+              "radial-gradient(circle,rgba(232,69,122,.18) 0%,transparent 70%)",
+          }}
+        />
+        <div className="mx-auto max-w-6xl px-5 py-8">
           <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--brand)]"
+            href="/jobs"
+            className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-xs font-medium text-gray-700 backdrop-blur-sm transition-colors hover:bg-white"
           >
-            <ArrowLeft size={16} />
-            목록으로 돌아가기
+            <ArrowLeft size={14} />
+            채용공고 목록
           </Link>
 
-          <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="mb-3 flex flex-wrap gap-2">
-                <Badge tone="teal">{deadlineText}</Badge>
-                <Badge>{companyTypeLabels[job.companyType]}</Badge>
-                <Badge>{jobFamilyLabels[job.jobFamily]}</Badge>
-              </div>
-              <Link
-                href={`/companies/${job.companyId}`}
-                className="inline-flex items-center gap-3 text-sm font-medium text-[var(--app-muted)] hover:text-[var(--brand)]"
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex items-end gap-4">
+              {/* Company logo / initial */}
+              <div
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-2xl font-black text-white shadow-lg"
+                style={{ background: "var(--proto-brand)" }}
               >
-                <CompanyLogo
-                  name={job.companyName}
-                  logoUrl={job.companyLogoUrl}
-                  size="sm"
-                />
-                <span className="inline-flex items-center gap-2">
-                  <BriefcaseBusiness size={16} />
+                {job.companyLogoUrl ? (
+                  <img
+                    src={job.companyLogoUrl}
+                    alt={job.companyName}
+                    className="h-full w-full rounded-2xl object-cover"
+                  />
+                ) : (
+                  initial
+                )}
+              </div>
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span
+                    className="rounded-full px-3 py-1 text-xs font-bold text-white"
+                    style={{
+                      background: isUrgent
+                        ? "var(--proto-brand)"
+                        : "rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    {dDayLabel}
+                  </span>
+                  <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-gray-700 backdrop-blur-sm">
+                    {companyTypeLabels[job.companyType]}
+                  </span>
+                  <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-gray-700 backdrop-blur-sm">
+                    {jobFamilyLabels[job.jobFamily]}
+                  </span>
+                </div>
+                <Link
+                  href={`/companies/${job.companyId}`}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[var(--brand)]"
+                >
+                  <BriefcaseBusiness size={15} />
                   {job.companyName}
-                </span>
-              </Link>
-              <h1 className="mt-2 max-w-3xl text-3xl font-semibold tracking-normal">
-                {job.title}
-              </h1>
+                </Link>
+                <h1 className="mt-1 max-w-3xl text-2xl font-black leading-snug text-gray-900">
+                  {job.title}
+                </h1>
+              </div>
             </div>
 
             <a
               href={job.originalUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-strong)]"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow transition-opacity hover:opacity-90"
+              style={{ background: "var(--proto-brand)" }}
             >
               원문에서 지원
               <ExternalLink size={16} />
             </a>
           </div>
         </div>
-      </header>
+      </div>
 
-      <section className="mx-auto grid max-w-6xl gap-5 px-5 py-6 lg:grid-cols-[1fr_320px]">
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 py-6 lg:grid-cols-[1fr_300px]">
         <div className="grid gap-5">
-          <section className="border border-[var(--app-line)] bg-[var(--app-surface)] p-5">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <FileText size={18} />
+          {/* Info grid */}
+          <section className="rounded-2xl border border-[var(--app-line)] bg-white p-5">
+            <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
+              <FileText size={17} style={{ color: "var(--proto-brand)" }} />
               공고 정보
             </h2>
-            <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
+            <div className="grid gap-3 text-sm md:grid-cols-2">
               <Info label="직무군" value={jobFamilyLabels[job.jobFamily]} />
               <Info
                 label="고용형태"
@@ -189,41 +241,57 @@ function JobDetail({ job }: { job: JobDetailItem }) {
             </div>
           </section>
 
-          <section className="border border-[var(--app-line)] bg-[var(--app-surface)] p-5">
-            <h2 className="text-lg font-semibold">공고 본문</h2>
-            <p className="mt-4 whitespace-pre-line text-sm leading-7 text-neutral-800">
-              {job.description}
-            </p>
-          </section>
-
-          <section className="border border-[var(--app-line)] bg-[var(--app-surface)] p-5">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <Sparkles size={18} />
+          {/* AI 요약 — pink background */}
+          <section
+            className="rounded-2xl p-5"
+            style={{ background: "var(--proto-brand-light)" }}
+          >
+            <h2 className="mb-4 flex items-center gap-2 text-base font-bold"
+              style={{ color: "var(--proto-brand)" }}
+            >
+              <Sparkles size={17} />
               AI 요약
             </h2>
             {job.aiSuggestion ? (
-              <div className="mt-4 grid gap-4">
-                <p className="text-sm leading-7 text-neutral-800">
+              <div className="grid gap-4">
+                <p className="text-sm leading-7 text-gray-800">
                   {job.aiSuggestion.summary}
                 </p>
-                <ChipGroup title="추천 태그" items={job.aiSuggestion.tags} />
-                <ChipGroup title="확인 필요" items={job.aiSuggestion.risks} />
+                <ChipGroup
+                  title="추천 태그"
+                  items={job.aiSuggestion.tags}
+                  tone="pink"
+                />
+                <ChipGroup
+                  title="확인 필요"
+                  items={job.aiSuggestion.risks}
+                  tone="gray"
+                />
               </div>
             ) : (
-              <p className="mt-4 border border-dashed border-[var(--app-line)] bg-[#fbfbf8] p-4 text-sm text-[var(--app-muted)]">
+              <p className="text-sm text-[var(--app-muted)]">
                 아직 AI 요약이 없습니다. 추후 관리자 검수 후 요약과 태그가
                 표시됩니다.
               </p>
             )}
           </section>
+
+          {/* Description */}
+          <section className="rounded-2xl border border-[var(--app-line)] bg-white p-5">
+            <h2 className="mb-4 text-base font-bold text-gray-900">공고 본문</h2>
+            <p className="whitespace-pre-line text-sm leading-7 text-neutral-800">
+              {job.description}
+            </p>
+          </section>
         </div>
 
-        <aside className="h-fit border border-[var(--app-line)] bg-[var(--app-surface)] p-5">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <CheckCircle2 size={18} />
+        {/* Sidebar */}
+        <aside className="h-fit rounded-2xl border border-[var(--app-line)] bg-white p-5">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
+            <CheckCircle2 size={17} style={{ color: "var(--proto-brand)" }} />
             출처 정보
           </h2>
-          <div className="mt-4 grid gap-3 text-sm">
+          <div className="grid gap-3 text-sm">
             <Info label="출처" value={job.sourceName} />
             <Info
               label="최종 확인"
@@ -238,20 +306,20 @@ function JobDetail({ job }: { job: JobDetailItem }) {
             href={job.originalUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-[var(--app-line)] px-3 py-3 text-sm font-medium"
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm font-medium transition-colors hover:border-gray-400"
           >
             원문 링크 열기
-            <ExternalLink size={16} />
+            <ExternalLink size={15} />
           </a>
 
           <div className="mt-5 border-t border-[var(--app-line)] pt-4">
-            <h3 className="text-sm font-semibold">라벨</h3>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <h3 className="mb-2 text-sm font-semibold">라벨</h3>
+            <div className="flex flex-wrap gap-2">
               {job.labels.length ? (
                 job.labels.map((label) => (
                   <span
                     key={label}
-                    className="rounded border border-[var(--app-line)] px-2 py-1 text-xs"
+                    className="rounded-full border border-[var(--app-line)] px-2 py-1 text-xs"
                   >
                     #{label}
                   </span>
@@ -266,15 +334,16 @@ function JobDetail({ job }: { job: JobDetailItem }) {
 
           <Link
             href={`/companies/${job.companyId}`}
-            className="mt-5 flex items-center gap-3 border-t border-[var(--app-line)] pt-4 text-sm font-medium text-[var(--app-muted)] hover:text-[var(--brand)]"
+            className="mt-5 flex items-center gap-3 rounded-xl border border-[var(--app-line)] p-3 text-sm font-medium text-gray-700 transition-colors hover:border-[var(--brand)] hover:text-[var(--brand)]"
           >
-            <CompanyLogo
-              name={job.companyName}
-              logoUrl={job.companyLogoUrl}
-              size="sm"
-            />
-            <span className="inline-flex items-center gap-2">
-              <Building2 size={16} />
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-black text-white"
+              style={{ background: "var(--proto-brand)" }}
+            >
+              {job.companyName.charAt(0)}
+            </div>
+            <span className="flex items-center gap-2">
+              <Building2 size={15} />
               회사 상세 보기
             </span>
           </Link>
@@ -299,45 +368,39 @@ function trainingInstitutionText(value: boolean | null) {
   return "확인 필요";
 }
 
-function Badge({
-  children,
-  tone,
-}: {
-  children: React.ReactNode;
-  tone?: "teal";
-}) {
-  return (
-    <span
-      className={
-        tone === "teal"
-          ? "rounded bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-800"
-          : "rounded bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700"
-      }
-    >
-      {children}
-    </span>
-  );
-}
-
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[var(--app-line)] bg-[#fbfbf8] px-3 py-2">
+    <div className="rounded-xl border border-[var(--app-line)] bg-[#fbfbf8] px-3 py-2.5">
       <p className="text-xs text-[var(--app-muted)]">{label}</p>
-      <p className="mt-1 font-medium">{value}</p>
+      <p className="mt-1 font-semibold">{value}</p>
     </div>
   );
 }
 
-function ChipGroup({ title, items }: { title: string; items: string[] }) {
+function ChipGroup({
+  title,
+  items,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  tone: "pink" | "gray";
+}) {
   if (!items.length) return null;
   return (
     <div>
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <h3 className="mb-2 text-sm font-bold" style={{ color: tone === "pink" ? "var(--proto-brand)" : undefined }}>
+        {title}
+      </h3>
+      <div className="flex flex-wrap gap-2">
         {items.map((item) => (
           <span
             key={item}
-            className="rounded border border-[var(--app-line)] px-2 py-1 text-xs"
+            className={
+              tone === "pink"
+                ? "rounded-full border border-pink-200 bg-white px-3 py-1 text-xs font-semibold text-pink-700"
+                : "rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-xs font-semibold text-gray-600"
+            }
           >
             {item}
           </span>
