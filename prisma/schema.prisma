@@ -68,6 +68,11 @@ enum SubmissionStatus {
   REJECTED
 }
 
+enum SubmissionType {
+  CREATE
+  UPDATE
+}
+
 enum AiSuggestionStatus {
   PENDING
   APPROVED
@@ -75,41 +80,45 @@ enum AiSuggestionStatus {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  username     String    @unique
-  passwordHash String
-  displayName  String?
-  role         UserRole
+  id                  String   @id @default(uuid())
+  username            String   @unique
+  passwordHash        String
+  displayName         String?
+  role                UserRole
   jobFilterPreference Json?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  ownedCompany Company? @relation("CompanyOwner")
-  jobSubmissions JobSubmission[]
+  ownedCompany                      Company?                   @relation("CompanyOwner")
+  jobSubmissions                    JobSubmission[]            @relation("JobSubmissionSubmitter")
+  reviewedJobSubmissions            JobSubmission[]            @relation("JobSubmissionReviewer")
+  companyProfileSubmissions         CompanyProfileSubmission[] @relation("CompanyProfileSubmissionSubmitter")
+  reviewedCompanyProfileSubmissions CompanyProfileSubmission[] @relation("CompanyProfileSubmissionReviewer")
 }
 
 model Company {
-  id             String      @id @default(uuid())
-  name           String      @unique
-  type           CompanyType
-  websiteUrl     String?
-  logoUrl        String?
-  description    String?
-  businessNumber String?
-  employeeTrend  Json?
-  externalLinks  String[]    @default([])
-  tags           String[]    @default([])
-  employeeCount  Int?
-  averageSalary  Int?
-  foundedYear    Int?
+  id                  String      @id @default(uuid())
+  name                String      @unique
+  type                CompanyType
+  websiteUrl          String?
+  logoUrl             String?
+  description         String?
+  businessNumber      String?
+  employeeTrend       Json?
+  externalLinks       String[]    @default([])
+  tags                String[]    @default([])
+  employeeCount       Int?
+  averageSalary       Int?
+  foundedYear         Int?
   recentAttritionRate Float?
-  ownerUserId    String      @unique
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  ownerUserId         String      @unique
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
-  owner          User        @relation("CompanyOwner", fields: [ownerUserId], references: [id])
-  jobs           Job[]
-  jobSubmissions JobSubmission[]
+  owner              User                       @relation("CompanyOwner", fields: [ownerUserId], references: [id])
+  jobs               Job[]
+  jobSubmissions     JobSubmission[]
+  profileSubmissions CompanyProfileSubmission[]
 }
 
 model Source {
@@ -134,7 +143,7 @@ model Label {
 }
 
 model Job {
-  id                           String          @id @default(uuid())
+  id                           String         @id @default(uuid())
   title                        String
   description                  String
   companyId                    String
@@ -151,15 +160,17 @@ model Job {
   location                     String?
   deadlineType                 DeadlineType
   deadline                     DateTime?
-  status                       JobStatus       @default(OPEN)
+  status                       JobStatus      @default(OPEN)
   lastCheckedAt                DateTime
-  createdAt                    DateTime        @default(now())
-  updatedAt                    DateTime        @updatedAt
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
 
-  company       Company        @relation(fields: [companyId], references: [id])
-  source        Source         @relation(fields: [sourceId], references: [id])
-  labels        JobLabel[]
-  aiSuggestions AiSuggestion[]
+  company            Company         @relation(fields: [companyId], references: [id])
+  source             Source          @relation(fields: [sourceId], references: [id])
+  labels             JobLabel[]
+  aiSuggestions      AiSuggestion[]
+  approvedSubmission JobSubmission?  @relation("ApprovedJobSubmission")
+  editSubmissions    JobSubmission[] @relation("TargetJobSubmission")
 
   @@index([status, deadline])
   @@index([jobFamily])
@@ -170,30 +181,68 @@ model Job {
 model JobLabel {
   jobId   String
   labelId String
-  job     Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@id([jobId, labelId])
 }
 
 model JobSubmission {
-  id             String           @id @default(uuid())
-  companyId      String
-  submittedById  String
-  title          String
-  description    String
-  originalUrl    String?
-  jobFamily      JobFamily
-  employmentType EmploymentType
-  deadlineType   DeadlineType
-  deadline       DateTime?
-  status         SubmissionStatus @default(PENDING)
-  adminNote      String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id                           String           @id @default(uuid())
+  companyId                    String
+  submittedById                String
+  submissionType               SubmissionType   @default(CREATE)
+  targetJobId                  String?
+  title                        String
+  description                  String
+  originalUrl                  String?
+  jobFamily                    JobFamily
+  employmentType               EmploymentType
+  kicpaCondition               KicpaCondition   @default(UNCLEAR)
+  traineeStatus                TraineeStatus    @default(UNCLEAR)
+  practicalTrainingInstitution Boolean?
+  minExperienceYears           Int?
+  maxExperienceYears           Int?
+  location                     String?
+  deadlineType                 DeadlineType
+  deadline                     DateTime?
+  status                       SubmissionStatus @default(PENDING)
+  adminNote                    String?
+  approvedJobId                String?          @unique
+  reviewedById                 String?
+  reviewedAt                   DateTime?
+  createdAt                    DateTime         @default(now())
+  updatedAt                    DateTime         @updatedAt
 
   company     Company @relation(fields: [companyId], references: [id])
-  submittedBy User    @relation(fields: [submittedById], references: [id])
+  submittedBy User    @relation("JobSubmissionSubmitter", fields: [submittedById], references: [id])
+  reviewedBy  User?   @relation("JobSubmissionReviewer", fields: [reviewedById], references: [id])
+  approvedJob Job?    @relation("ApprovedJobSubmission", fields: [approvedJobId], references: [id])
+  targetJob   Job?    @relation("TargetJobSubmission", fields: [targetJobId], references: [id])
+
+  @@index([companyId, status])
+  @@index([submittedById, status])
+  @@index([targetJobId, status])
+}
+
+model CompanyProfileSubmission {
+  id            String           @id @default(uuid())
+  companyId     String
+  submittedById String
+  proposed      Json
+  status        SubmissionStatus @default(PENDING)
+  adminNote     String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  company     Company @relation(fields: [companyId], references: [id])
+  submittedBy User    @relation("CompanyProfileSubmissionSubmitter", fields: [submittedById], references: [id])
+  reviewedBy  User?   @relation("CompanyProfileSubmissionReviewer", fields: [reviewedById], references: [id])
+
+  @@index([companyId, status])
+  @@index([submittedById, status])
 }
 
 model AiSuggestion {

@@ -1,7 +1,26 @@
-import type { EmployeeTrendPoint } from '@cpa/shared';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { DeadlineType, Job, JobStatus, Prisma } from '@prisma/client';
+import type {
+  CompanyDashboardResponse,
+  CompanyProfileProposal,
+  EmployeeTrendPoint,
+} from '@cpa/shared';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  DeadlineType,
+  Job,
+  JobStatus,
+  Prisma,
+  SubmissionStatus,
+  SubmissionType,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateCompanyJobSubmissionDto } from './dto/create-company-job-submission.dto';
+import { CreateCompanyProfileSubmissionDto } from './dto/create-company-profile-submission.dto';
 import { ListCompaniesDto } from './dto/list-companies.dto';
 
 const companyListInclude = {
@@ -29,6 +48,46 @@ const companyDetailInclude = {
   },
 } satisfies Prisma.CompanyInclude;
 
+const companyDashboardInclude = {
+  ...companyDetailInclude,
+  profileSubmissions: {
+    where: { status: SubmissionStatus.PENDING },
+    include: {
+      company: { select: { name: true } },
+      submittedBy: { select: { username: true } },
+      reviewedBy: { select: { username: true } },
+    },
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+  },
+} satisfies Prisma.CompanyInclude;
+
+const profileSubmissionInclude = {
+  company: { select: { name: true } },
+  submittedBy: { select: { username: true } },
+  reviewedBy: { select: { username: true } },
+} satisfies Prisma.CompanyProfileSubmissionInclude;
+
+const jobSubmissionInclude = {
+  company: { select: { name: true } },
+  submittedBy: { select: { username: true } },
+  reviewedBy: { select: { username: true } },
+  targetJob: { select: { id: true, title: true } },
+} satisfies Prisma.JobSubmissionInclude;
+
+const managedJobInclude = {
+  ...jobInclude,
+  editSubmissions: {
+    where: {
+      submissionType: SubmissionType.UPDATE,
+      status: SubmissionStatus.PENDING,
+    },
+    include: jobSubmissionInclude,
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+  },
+} satisfies Prisma.JobInclude;
+
 type CompanyListRecord = Prisma.CompanyGetPayload<{
   include: typeof companyListInclude;
 }>;
@@ -37,8 +96,24 @@ type CompanyDetailRecord = Prisma.CompanyGetPayload<{
   include: typeof companyDetailInclude;
 }>;
 
+type CompanyDashboardRecord = Prisma.CompanyGetPayload<{
+  include: typeof companyDashboardInclude;
+}>;
+
 type JobWithRelations = Job &
   Prisma.JobGetPayload<{ include: typeof jobInclude }>;
+
+type CompanyProfileSubmissionRecord =
+  Prisma.CompanyProfileSubmissionGetPayload<{
+    include: typeof profileSubmissionInclude;
+  }>;
+
+type JobSubmissionRecord = Prisma.JobSubmissionGetPayload<{
+  include: typeof jobSubmissionInclude;
+}>;
+
+type ManagedJobRecord = Job &
+  Prisma.JobGetPayload<{ include: typeof managedJobInclude }>;
 
 @Injectable()
 export class CompaniesService {
@@ -87,13 +162,277 @@ export class CompaniesService {
       throw new NotFoundException('회사를 찾을 수 없습니다.');
     }
 
+    return this.toDetailItem(company);
+  }
+
+  async me(userId: string): Promise<CompanyDashboardResponse> {
+    const company = await this.prisma.company.findUnique({
+      where: { ownerUserId: userId },
+      include: companyDashboardInclude,
+    });
+
+    if (!company) {
+      throw new ForbiddenException('기업회원 회사 정보를 찾을 수 없습니다.');
+    }
+
     return {
-      ...this.toListItem(company),
-      businessNumber: company.businessNumber,
-      externalLinks: company.externalLinks,
-      employeeTrend: this.toEmployeeTrend(company.employeeTrend),
-      openJobs: company.jobs.map((job) => this.toJobListItem(job)),
+      company: this.toDetailItem(company),
+      pendingProfileSubmission: company.profileSubmissions[0]
+        ? this.toProfileSubmissionItem(company.profileSubmissions[0])
+        : null,
     };
+  }
+
+  async createProfileSubmission(
+    userId: string,
+    dto: CreateCompanyProfileSubmissionDto,
+  ) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const proposed = this.normalizeProfileProposal(dto);
+
+    if (Object.keys(proposed).length === 0) {
+      throw new BadRequestException('수정 요청 내용이 필요합니다.');
+    }
+
+    const pending = await this.prisma.companyProfileSubmission.findFirst({
+      where: { companyId: company.id, status: SubmissionStatus.PENDING },
+      select: { id: true },
+    });
+    if (pending) {
+      throw new ConflictException(
+        '이미 검수 대기 중인 회사 정보 수정 요청이 있습니다.',
+      );
+    }
+
+    const submission = await this.prisma.companyProfileSubmission.create({
+      data: {
+        companyId: company.id,
+        submittedById: userId,
+        proposed,
+      },
+      include: profileSubmissionInclude,
+    });
+
+    return this.toProfileSubmissionItem(submission);
+  }
+
+  async createJobSubmission(
+    userId: string,
+    dto: CreateCompanyJobSubmissionDto,
+  ) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const deadline = this.normalizeDeadline(dto.deadlineType, dto.deadline);
+    this.validateExperienceRange(
+      dto.minExperienceYears,
+      dto.maxExperienceYears,
+    );
+
+    const submission = await this.prisma.jobSubmission.create({
+      data: {
+        companyId: company.id,
+        submittedById: userId,
+        submissionType: SubmissionType.CREATE,
+        title: dto.title.trim(),
+        description: dto.description.trim(),
+        originalUrl: dto.originalUrl.trim(),
+        jobFamily: dto.jobFamily,
+        employmentType: dto.employmentType,
+        kicpaCondition: dto.kicpaCondition,
+        traineeStatus: dto.traineeStatus,
+        practicalTrainingInstitution: dto.practicalTrainingInstitution,
+        minExperienceYears: dto.minExperienceYears,
+        maxExperienceYears: dto.maxExperienceYears,
+        location: this.optionalTrimmed(dto.location),
+        deadlineType: dto.deadlineType,
+        deadline,
+      },
+      include: jobSubmissionInclude,
+    });
+
+    return this.toJobSubmissionItem(submission);
+  }
+
+  async listMyJobs(userId: string) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const jobs = await this.prisma.job.findMany({
+      where: {
+        companyId: company.id,
+        status: { in: [JobStatus.OPEN, JobStatus.CLOSED] },
+      },
+      include: managedJobInclude,
+      orderBy: [{ status: 'asc' }, { deadline: 'asc' }, { updatedAt: 'desc' }],
+    });
+
+    return { items: jobs.map((job) => this.toManagedJobItem(job)) };
+  }
+
+  async createJobEditSubmission(
+    userId: string,
+    jobId: string,
+    dto: CreateCompanyJobSubmissionDto,
+  ) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const job = await this.prisma.job.findFirst({
+      where: {
+        id: jobId,
+        companyId: company.id,
+        status: JobStatus.OPEN,
+      },
+      select: { id: true },
+    });
+    if (!job) {
+      throw new NotFoundException('수정 가능한 공고를 찾을 수 없습니다.');
+    }
+
+    const pending = await this.prisma.jobSubmission.findFirst({
+      where: {
+        targetJobId: job.id,
+        submissionType: SubmissionType.UPDATE,
+        status: SubmissionStatus.PENDING,
+      },
+      select: { id: true },
+    });
+    if (pending) {
+      throw new ConflictException(
+        '이미 검수 대기 중인 공고 수정 요청이 있습니다.',
+      );
+    }
+
+    const deadline = this.normalizeDeadline(dto.deadlineType, dto.deadline);
+    this.validateExperienceRange(
+      dto.minExperienceYears,
+      dto.maxExperienceYears,
+    );
+
+    const submission = await this.prisma.jobSubmission.create({
+      data: {
+        companyId: company.id,
+        submittedById: userId,
+        submissionType: SubmissionType.UPDATE,
+        targetJobId: job.id,
+        title: dto.title.trim(),
+        description: dto.description.trim(),
+        originalUrl: dto.originalUrl.trim(),
+        jobFamily: dto.jobFamily,
+        employmentType: dto.employmentType,
+        kicpaCondition: dto.kicpaCondition,
+        traineeStatus: dto.traineeStatus,
+        practicalTrainingInstitution: dto.practicalTrainingInstitution,
+        minExperienceYears: dto.minExperienceYears,
+        maxExperienceYears: dto.maxExperienceYears,
+        location: this.optionalTrimmed(dto.location),
+        deadlineType: dto.deadlineType,
+        deadline,
+      },
+      include: jobSubmissionInclude,
+    });
+
+    return this.toJobSubmissionItem(submission);
+  }
+
+  async closeMyJob(userId: string, jobId: string) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const job = await this.prisma.job.findFirst({
+      where: {
+        id: jobId,
+        companyId: company.id,
+        status: JobStatus.OPEN,
+      },
+      select: { id: true },
+    });
+    if (!job) {
+      throw new NotFoundException('삭제 가능한 공고를 찾을 수 없습니다.');
+    }
+
+    const closed = await this.prisma.job.update({
+      where: { id: job.id },
+      data: { status: JobStatus.CLOSED },
+      include: managedJobInclude,
+    });
+
+    return this.toManagedJobItem(closed);
+  }
+
+  async listMyJobSubmissions(userId: string) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const submissions = await this.prisma.jobSubmission.findMany({
+      where: { companyId: company.id, submittedById: userId },
+      include: jobSubmissionInclude,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { items: submissions.map((item) => this.toJobSubmissionItem(item)) };
+  }
+
+  async updateMyJobSubmission(
+    userId: string,
+    submissionId: string,
+    dto: CreateCompanyJobSubmissionDto,
+  ) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const existing = await this.prisma.jobSubmission.findFirst({
+      where: {
+        id: submissionId,
+        companyId: company.id,
+        submittedById: userId,
+        status: SubmissionStatus.PENDING,
+      },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException('수정 가능한 공고 요청을 찾을 수 없습니다.');
+    }
+
+    const deadline = this.normalizeDeadline(dto.deadlineType, dto.deadline);
+    this.validateExperienceRange(
+      dto.minExperienceYears,
+      dto.maxExperienceYears,
+    );
+
+    const submission = await this.prisma.jobSubmission.update({
+      where: { id: existing.id },
+      data: {
+        title: dto.title.trim(),
+        description: dto.description.trim(),
+        originalUrl: dto.originalUrl.trim(),
+        jobFamily: dto.jobFamily,
+        employmentType: dto.employmentType,
+        kicpaCondition: dto.kicpaCondition,
+        traineeStatus: dto.traineeStatus,
+        practicalTrainingInstitution: dto.practicalTrainingInstitution,
+        minExperienceYears: dto.minExperienceYears,
+        maxExperienceYears: dto.maxExperienceYears,
+        location: this.optionalTrimmed(dto.location),
+        deadlineType: dto.deadlineType,
+        deadline,
+      },
+      include: jobSubmissionInclude,
+    });
+
+    return this.toJobSubmissionItem(submission);
+  }
+
+  async cancelMyJobSubmission(userId: string, submissionId: string) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const existing = await this.prisma.jobSubmission.findFirst({
+      where: {
+        id: submissionId,
+        companyId: company.id,
+        submittedById: userId,
+        status: SubmissionStatus.PENDING,
+      },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException('취소 가능한 공고 요청을 찾을 수 없습니다.');
+    }
+
+    const submission = await this.prisma.jobSubmission.delete({
+      where: { id: existing.id },
+      include: jobSubmissionInclude,
+    });
+
+    return this.toJobSubmissionItem(submission);
   }
 
   private toListItem(company: CompanyListRecord | CompanyDetailRecord) {
@@ -110,6 +449,16 @@ export class CompaniesService {
       foundedYear: company.foundedYear,
       recentAttritionRate: company.recentAttritionRate,
       openJobCount: company.jobs.length,
+    };
+  }
+
+  private toDetailItem(company: CompanyDetailRecord | CompanyDashboardRecord) {
+    return {
+      ...this.toListItem(company),
+      businessNumber: company.businessNumber,
+      externalLinks: company.externalLinks,
+      employeeTrend: this.toEmployeeTrend(company.employeeTrend),
+      openJobs: company.jobs.map((job) => this.toJobListItem(job)),
     };
   }
 
@@ -237,6 +586,65 @@ export class CompaniesService {
     };
   }
 
+  private toProfileSubmissionItem(submission: CompanyProfileSubmissionRecord) {
+    return {
+      id: submission.id,
+      companyId: submission.companyId,
+      companyName: submission.company.name,
+      proposed: this.toCompanyProfileProposal(submission.proposed),
+      status: submission.status,
+      adminNote: submission.adminNote,
+      submittedByUsername: submission.submittedBy.username,
+      reviewedByUsername: submission.reviewedBy?.username ?? null,
+      createdAt: submission.createdAt.toISOString(),
+      updatedAt: submission.updatedAt.toISOString(),
+      reviewedAt: submission.reviewedAt?.toISOString() ?? null,
+    };
+  }
+
+  private toJobSubmissionItem(submission: JobSubmissionRecord) {
+    return {
+      id: submission.id,
+      companyId: submission.companyId,
+      companyName: submission.company.name,
+      title: submission.title,
+      description: submission.description,
+      originalUrl: submission.originalUrl,
+      jobFamily: submission.jobFamily,
+      employmentType: submission.employmentType,
+      kicpaCondition: submission.kicpaCondition,
+      traineeStatus: submission.traineeStatus,
+      practicalTrainingInstitution: submission.practicalTrainingInstitution,
+      minExperienceYears: submission.minExperienceYears,
+      maxExperienceYears: submission.maxExperienceYears,
+      location: submission.location,
+      deadlineType: submission.deadlineType,
+      deadline: submission.deadline?.toISOString() ?? null,
+      status: submission.status,
+      adminNote: submission.adminNote,
+      approvedJobId: submission.approvedJobId,
+      submissionType: submission.submissionType,
+      targetJobId: submission.targetJobId,
+      targetJobTitle: submission.targetJob?.title ?? null,
+      submittedByUsername: submission.submittedBy.username,
+      reviewedByUsername: submission.reviewedBy?.username ?? null,
+      createdAt: submission.createdAt.toISOString(),
+      updatedAt: submission.updatedAt.toISOString(),
+      reviewedAt: submission.reviewedAt?.toISOString() ?? null,
+    };
+  }
+
+  private toManagedJobItem(job: ManagedJobRecord) {
+    return {
+      ...this.toJobListItem(job),
+      description: job.description,
+      status: job.status,
+      pendingEditSubmission: job.editSubmissions[0]
+        ? this.toJobSubmissionItem(job.editSubmissions[0])
+        : null,
+    };
+  }
+
   private toEmployeeTrend(
     value: Prisma.JsonValue | null,
   ): EmployeeTrendPoint[] {
@@ -276,5 +684,125 @@ export class CompaniesService {
     const deadline = new Date(job.deadline);
     deadline.setHours(0, 0, 0, 0);
     return Math.ceil((deadline.getTime() - today.getTime()) / 86_400_000);
+  }
+
+  private async getOwnedCompanyOrThrow(userId: string) {
+    const company = await this.prisma.company.findUnique({
+      where: { ownerUserId: userId },
+      select: { id: true },
+    });
+    if (!company) {
+      throw new ForbiddenException('기업회원 회사 정보를 찾을 수 없습니다.');
+    }
+    return company;
+  }
+
+  private normalizeProfileProposal(
+    dto: CreateCompanyProfileSubmissionDto,
+  ): Prisma.JsonObject {
+    const proposed: Prisma.JsonObject = {};
+
+    const name = this.optionalTrimmed(dto.name);
+    if (name !== undefined) proposed.name = name;
+    if (dto.type !== undefined) proposed.type = dto.type;
+
+    this.assignNullableString(proposed, 'websiteUrl', dto.websiteUrl);
+    this.assignNullableString(proposed, 'logoUrl', dto.logoUrl);
+    this.assignNullableString(proposed, 'description', dto.description);
+    this.assignNullableString(proposed, 'businessNumber', dto.businessNumber);
+
+    if (dto.externalLinks !== undefined) {
+      proposed.externalLinks = this.normalizeStringArray(dto.externalLinks, 10);
+    }
+    if (dto.tags !== undefined) {
+      proposed.tags = this.normalizeStringArray(dto.tags, 20);
+    }
+
+    return proposed;
+  }
+
+  private toCompanyProfileProposal(value: Prisma.JsonValue) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return {};
+    }
+
+    const input = value as Record<string, unknown>;
+    const proposal: CompanyProfileProposal = {};
+
+    if (typeof input.name === 'string') proposal.name = input.name;
+    if (typeof input.type === 'string') {
+      proposal.type = input.type as CompanyProfileProposal['type'];
+    }
+    for (const key of [
+      'websiteUrl',
+      'logoUrl',
+      'description',
+      'businessNumber',
+    ] as const) {
+      const raw = input[key];
+      if (typeof raw === 'string' || raw === null) {
+        proposal[key] = raw;
+      }
+    }
+    if (Array.isArray(input.externalLinks)) {
+      proposal.externalLinks = input.externalLinks.filter(
+        (item): item is string => typeof item === 'string',
+      );
+    }
+    if (Array.isArray(input.tags)) {
+      proposal.tags = input.tags.filter(
+        (item): item is string => typeof item === 'string',
+      );
+    }
+
+    return proposal;
+  }
+
+  private assignNullableString(
+    target: Prisma.JsonObject,
+    key: string,
+    value: string | undefined,
+  ) {
+    if (value === undefined) return;
+    const trimmed = value.trim();
+    target[key] = trimmed ? trimmed : null;
+  }
+
+  private optionalTrimmed(value: string | undefined) {
+    if (value === undefined) return undefined;
+    const trimmed = value.trim();
+    return trimmed ? trimmed : undefined;
+  }
+
+  private normalizeStringArray(values: string[], max: number) {
+    return values
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .filter((value, index, all) => all.indexOf(value) === index)
+      .slice(0, max);
+  }
+
+  private normalizeDeadline(deadlineType: DeadlineType, value?: string) {
+    if (deadlineType !== DeadlineType.FIXED_DATE) {
+      return null;
+    }
+    if (!value) {
+      throw new BadRequestException(
+        '마감일 지정 공고는 deadline이 필요합니다.',
+      );
+    }
+    const deadline = new Date(value);
+    if (Number.isNaN(deadline.getTime())) {
+      throw new BadRequestException('deadline 형식이 올바르지 않습니다.');
+    }
+    return deadline;
+  }
+
+  private validateExperienceRange(min?: number, max?: number) {
+    if (min !== undefined && max !== undefined && min > max) {
+      throw new BadRequestException(
+        '최소 경력은 최대 경력보다 클 수 없습니다.',
+      );
+    }
   }
 }

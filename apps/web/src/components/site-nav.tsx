@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { fetchCurrentUser, type AuthUser } from "@/lib/api";
 
 const navItems = [
   { href: "/", label: "홈", key: "home" },
@@ -12,20 +14,47 @@ const navItems = [
 
 export function SiteNav() {
   const pathname = usePathname();
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+    fetchCurrentUser()
+      .then((currentUser) => {
+        if (!ignore) setUser(currentUser);
+      })
+      .catch(() => {
+        if (!ignore) setUser(null);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [pathname]);
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   }
 
+  const roleItems = [
+    ...(user?.role === "COMPANY"
+      ? [{ href: "/company", label: "기업 관리", key: "company" }]
+      : []),
+    ...(user?.role === "ADMIN"
+      ? [{ href: "/admin", label: "Admin", key: "admin" }]
+      : []),
+  ];
+
   return (
     <nav className="sticky top-0 z-40 border-b border-[var(--app-line)] bg-white/95 shadow-sm backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-3">
-        <Link href="/" className="shrink-0 text-xl font-black tracking-tight text-gray-900">
+        <Link
+          href="/"
+          className="shrink-0 text-xl font-black tracking-tight text-gray-900"
+        >
           Account<span style={{ color: "var(--proto-brand)" }}>it</span>
         </Link>
         <div className="flex items-center gap-1">
-          {navItems.map((item) => {
+          {[...navItems, ...roleItems].map((item) => {
             const active = isActive(item.href);
             return (
               <Link
@@ -37,7 +66,9 @@ export function SiteNav() {
                   fontWeight: active ? 600 : undefined,
                 }}
               >
-                <span className={active ? "" : "text-gray-500 hover:text-gray-800"}>
+                <span
+                  className={active ? "" : "text-gray-500 hover:text-gray-800"}
+                >
                   {item.label}
                 </span>
               </Link>
@@ -49,7 +80,7 @@ export function SiteNav() {
             href="/login"
             className="rounded-xl bg-[var(--proto-brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--proto-brand-dark)] hover:shadow-md"
           >
-            로그인 / 회원가입
+            {user ? (user.displayName ?? user.username) : "로그인 / 회원가입"}
           </Link>
         </div>
       </div>

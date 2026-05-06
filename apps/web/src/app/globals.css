@@ -6,14 +6,14 @@
 
 :root {
   --app-surface: #ffffff;
-  --app-line: #EBEBEB;
-  --brand: #E8457A;
-  --brand-strong: #D03368;
-  --app-muted: #6B7280;
+  --app-line: #ebebeb;
+  --brand: #e8457a;
+  --brand-strong: #d03368;
+  --app-muted: #6b7280;
   --accent: oklch(0.97 0 0);
-  --background: #F7F7F7;
-  --proto-brand: #E8457A;
-  --proto-brand-dark: #D03368;
+  --background: #f7f7f7;
+  --proto-brand: #e8457a;
+  --proto-brand-dark: #d03368;
   --proto-brand-light: #fff0f5;
   --proto-brand-mid: #ffd6e5;
   --foreground: oklch(0.145 0 0);
@@ -21,7 +21,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #E8457A;
+  --primary: #e8457a;
   --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -30,7 +30,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: #E8457A;
+  --ring: #e8457a;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -145,5 +145,11 @@ textarea {
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  .form-input {
+    @apply w-full rounded-lg border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-[var(--proto-brand)] disabled:bg-gray-100 disabled:text-gray-400;
   }
 }

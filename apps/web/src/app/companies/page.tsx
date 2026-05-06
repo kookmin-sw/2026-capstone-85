@@ -77,7 +77,9 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     let ignore = false;
-    setCompaniesLoading(true);
+    queueMicrotask(() => {
+      if (!ignore) setCompaniesLoading(true);
+    });
     fetchCompanies(companyParams)
       .then((data) => {
         if (!ignore) {
@@ -194,22 +196,40 @@ export default function CompaniesPage() {
                 <div className="flex gap-8">
                   {/* 회사 유형 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">회사 유형</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      회사 유형
+                    </h3>
                     <div className="flex flex-col gap-1.5">
                       {[
                         { value: "", label: "전체" },
                         { value: "BIG4", label: "Big4" },
-                        { value: "LOCAL_ACCOUNTING_FIRM", label: "로컬 회계법인" },
-                        { value: "MID_SMALL_ACCOUNTING_FIRM", label: "중소 회계법인" },
+                        {
+                          value: "LOCAL_ACCOUNTING_FIRM",
+                          label: "로컬 회계법인",
+                        },
+                        {
+                          value: "MID_SMALL_ACCOUNTING_FIRM",
+                          label: "중소 회계법인",
+                        },
                         { value: "FINANCIAL_COMPANY", label: "금융사" },
                         { value: "GENERAL_COMPANY", label: "일반 기업" },
                         { value: "PUBLIC_INSTITUTION", label: "공공기관" },
                       ].map((opt) => (
-                        <label key={opt.value} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+                        <label
+                          key={opt.value}
+                          className="flex cursor-pointer items-center gap-2 text-xs text-gray-700"
+                        >
                           <input
                             type="checkbox"
                             checked={companyListType === opt.value}
-                            onChange={() => setCompanyListType(companyListType === opt.value && opt.value !== "" ? "" : opt.value)}
+                            onChange={() =>
+                              setCompanyListType(
+                                companyListType === opt.value &&
+                                  opt.value !== ""
+                                  ? ""
+                                  : opt.value,
+                              )
+                            }
                             className="h-3.5 w-3.5 accent-[#E8457A]"
                           />
                           {opt.label}
@@ -220,18 +240,29 @@ export default function CompaniesPage() {
 
                   {/* 채용 상태 */}
                   <div className="min-w-[80px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">채용 상태</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      채용 상태
+                    </h3>
                     <div className="flex flex-col gap-1.5">
                       {[
                         { value: "", label: "전체" },
                         { value: "true", label: "채용 중" },
                         { value: "false", label: "공고 없음" },
                       ].map((opt) => (
-                        <label key={opt.value} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+                        <label
+                          key={opt.value}
+                          className="flex cursor-pointer items-center gap-2 text-xs text-gray-700"
+                        >
                           <input
                             type="checkbox"
                             checked={hasOpenJobs === opt.value}
-                            onChange={() => setHasOpenJobs(hasOpenJobs === opt.value && opt.value !== "" ? "" : opt.value)}
+                            onChange={() =>
+                              setHasOpenJobs(
+                                hasOpenJobs === opt.value && opt.value !== ""
+                                  ? ""
+                                  : opt.value,
+                              )
+                            }
                             className="h-3.5 w-3.5 accent-[#E8457A]"
                           />
                           {opt.label}
@@ -242,7 +273,9 @@ export default function CompaniesPage() {
 
                   {/* 태그 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">태그</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      태그
+                    </h3>
                     <input
                       value={companyTag}
                       onChange={(e) => setCompanyTag(e.target.value)}
@@ -253,17 +286,21 @@ export default function CompaniesPage() {
 
                   {/* 직원수 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">직원수 (명)</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      직원수 (명)
+                    </h3>
                     <div className="flex flex-col gap-2">
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={minEmployeeCount}
                         onChange={(e) => setMinEmployeeCount(e.target.value)}
                         placeholder="최소"
                         className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                       />
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={maxEmployeeCount}
                         onChange={(e) => setMaxEmployeeCount(e.target.value)}
                         placeholder="최대"
@@ -274,17 +311,21 @@ export default function CompaniesPage() {
 
                   {/* 평균연봉 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">평균연봉 (만원)</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      평균연봉 (만원)
+                    </h3>
                     <div className="flex flex-col gap-2">
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={minAverageSalary}
                         onChange={(e) => setMinAverageSalary(e.target.value)}
                         placeholder="최소"
                         className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                       />
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={maxAverageSalary}
                         onChange={(e) => setMaxAverageSalary(e.target.value)}
                         placeholder="최대"
@@ -295,17 +336,21 @@ export default function CompaniesPage() {
 
                   {/* 업력 */}
                   <div className="min-w-[100px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">업력 (년)</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      업력 (년)
+                    </h3>
                     <div className="flex flex-col gap-2">
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={companyMinAgeYears}
                         onChange={(e) => setCompanyMinAgeYears(e.target.value)}
                         placeholder="최소"
                         className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                       />
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={companyMaxAgeYears}
                         onChange={(e) => setCompanyMaxAgeYears(e.target.value)}
                         placeholder="최대"
@@ -316,11 +361,16 @@ export default function CompaniesPage() {
 
                   {/* 퇴사율 */}
                   <div className="min-w-[100px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">퇴사율 이하</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      퇴사율 이하
+                    </h3>
                     <input
-                      type="number" min={0}
+                      type="number"
+                      min={0}
                       value={companyMaxAttritionRate}
-                      onChange={(e) => setCompanyMaxAttritionRate(e.target.value)}
+                      onChange={(e) =>
+                        setCompanyMaxAttritionRate(e.target.value)
+                      }
                       placeholder="10%"
                       className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                     />
@@ -402,9 +452,7 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
         style={{ background: gradient }}
       >
         {hasJobs && (
-          <span
-            className="absolute right-3 top-3 rounded-full bg-pink-50 px-2.5 py-0.5 text-[11px] font-bold text-pink-600"
-          >
+          <span className="absolute right-3 top-3 rounded-full bg-pink-50 px-2.5 py-0.5 text-[11px] font-bold text-pink-600">
             채용 중 {company.openJobCount}
           </span>
         )}
@@ -430,7 +478,9 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
             {companyTypeLabels[company.type]}
           </span>
         </div>
-        <h3 className="mb-1 text-sm font-semibold text-gray-900">{company.name}</h3>
+        <h3 className="mb-1 text-sm font-semibold text-gray-900">
+          {company.name}
+        </h3>
         <p className="mb-3 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-gray-500">
           {company.description ?? "회사 소개가 준비 중입니다."}
         </p>

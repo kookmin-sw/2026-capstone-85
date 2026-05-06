@@ -54,6 +54,12 @@ export type DeadlineType = (typeof DEADLINE_TYPES)[number];
 export const JOB_STATUSES = ["OPEN", "CLOSED", "DRAFT"] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
+export const SUBMISSION_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
+
+export const SUBMISSION_TYPES = ["CREATE", "UPDATE"] as const;
+export type SubmissionType = (typeof SUBMISSION_TYPES)[number];
+
 export const AI_SUGGESTION_STATUSES = [
   "PENDING",
   "APPROVED",
@@ -182,4 +188,70 @@ export type CompanyDetailItem = CompanyListItem & {
   externalLinks: string[];
   employeeTrend: EmployeeTrendPoint[];
   openJobs: JobListItem[];
+};
+
+export type CompanyProfileProposal = {
+  name?: string;
+  type?: CompanyType;
+  websiteUrl?: string | null;
+  logoUrl?: string | null;
+  description?: string | null;
+  businessNumber?: string | null;
+  externalLinks?: string[];
+  tags?: string[];
+};
+
+export type CompanyProfileSubmissionItem = {
+  id: string;
+  companyId: string;
+  companyName: string;
+  proposed: CompanyProfileProposal;
+  status: SubmissionStatus;
+  adminNote: string | null;
+  submittedByUsername: string;
+  reviewedByUsername: string | null;
+  createdAt: string;
+  updatedAt: string;
+  reviewedAt: string | null;
+};
+
+export type JobSubmissionItem = {
+  id: string;
+  companyId: string;
+  companyName: string;
+  submissionType: SubmissionType;
+  targetJobId: string | null;
+  targetJobTitle: string | null;
+  title: string;
+  description: string;
+  originalUrl: string | null;
+  jobFamily: JobFamily;
+  employmentType: EmploymentType;
+  kicpaCondition: KicpaCondition;
+  traineeStatus: TraineeStatus;
+  practicalTrainingInstitution: boolean | null;
+  minExperienceYears: number | null;
+  maxExperienceYears: number | null;
+  location: string | null;
+  deadlineType: DeadlineType;
+  deadline: string | null;
+  status: SubmissionStatus;
+  adminNote: string | null;
+  approvedJobId: string | null;
+  submittedByUsername: string;
+  reviewedByUsername: string | null;
+  createdAt: string;
+  updatedAt: string;
+  reviewedAt: string | null;
+};
+
+export type CompanyManagedJobItem = JobListItem & {
+  description: string;
+  status: JobStatus;
+  pendingEditSubmission: JobSubmissionItem | null;
+};
+
+export type CompanyDashboardResponse = {
+  company: CompanyDetailItem;
+  pendingProfileSubmission: CompanyProfileSubmissionItem | null;
 };

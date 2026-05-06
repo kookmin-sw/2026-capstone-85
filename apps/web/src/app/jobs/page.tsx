@@ -1,7 +1,14 @@
 "use client";
 
 import type { JobCalendarDay, JobListItem } from "@cpa/shared";
-import { ArrowRight, ChevronLeft, ChevronRight, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { JobGridCard } from "@/components/job-card";
@@ -22,11 +29,7 @@ import {
   defaultJobFilters,
   type JobFilterState,
 } from "@/lib/job-filters";
-import {
-  employmentLabels,
-  jobFamilyLabels,
-  kicpaLabels,
-} from "@/lib/labels";
+import { employmentLabels, jobFamilyLabels, kicpaLabels } from "@/lib/labels";
 
 /* ── 일요일 시작 캘린더 그리드 ── */
 function getSundayFirstGrid(monthDate: Date): Date[] {
@@ -68,7 +71,7 @@ function JobsSidebarCalendar({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
-    setSelectedDate(null);
+    queueMicrotask(() => setSelectedDate(null));
   }, [monthDate]);
 
   return (
@@ -171,14 +174,10 @@ function JobsSidebarCalendar({
                 <button
                   key={dateKey}
                   type="button"
-                  onClick={() =>
-                    setSelectedDate(isSelected ? null : dateKey)
-                  }
+                  onClick={() => setSelectedDate(isSelected ? null : dateKey)}
                   className="flex w-full flex-col items-center rounded py-1 transition-colors hover:bg-pink-50"
                   style={
-                    isSelected
-                      ? { background: "var(--proto-brand-light)" }
-                      : {}
+                    isSelected ? { background: "var(--proto-brand-light)" } : {}
                   }
                 >
                   {cellContent}
@@ -420,7 +419,9 @@ export default function JobsPage() {
   useEffect(() => {
     if (!ready) return;
     let ignore = false;
-    setLoading(true);
+    queueMicrotask(() => {
+      if (!ignore) setLoading(true);
+    });
     fetchJobs(params)
       .then((data) => {
         if (!ignore) {
@@ -464,11 +465,7 @@ export default function JobsPage() {
   const dayMap = useMemo(() => calendarDaysToMap(calendarDays), [calendarDays]);
   const weekJobs = useMemo(
     () =>
-      jobsBetween(
-        calendarDays,
-        startOfWeek(new Date()),
-        endOfWeek(new Date()),
-      ),
+      jobsBetween(calendarDays, startOfWeek(new Date()), endOfWeek(new Date())),
     [calendarDays],
   );
   const urgentJobs = useMemo(
@@ -481,7 +478,8 @@ export default function JobsPage() {
   const calendarHref = `/calendar${queryString ? `?${queryString}` : ""}`;
 
   // weekJobs를 urgentJobs fallback으로 활용
-  const sidebarUrgentJobs = urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
+  const sidebarUrgentJobs =
+    urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -520,9 +518,7 @@ export default function JobsPage() {
             </button>
             <select
               value={filters.sort}
-              onChange={(e) =>
-                setFilters({ ...filters, sort: e.target.value })
-              }
+              onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
               className="rounded-xl border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm font-medium text-gray-700 outline-none"
             >
               {Object.entries(jobSortLabels).map(([v, l]) => (
@@ -532,7 +528,6 @@ export default function JobsPage() {
               ))}
             </select>
           </div>
-
         </div>
 
         {/* 필터 카드 */}
