@@ -1,17 +1,22 @@
 "use client";
 
 import type { CompanyListItem } from "@cpa/shared";
-import { ArrowRight, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
-import Link from "next/link";
+import {
+  ArrowRight,
+  Building2,
+  CircleDollarSign,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  TrendingDown,
+  Users,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { SiteNav } from "@/components/site-nav";
+import { ActionButton, ActionLink } from "@/components/ui/action-button";
 import { fetchCompanies } from "@/lib/api";
 import { companyTypeLabels } from "@/lib/labels";
-
-const openJobLabels = {
-  true: "채용 중",
-  false: "공고 없음",
-};
+import styles from "./companies-page.module.css";
 
 const companySortLabels = {
   name: "회사명순",
@@ -19,10 +24,6 @@ const companySortLabels = {
   averageSalaryDesc: "평균연봉 높은순",
   companyAgeDesc: "업력 높은순",
 };
-
-function bannerGradient(_name: string) {
-  return "#F7F7F7";
-}
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
@@ -77,7 +78,9 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     let ignore = false;
-    setCompaniesLoading(true);
+    queueMicrotask(() => {
+      if (!ignore) setCompaniesLoading(true);
+    });
     fetchCompanies(companyParams)
       .then((data) => {
         if (!ignore) {
@@ -125,13 +128,9 @@ export default function CompaniesPage() {
                 className="w-full rounded-xl border border-[var(--app-line)] bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[var(--brand)]"
               />
             </div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--proto-brand)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--brand-strong)] hover:shadow-md"
-            >
-              <Search size={15} />
+            <ActionButton type="button" iconStart={<Search size={15} />}>
               검색
-            </button>
+            </ActionButton>
             <select
               value={companySort}
               onChange={(e) => setCompanySort(e.target.value)}
@@ -151,22 +150,21 @@ export default function CompaniesPage() {
           <div className="rounded-2xl border border-[var(--app-line)] bg-white">
             {/* 필터 헤더 */}
             <div className="flex items-center justify-between px-5 py-3">
-              <button
+              <ActionButton
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className="inline-flex items-center gap-2 text-sm font-bold text-gray-700"
+                variant="ghost"
+                size="sm"
+                className={styles.filterHeaderButton}
+                iconStart={<SlidersHorizontal size={15} />}
               >
-                <SlidersHorizontal
-                  size={15}
-                  style={{ color: "var(--proto-brand)" }}
-                />
                 필터
                 <span className="text-xs font-medium text-gray-400">
                   {filterOpen ? "필터 닫기 ∧" : "필터 열기 ∨"}
                 </span>
-              </button>
+              </ActionButton>
               {filterOpen && (
-                <button
+                <ActionButton
                   type="button"
                   onClick={() => {
                     setCompanyListType("");
@@ -180,11 +178,12 @@ export default function CompaniesPage() {
                     setCompanyMaxAgeYears("");
                     setCompanyMaxAttritionRate("");
                   }}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-gray-600"
+                  variant="ghost"
+                  size="sm"
+                  iconStart={<RefreshCw size={12} />}
                 >
-                  <RefreshCw size={12} />
                   필터 초기화
-                </button>
+                </ActionButton>
               )}
             </div>
 
@@ -194,22 +193,40 @@ export default function CompaniesPage() {
                 <div className="flex gap-8">
                   {/* 회사 유형 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">회사 유형</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      회사 유형
+                    </h3>
                     <div className="flex flex-col gap-1.5">
                       {[
                         { value: "", label: "전체" },
                         { value: "BIG4", label: "Big4" },
-                        { value: "LOCAL_ACCOUNTING_FIRM", label: "로컬 회계법인" },
-                        { value: "MID_SMALL_ACCOUNTING_FIRM", label: "중소 회계법인" },
+                        {
+                          value: "LOCAL_ACCOUNTING_FIRM",
+                          label: "로컬 회계법인",
+                        },
+                        {
+                          value: "MID_SMALL_ACCOUNTING_FIRM",
+                          label: "중소 회계법인",
+                        },
                         { value: "FINANCIAL_COMPANY", label: "금융사" },
                         { value: "GENERAL_COMPANY", label: "일반 기업" },
                         { value: "PUBLIC_INSTITUTION", label: "공공기관" },
                       ].map((opt) => (
-                        <label key={opt.value} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+                        <label
+                          key={opt.value}
+                          className="flex cursor-pointer items-center gap-2 text-xs text-gray-700"
+                        >
                           <input
                             type="checkbox"
                             checked={companyListType === opt.value}
-                            onChange={() => setCompanyListType(companyListType === opt.value && opt.value !== "" ? "" : opt.value)}
+                            onChange={() =>
+                              setCompanyListType(
+                                companyListType === opt.value &&
+                                  opt.value !== ""
+                                  ? ""
+                                  : opt.value,
+                              )
+                            }
                             className="h-3.5 w-3.5 accent-[#E8457A]"
                           />
                           {opt.label}
@@ -220,18 +237,29 @@ export default function CompaniesPage() {
 
                   {/* 채용 상태 */}
                   <div className="min-w-[80px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">채용 상태</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      채용 상태
+                    </h3>
                     <div className="flex flex-col gap-1.5">
                       {[
                         { value: "", label: "전체" },
                         { value: "true", label: "채용 중" },
                         { value: "false", label: "공고 없음" },
                       ].map((opt) => (
-                        <label key={opt.value} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+                        <label
+                          key={opt.value}
+                          className="flex cursor-pointer items-center gap-2 text-xs text-gray-700"
+                        >
                           <input
                             type="checkbox"
                             checked={hasOpenJobs === opt.value}
-                            onChange={() => setHasOpenJobs(hasOpenJobs === opt.value && opt.value !== "" ? "" : opt.value)}
+                            onChange={() =>
+                              setHasOpenJobs(
+                                hasOpenJobs === opt.value && opt.value !== ""
+                                  ? ""
+                                  : opt.value,
+                              )
+                            }
                             className="h-3.5 w-3.5 accent-[#E8457A]"
                           />
                           {opt.label}
@@ -242,7 +270,9 @@ export default function CompaniesPage() {
 
                   {/* 태그 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">태그</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      태그
+                    </h3>
                     <input
                       value={companyTag}
                       onChange={(e) => setCompanyTag(e.target.value)}
@@ -253,17 +283,21 @@ export default function CompaniesPage() {
 
                   {/* 직원수 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">직원수 (명)</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      직원수 (명)
+                    </h3>
                     <div className="flex flex-col gap-2">
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={minEmployeeCount}
                         onChange={(e) => setMinEmployeeCount(e.target.value)}
                         placeholder="최소"
                         className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                       />
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={maxEmployeeCount}
                         onChange={(e) => setMaxEmployeeCount(e.target.value)}
                         placeholder="최대"
@@ -274,17 +308,21 @@ export default function CompaniesPage() {
 
                   {/* 평균연봉 */}
                   <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">평균연봉 (만원)</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      평균연봉 (만원)
+                    </h3>
                     <div className="flex flex-col gap-2">
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={minAverageSalary}
                         onChange={(e) => setMinAverageSalary(e.target.value)}
                         placeholder="최소"
                         className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                       />
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={maxAverageSalary}
                         onChange={(e) => setMaxAverageSalary(e.target.value)}
                         placeholder="최대"
@@ -295,17 +333,21 @@ export default function CompaniesPage() {
 
                   {/* 업력 */}
                   <div className="min-w-[100px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">업력 (년)</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      업력 (년)
+                    </h3>
                     <div className="flex flex-col gap-2">
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={companyMinAgeYears}
                         onChange={(e) => setCompanyMinAgeYears(e.target.value)}
                         placeholder="최소"
                         className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                       />
                       <input
-                        type="number" min={0}
+                        type="number"
+                        min={0}
                         value={companyMaxAgeYears}
                         onChange={(e) => setCompanyMaxAgeYears(e.target.value)}
                         placeholder="최대"
@@ -316,11 +358,16 @@ export default function CompaniesPage() {
 
                   {/* 퇴사율 */}
                   <div className="min-w-[100px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">퇴사율 이하</h3>
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      퇴사율 이하
+                    </h3>
                     <input
-                      type="number" min={0}
+                      type="number"
+                      min={0}
                       value={companyMaxAttritionRate}
-                      onChange={(e) => setCompanyMaxAttritionRate(e.target.value)}
+                      onChange={(e) =>
+                        setCompanyMaxAttritionRate(e.target.value)
+                      }
                       placeholder="10%"
                       className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
                     />
@@ -344,7 +391,7 @@ export default function CompaniesPage() {
           </span>
           <span>
             채용 중{" "}
-            <strong style={{ color: "var(--proto-brand)" }}>
+            <strong className={styles.brandText}>
               {companyOpenTotal.toLocaleString("ko-KR")}
             </strong>
             개
@@ -391,84 +438,92 @@ export default function CompaniesPage() {
 
 function CompanyCard({ company }: { company: CompanyListItem }) {
   const initial = company.name.charAt(0);
-  const gradient = bannerGradient(company.name);
   const hasJobs = company.openJobCount > 0;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
-      {/* Banner */}
-      <div
-        className="relative flex h-24 items-end px-5 pb-3"
-        style={{ background: gradient }}
-      >
+    <article className={styles.companyCard}>
+      <div className={styles.banner}>
         {hasJobs && (
-          <span
-            className="absolute right-3 top-3 rounded-full bg-pink-50 px-2.5 py-0.5 text-[11px] font-bold text-pink-600"
-          >
+          <span className={styles.openBadge}>
             채용 중 {company.openJobCount}
           </span>
         )}
-        <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-black text-white shadow-md"
-          style={{ background: "var(--proto-brand)" }}
-        >
+        <div className={styles.logo}>
           {company.logoUrl ? (
-            <img
-              src={company.logoUrl}
-              alt={company.name}
-              className="h-full w-full rounded-xl object-cover"
-            />
+            <img src={company.logoUrl} alt={company.name} />
           ) : (
             initial
           )}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-2.5">
-          <span className="rounded-full bg-pink-50 px-2.5 py-0.5 text-xs font-semibold text-pink-600">
-            {companyTypeLabels[company.type]}
-          </span>
-        </div>
-        <h3 className="mb-1 text-sm font-semibold text-gray-900">{company.name}</h3>
-        <p className="mb-3 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-gray-500">
+      <div className={styles.body}>
+        <span className={styles.typeBadge}>
+          {companyTypeLabels[company.type]}
+        </span>
+        <h3 className={styles.title}>{company.name}</h3>
+        <p className={styles.description}>
           {company.description ?? "회사 소개가 준비 중입니다."}
         </p>
 
-        <div className="mb-3 grid grid-cols-2 gap-1.5 text-xs text-gray-500">
-          <span>🏢 {formatCompanyAge(company.foundedYear)}</span>
-          <span>
-            👥{" "}
-            {company.employeeCount
-              ? `${company.employeeCount.toLocaleString("ko-KR")}명`
-              : "미공개"}
-          </span>
-          <span>💰 {formatSalary(company.averageSalary)}</span>
-          <span>📉 퇴사율 {formatRate(company.recentAttritionRate)}</span>
+        <div className={styles.factGrid}>
+          <CompanyFact
+            icon={Building2}
+            text={formatCompanyAge(company.foundedYear)}
+          />
+          <CompanyFact
+            icon={Users}
+            text={
+              company.employeeCount
+                ? `${company.employeeCount.toLocaleString("ko-KR")}명`
+                : "미공개"
+            }
+          />
+          <CompanyFact
+            icon={CircleDollarSign}
+            text={formatSalary(company.averageSalary)}
+          />
+          <CompanyFact
+            icon={TrendingDown}
+            text={`퇴사율 ${formatRate(company.recentAttritionRate)}`}
+          />
         </div>
 
         {company.tags.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-1">
+          <div className={styles.tags}>
             {company.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-500"
-              >
+              <span key={tag} className={styles.tag}>
                 #{tag}
               </span>
             ))}
           </div>
         )}
 
-        <Link
+        <ActionLink
           href={`/companies/${company.id}`}
-          className="mt-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-[var(--proto-brand)] py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[var(--proto-brand-dark)] hover:shadow-md"
+          size="sm"
+          className={styles.cardAction}
+          iconEnd={<ArrowRight size={13} />}
         >
           상세 보기
-          <ArrowRight size={13} />
-        </Link>
+        </ActionLink>
       </div>
     </article>
+  );
+}
+
+function CompanyFact({
+  icon: Icon,
+  text,
+}: {
+  icon: typeof Building2;
+  text: string;
+}) {
+  return (
+    <span className={styles.fact}>
+      <Icon size={13} />
+      <span>{text}</span>
+    </span>
   );
 }
 

@@ -29,6 +29,11 @@ export class AuthService {
     if (existing) {
       throw new ConflictException('이미 사용 중인 아이디입니다.');
     }
+    if (dto.role === UserRole.ADMIN) {
+      throw new BadRequestException(
+        '관리자 계정은 공개 회원가입으로 생성할 수 없습니다.',
+      );
+    }
 
     const passwordHash = await argon2.hash(dto.password);
 

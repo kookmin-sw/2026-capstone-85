@@ -2,16 +2,36 @@
 
 import { Building2, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useState } from "react";
+import { ActionButton } from "@/components/ui/action-button";
 import { authRequest, type AuthUser } from "@/lib/api";
+import { companyTypeLabels } from "@/lib/labels";
+import { cn } from "@/lib/utils";
+import styles from "./login-page.module.css";
+
+type RegisterRole = "JOB_SEEKER" | "COMPANY";
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [role, setRole] = useState<AuthUser["role"]>("JOB_SEEKER");
+  return (
+    <Suspense fallback={<main className={styles.page} />}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [mode, setMode] = useState<"login" | "register">(
+    searchParams.get("mode") === "register" ? "register" : "login",
+  );
+  const [role, setRole] = useState<RegisterRole>("JOB_SEEKER");
   const [username, setUsername] = useState("test002");
   const [password, setPassword] = useState("password123");
   const [displayName, setDisplayName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [companyType, setCompanyType] = useState("LOCAL_ACCOUNTING_FIRM");
   const [message, setMessage] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -22,10 +42,14 @@ export default function LoginPage() {
       if (mode === "register") {
         payload.role = role;
         if (displayName) payload.displayName = displayName;
-        if (role === "COMPANY") payload.companyName = companyName;
+        if (role === "COMPANY") {
+          payload.companyName = companyName;
+          payload.companyType = companyType;
+        }
       }
       const user = await authRequest(mode, payload);
       setMessage(`${user?.username} 계정으로 로그인되었습니다.`);
+      router.push(nextPathForRole(user));
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "요청에 실패했습니다.",
@@ -34,21 +58,14 @@ export default function LoginPage() {
   }
 
   return (
-    <main
-      className="flex min-h-screen items-center justify-center px-4 py-12"
-      style={{
-        background:
-          "linear-gradient(135deg,#fff5f8 0%,#ffe8f0 50%,#fff0f5 100%)",
-      }}
-    >
-      {/* Logo / back link */}
+    <main className={styles.page}>
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Link
             href="/"
             className="text-2xl font-black tracking-tight text-gray-900"
           >
-            Account<span style={{ color: "var(--proto-brand)" }}>it</span>
+            Account<span className={styles.logoAccent}>it</span>
           </Link>
           <p className="mt-1 text-sm text-gray-500">
             CPA 전용 채용 큐레이션 플랫폼
@@ -56,20 +73,10 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-2xl border border-[var(--app-line)] bg-white p-8 shadow-sm">
-          {/* Mode tabs */}
           <div className="mb-6 grid grid-cols-2 gap-2">
             <button
               type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-semibold transition-colors"
-              style={
-                mode === "login"
-                  ? {
-                      background: "var(--proto-brand-light)",
-                      borderColor: "var(--proto-brand)",
-                      color: "var(--proto-brand)",
-                    }
-                  : { borderColor: "var(--app-line)" }
-              }
+              className={cn(styles.tab, mode === "login" && styles.tabActive)}
               onClick={() => setMode("login")}
             >
               <LogIn size={16} />
@@ -77,16 +84,10 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-semibold transition-colors"
-              style={
-                mode === "register"
-                  ? {
-                      background: "var(--proto-brand-light)",
-                      borderColor: "var(--proto-brand)",
-                      color: "var(--proto-brand)",
-                    }
-                  : { borderColor: "var(--app-line)" }
-              }
+              className={cn(
+                styles.tab,
+                mode === "register" && styles.tabActive,
+              )}
               onClick={() => setMode("register")}
             >
               <UserPlus size={16} />
@@ -121,12 +122,11 @@ export default function LoginPage() {
                     className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none"
                     value={role}
                     onChange={(event) =>
-                      setRole(event.target.value as AuthUser["role"])
+                      setRole(event.target.value as RegisterRole)
                     }
                   >
-                    <option value="JOB_SEEKER">개인회원</option>
-                    <option value="COMPANY">기업회원</option>
-                    <option value="ADMIN">관리자</option>
+                    <option value="JOB_SEEKER">일반(구직자)</option>
+                    <option value="COMPANY">회사(채용하는 사람)</option>
                   </select>
                 </label>
                 <label className="text-sm font-semibold text-gray-700">
@@ -138,27 +138,45 @@ export default function LoginPage() {
                   />
                 </label>
                 {role === "COMPANY" && (
-                  <label className="text-sm font-semibold text-gray-700">
-                    회사명
-                    <input
-                      className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--brand)]"
-                      value={companyName}
-                      onChange={(event) => setCompanyName(event.target.value)}
-                      placeholder="예: 한빛회계법인"
-                    />
-                  </label>
+                  <>
+                    <label className="text-sm font-semibold text-gray-700">
+                      회사명
+                      <input
+                        className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--brand)]"
+                        value={companyName}
+                        onChange={(event) => setCompanyName(event.target.value)}
+                        placeholder="예: 한빛회계법인"
+                      />
+                    </label>
+                    <label className="text-sm font-semibold text-gray-700">
+                      회사 유형
+                      <select
+                        className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none"
+                        value={companyType}
+                        onChange={(event) => setCompanyType(event.target.value)}
+                      >
+                        {Object.entries(companyTypeLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                  </>
                 )}
               </>
             )}
 
-            <button
+            <ActionButton
               type="submit"
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-              style={{ background: "var(--proto-brand)" }}
+              className={styles.submit}
+              size="lg"
+              iconStart={<Building2 size={17} />}
             >
-              <Building2 size={17} />
               {mode === "login" ? "로그인" : "회원가입"}
-            </button>
+            </ActionButton>
           </form>
 
           {message && (
@@ -176,4 +194,10 @@ export default function LoginPage() {
       </div>
     </main>
   );
+}
+
+function nextPathForRole(user: AuthUser | undefined) {
+  if (user?.role === "COMPANY") return "/company";
+  if (user?.role === "ADMIN") return "/admin";
+  return "/jobs";
 }

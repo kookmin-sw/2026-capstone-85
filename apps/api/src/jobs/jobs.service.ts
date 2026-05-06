@@ -63,8 +63,8 @@ export class JobsService {
   }
 
   async detail(id: string) {
-    const job = await this.prisma.job.findUnique({
-      where: { id },
+    const job = await this.prisma.job.findFirst({
+      where: { id, status: JobStatus.OPEN },
       include: {
         ...jobInclude,
         aiSuggestions: {
