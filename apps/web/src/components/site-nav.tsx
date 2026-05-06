@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ActionLink } from "@/components/ui/action-button";
+import { fetchCurrentUser, type AuthUser } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import styles from "./site-nav.module.css";
 
@@ -19,12 +21,36 @@ type SiteNavProps = {
 
 export function SiteNav({ variant = "app" }: SiteNavProps) {
   const pathname = usePathname();
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+    fetchCurrentUser()
+      .then((currentUser) => {
+        if (!ignore) setUser(currentUser);
+      })
+      .catch(() => {
+        if (!ignore) setUser(null);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [pathname]);
   const isLanding = variant === "landing";
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   }
+
+  const roleItems = [
+    ...(user?.role === "COMPANY"
+      ? [{ href: "/company", label: "기업 관리", key: "company" }]
+      : []),
+    ...(user?.role === "ADMIN"
+      ? [{ href: "/admin", label: "Admin", key: "admin" }]
+      : []),
+  ];
 
   return (
     <nav className={cn(styles.nav, isLanding && styles.landingNav)}>
@@ -36,7 +62,7 @@ export function SiteNav({ variant = "app" }: SiteNavProps) {
           </span>
         </Link>
         <div className={styles.links}>
-          {navItems.map((item) => {
+          {[...navItems, ...roleItems].map((item) => {
             const active = isActive(item.href);
             return (
               <Link
@@ -50,7 +76,11 @@ export function SiteNav({ variant = "app" }: SiteNavProps) {
           })}
         </div>
         <div className={styles.spacer}>
-          {isLanding ? (
+          {user ? (
+            <ActionLink href="/login" size="sm">
+              {user.displayName ?? user.username}
+            </ActionLink>
+          ) : isLanding ? (
             <div className={styles.landingActions}>
               <Link href="/login" className={styles.loginLink}>
                 로그인

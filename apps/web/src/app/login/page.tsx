@@ -2,12 +2,15 @@
 
 import { Building2, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useState } from "react";
 import { ActionButton } from "@/components/ui/action-button";
 import { authRequest, type AuthUser } from "@/lib/api";
+import { companyTypeLabels } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import styles from "./login-page.module.css";
+
+type RegisterRole = "JOB_SEEKER" | "COMPANY";
 
 export default function LoginPage() {
   return (
@@ -18,15 +21,17 @@ export default function LoginPage() {
 }
 
 function LoginPageContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<"login" | "register">(
     searchParams.get("mode") === "register" ? "register" : "login",
   );
-  const [role, setRole] = useState<AuthUser["role"]>("JOB_SEEKER");
+  const [role, setRole] = useState<RegisterRole>("JOB_SEEKER");
   const [username, setUsername] = useState("test002");
   const [password, setPassword] = useState("password123");
   const [displayName, setDisplayName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [companyType, setCompanyType] = useState("LOCAL_ACCOUNTING_FIRM");
   const [message, setMessage] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -37,10 +42,14 @@ function LoginPageContent() {
       if (mode === "register") {
         payload.role = role;
         if (displayName) payload.displayName = displayName;
-        if (role === "COMPANY") payload.companyName = companyName;
+        if (role === "COMPANY") {
+          payload.companyName = companyName;
+          payload.companyType = companyType;
+        }
       }
       const user = await authRequest(mode, payload);
       setMessage(`${user?.username} 계정으로 로그인되었습니다.`);
+      router.push(nextPathForRole(user));
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "요청에 실패했습니다.",
@@ -50,7 +59,6 @@ function LoginPageContent() {
 
   return (
     <main className={styles.page}>
-      {/* Logo / back link */}
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Link
@@ -65,7 +73,6 @@ function LoginPageContent() {
         </div>
 
         <div className="rounded-2xl border border-[var(--app-line)] bg-white p-8 shadow-sm">
-          {/* Mode tabs */}
           <div className="mb-6 grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -115,12 +122,11 @@ function LoginPageContent() {
                     className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none"
                     value={role}
                     onChange={(event) =>
-                      setRole(event.target.value as AuthUser["role"])
+                      setRole(event.target.value as RegisterRole)
                     }
                   >
-                    <option value="JOB_SEEKER">개인회원</option>
-                    <option value="COMPANY">기업회원</option>
-                    <option value="ADMIN">관리자</option>
+                    <option value="JOB_SEEKER">일반(구직자)</option>
+                    <option value="COMPANY">회사(채용하는 사람)</option>
                   </select>
                 </label>
                 <label className="text-sm font-semibold text-gray-700">
@@ -132,15 +138,33 @@ function LoginPageContent() {
                   />
                 </label>
                 {role === "COMPANY" && (
-                  <label className="text-sm font-semibold text-gray-700">
-                    회사명
-                    <input
-                      className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--brand)]"
-                      value={companyName}
-                      onChange={(event) => setCompanyName(event.target.value)}
-                      placeholder="예: 한빛회계법인"
-                    />
-                  </label>
+                  <>
+                    <label className="text-sm font-semibold text-gray-700">
+                      회사명
+                      <input
+                        className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none focus:border-[var(--brand)]"
+                        value={companyName}
+                        onChange={(event) => setCompanyName(event.target.value)}
+                        placeholder="예: 한빛회계법인"
+                      />
+                    </label>
+                    <label className="text-sm font-semibold text-gray-700">
+                      회사 유형
+                      <select
+                        className="mt-2 w-full rounded-xl border border-[var(--app-line)] px-3 py-2.5 text-sm outline-none"
+                        value={companyType}
+                        onChange={(event) => setCompanyType(event.target.value)}
+                      >
+                        {Object.entries(companyTypeLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                  </>
                 )}
               </>
             )}
@@ -170,4 +194,10 @@ function LoginPageContent() {
       </div>
     </main>
   );
+}
+
+function nextPathForRole(user: AuthUser | undefined) {
+  if (user?.role === "COMPANY") return "/company";
+  if (user?.role === "ADMIN") return "/admin";
+  return "/jobs";
 }

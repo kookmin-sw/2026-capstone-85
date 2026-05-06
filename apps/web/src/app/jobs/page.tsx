@@ -1,7 +1,14 @@
 "use client";
 
 import type { JobCalendarDay, JobListItem } from "@cpa/shared";
-import { ArrowRight, ChevronLeft, ChevronRight, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { JobGridCard } from "@/components/job-card";
@@ -23,11 +30,7 @@ import {
   defaultJobFilters,
   type JobFilterState,
 } from "@/lib/job-filters";
-import {
-  employmentLabels,
-  jobFamilyLabels,
-  kicpaLabels,
-} from "@/lib/labels";
+import { employmentLabels, jobFamilyLabels, kicpaLabels } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import styles from "./jobs-page.module.css";
 
@@ -69,6 +72,10 @@ function JobsSidebarCalendar({
   const days = useMemo(() => getSundayFirstGrid(monthDate), [monthDate]);
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    queueMicrotask(() => setSelectedDate(null));
+  }, [monthDate]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -115,7 +122,10 @@ function JobsSidebarCalendar({
           {WEEK_LABELS.map((label, i) => (
             <div
               key={label}
-              className={cn(styles.weekLabel, i === 0 && styles.weekLabelSunday)}
+              className={cn(
+                styles.weekLabel,
+                i === 0 && styles.weekLabelSunday,
+              )}
             >
               {label}
             </div>
@@ -145,9 +155,7 @@ function JobsSidebarCalendar({
                 >
                   {day.getDate()}
                 </span>
-                <span
-                  className={styles.dayCount}
-                >
+                <span className={styles.dayCount}>
                   {inMonth && count > 0 ? count : ""}
                 </span>
               </>
@@ -158,9 +166,7 @@ function JobsSidebarCalendar({
                 <button
                   key={dateKey}
                   type="button"
-                  onClick={() =>
-                    setSelectedDate(isSelected ? null : dateKey)
-                  }
+                  onClick={() => setSelectedDate(isSelected ? null : dateKey)}
                   className={cn(
                     styles.calendarCell,
                     isSelected && styles.calendarCellSelected,
@@ -230,10 +236,7 @@ function JobsSidebarCalendar({
           <span className="text-sm font-bold text-gray-900">
             D-7 마감 임박 공고
           </span>
-          <Link
-            href={calendarHref}
-            className={styles.sidebarMore}
-          >
+          <Link href={calendarHref} className={styles.sidebarMore}>
             전체 보기 <ArrowRight size={12} />
           </Link>
         </div>
@@ -401,6 +404,9 @@ export default function JobsPage() {
   useEffect(() => {
     if (!ready) return;
     let ignore = false;
+    queueMicrotask(() => {
+      if (!ignore) setLoading(true);
+    });
     fetchJobs(params)
       .then((data) => {
         if (!ignore) {
@@ -444,11 +450,7 @@ export default function JobsPage() {
   const dayMap = useMemo(() => calendarDaysToMap(calendarDays), [calendarDays]);
   const weekJobs = useMemo(
     () =>
-      jobsBetween(
-        calendarDays,
-        startOfWeek(new Date()),
-        endOfWeek(new Date()),
-      ),
+      jobsBetween(calendarDays, startOfWeek(new Date()), endOfWeek(new Date())),
     [calendarDays],
   );
   const urgentJobs = useMemo(
@@ -461,7 +463,8 @@ export default function JobsPage() {
   const calendarHref = `/calendar${queryString ? `?${queryString}` : ""}`;
 
   // weekJobs를 urgentJobs fallback으로 활용
-  const sidebarUrgentJobs = urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
+  const sidebarUrgentJobs =
+    urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -491,17 +494,12 @@ export default function JobsPage() {
                 className="w-full rounded-xl border border-[var(--app-line)] bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[var(--brand)]"
               />
             </div>
-            <ActionButton
-              type="button"
-              iconStart={<Search size={15} />}
-            >
+            <ActionButton type="button" iconStart={<Search size={15} />}>
               검색
             </ActionButton>
             <select
               value={filters.sort}
-              onChange={(e) =>
-                setFilters({ ...filters, sort: e.target.value })
-              }
+              onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
               className="rounded-xl border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm font-medium text-gray-700 outline-none"
             >
               {Object.entries(jobSortLabels).map(([v, l]) => (
@@ -511,7 +509,6 @@ export default function JobsPage() {
               ))}
             </select>
           </div>
-
         </div>
 
         {/* 필터 카드 */}

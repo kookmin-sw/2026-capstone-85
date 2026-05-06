@@ -20,18 +20,18 @@
   --gray-900: #141414;
   --app-surface: var(--surface);
   --app-line: var(--line);
-  --brand: #E8457A;
-  --brand-strong: #D03368;
+  --brand: #e8457a;
+  --brand-strong: #d03368;
   --brand-soft: #fff0f5;
   --brand-mid: #ffd6e5;
   --brand-foreground: #ffffff;
-  --app-muted: #6B7280;
+  --app-muted: #6b7280;
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.05);
   --accent: var(--brand-soft);
-  --background: #F7F7F7;
+  --background: #f7f7f7;
   --proto-brand: var(--brand);
   --proto-brand-dark: var(--brand-strong);
   --proto-brand-light: var(--brand-soft);
@@ -170,5 +170,11 @@ textarea {
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  .form-input {
+    @apply w-full rounded-lg border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-[var(--proto-brand)] disabled:bg-gray-100 disabled:text-gray-400;
   }
 }

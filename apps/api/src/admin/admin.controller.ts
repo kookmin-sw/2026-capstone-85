@@ -5,15 +5,19 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JobStatus, UserRole } from '@prisma/client';
+import type { RequestWithUser } from '../auth/auth.types';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import { AdminService } from './admin.service';
 import { CreateJobDto } from './dto/create-job.dto';
+import { ReviewSubmissionDto } from './dto/review-submission.dto';
 
 @ApiTags('admin')
 @ApiBearerAuth()
@@ -21,7 +25,10 @@ import { CreateJobDto } from './dto/create-job.dto';
 @Roles(UserRole.ADMIN)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly adminService: AdminService,
+  ) {}
 
   @Get('health')
   health() {
@@ -58,5 +65,67 @@ export class AdminController {
       where: { id },
       data: { status: JobStatus.CLOSED },
     });
+  }
+
+  @Get('job-submissions')
+  listJobSubmissions() {
+    return this.adminService.listJobSubmissions();
+  }
+
+  @Patch('job-submissions/:id/approve')
+  approveJobSubmission(
+    @Param('id') id: string,
+    @Body() dto: ReviewSubmissionDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.adminService.approveJobSubmission(
+      id,
+      req.user!.id,
+      dto.adminNote,
+    );
+  }
+
+  @Patch('job-submissions/:id/reject')
+  rejectJobSubmission(
+    @Param('id') id: string,
+    @Body() dto: ReviewSubmissionDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.adminService.rejectJobSubmission(
+      id,
+      req.user!.id,
+      dto.adminNote,
+    );
+  }
+
+  @Get('profile-submissions')
+  listProfileSubmissions() {
+    return this.adminService.listProfileSubmissions();
+  }
+
+  @Patch('profile-submissions/:id/approve')
+  approveProfileSubmission(
+    @Param('id') id: string,
+    @Body() dto: ReviewSubmissionDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.adminService.approveProfileSubmission(
+      id,
+      req.user!.id,
+      dto.adminNote,
+    );
+  }
+
+  @Patch('profile-submissions/:id/reject')
+  rejectProfileSubmission(
+    @Param('id') id: string,
+    @Body() dto: ReviewSubmissionDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.adminService.rejectProfileSubmission(
+      id,
+      req.user!.id,
+      dto.adminNote,
+    );
   }
 }
