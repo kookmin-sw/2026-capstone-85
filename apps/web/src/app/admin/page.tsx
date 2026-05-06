@@ -8,6 +8,7 @@ import {
   fetchAdminDashboard,
   type AdminDashboard,
 } from "@/components/admin/admin-demo-data";
+import styles from "@/components/admin/admin.module.css";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -42,12 +43,12 @@ export default function AdminDashboardPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-sm text-gray-500">대시보드를 불러오는 중입니다.</div>;
+    return <div className={styles.loadingText}>대시보드를 불러오는 중입니다.</div>;
   }
 
   if (error || !dashboard) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className={styles.messageError}>
         {error || "대시보드를 불러오지 못했습니다."}
       </div>
     );
@@ -69,20 +70,17 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="grid gap-6">
-      <section className="grid gap-4 lg:grid-cols-4">
+    <div className={styles.dashboardStack}>
+      <section className={styles.statsGrid}>
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <article
-              key={card.label}
-              className="rounded-lg border border-[var(--app-line)] bg-white p-5"
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-500">{card.label}</p>
-                <Icon size={18} className="text-[var(--proto-brand)]" />
+            <article key={card.label} className={styles.metricCard}>
+              <div className={styles.metricHeader}>
+                <p className={styles.metricLabel}>{card.label}</p>
+                <Icon size={18} className={styles.metricIcon} />
               </div>
-              <p className="mt-3 text-3xl font-bold">
+              <p className={styles.metricValue}>
                 {card.value.toLocaleString("ko-KR")}
               </p>
             </article>
@@ -90,75 +88,73 @@ export default function AdminDashboardPage() {
         })}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-lg border border-[var(--app-line)] bg-white">
-          <div className="flex items-center justify-between border-b border-[var(--app-line)] px-5 py-4">
-            <h2 className="text-sm font-bold">최근 등록된 공고</h2>
+      <section className={styles.dashboardPanels}>
+        <div className={styles.tablePanel}>
+          <div className={styles.panelHeader}>
+            <h2 className={styles.panelTitle}>최근 등록된 공고</h2>
             <Link
               href="/admin/jobs"
-              className="text-xs font-semibold text-[var(--proto-brand)]"
+              className={styles.brandLink}
             >
               전체 보기
             </Link>
           </div>
-          <div className="divide-y divide-[var(--app-line)]">
+          <div className={styles.list}>
             {dashboard.recentJobs.length ? (
               dashboard.recentJobs.map((job) => (
                 <Link
                   key={job.id}
                   href={`/admin/jobs/${job.id}`}
-                  className="grid gap-1 px-5 py-3 hover:bg-gray-50"
+                  className={styles.listItem}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="truncate text-sm font-semibold">{job.title}</p>
+                  <div className={styles.listRowHeader}>
+                    <p className={styles.listTitle}>{job.title}</p>
                     <JobStatusBadge status={job.status} />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className={styles.listMeta}>
                     {job.companyName} · {formatDate(job.createdAt)}
                   </p>
                 </Link>
               ))
             ) : (
-              <p className="px-5 py-8 text-center text-sm text-gray-400">
+              <p className={styles.emptyCell}>
                 등록된 공고가 없습니다.
               </p>
             )}
           </div>
         </div>
 
-        <div className="rounded-lg border border-[var(--app-line)] bg-white">
-          <div className="flex items-center justify-between border-b border-[var(--app-line)] px-5 py-4">
-            <h2 className="text-sm font-bold">최근 등록된 회사</h2>
+        <div className={styles.tablePanel}>
+          <div className={styles.panelHeader}>
+            <h2 className={styles.panelTitle}>최근 등록된 회사</h2>
             <Link
               href="/admin/companies"
-              className="text-xs font-semibold text-[var(--proto-brand)]"
+              className={styles.brandLink}
             >
               전체 보기
             </Link>
           </div>
-          <div className="divide-y divide-[var(--app-line)]">
+          <div className={styles.list}>
             {dashboard.recentCompanies.length ? (
               dashboard.recentCompanies.map((company) => (
                 <Link
                   key={company.id}
                   href={`/admin/companies/${company.id}`}
-                  className="grid gap-1 px-5 py-3 hover:bg-gray-50"
+                  className={styles.listItem}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="truncate text-sm font-semibold">
-                      {company.name}
-                    </p>
-                    <span className="text-xs font-semibold text-gray-500">
+                  <div className={styles.listRowHeader}>
+                    <p className={styles.listTitle}>{company.name}</p>
+                    <span className={styles.inlineStat}>
                       공고 {company.jobCount}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className={styles.listMeta}>
                     {company.type} · {formatDate(company.createdAt)}
                   </p>
                 </Link>
               ))
             ) : (
-              <p className="px-5 py-8 text-center text-sm text-gray-400">
+              <p className={styles.emptyCell}>
                 등록된 회사가 없습니다.
               </p>
             )}

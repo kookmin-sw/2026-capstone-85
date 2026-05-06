@@ -3,17 +3,19 @@ import {
   userRoleLabels,
   type JobStatus,
 } from "@/components/admin/admin-demo-data";
+import { cn } from "@/lib/utils";
+import styles from "./admin.module.css";
 
 const jobStatusClasses: Record<JobStatus, string> = {
-  OPEN: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  CLOSED: "border-gray-200 bg-gray-50 text-gray-600",
-  DRAFT: "border-amber-200 bg-amber-50 text-amber-700",
+  OPEN: styles.statusOpen,
+  CLOSED: styles.statusClosed,
+  DRAFT: styles.statusDraft,
 };
 
 export function JobStatusBadge({ status }: { status: JobStatus }) {
   return (
     <span
-      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ${jobStatusClasses[status]}`}
+      className={cn(styles.statusBadge, jobStatusClasses[status])}
     >
       {jobStatusLabels[status]}
     </span>
@@ -22,7 +24,7 @@ export function JobStatusBadge({ status }: { status: JobStatus }) {
 
 export function RoleBadge({ role }: { role: string }) {
   return (
-    <span className="inline-flex items-center rounded-md border border-gray-200 bg-white px-2 py-0.5 text-xs font-semibold text-gray-700">
+    <span className={styles.roleBadge}>
       {userRoleLabels[role] ?? role}
     </span>
   );

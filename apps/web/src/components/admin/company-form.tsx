@@ -12,7 +12,8 @@ import {
   type AdminCompanyType,
   companyTypeLabels,
 } from "@/components/admin/admin-demo-data";
-import { adminInputClass } from "@/components/admin/admin-ui";
+import { cn } from "@/lib/utils";
+import styles from "./admin.module.css";
 
 type CompanyFormState = {
   name: string;
@@ -147,24 +148,24 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
   }
 
   if (loading) {
-    return <div className="text-sm text-gray-500">회사 정보를 불러오는 중입니다.</div>;
+    return <div className={styles.loadingText}>회사 정보를 불러오는 중입니다.</div>;
   }
 
   return (
-    <form className="grid gap-6" onSubmit={submit}>
-      <div className="flex items-center justify-between">
+    <form className={styles.form} onSubmit={submit}>
+      <div className={styles.pageHeader}>
         <div>
-          <h2 className="text-xl font-bold">
+          <h2 className={styles.pageTitle}>
             {companyId ? "회사 수정" : "회사 생성"}
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className={styles.pageDescription}>
             회사 삭제와 숨김 처리는 이번 프로토타입 범위에서 제외합니다.
           </p>
         </div>
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--proto-brand)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--proto-brand-dark)] disabled:opacity-60"
+          className={styles.primaryButton}
         >
           <Save size={16} />
           {saving ? "저장 중" : "저장"}
@@ -172,19 +173,19 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
       </div>
 
       {message && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className={styles.messageError}>
           {message}
         </div>
       )}
 
-      <section className="grid gap-5 rounded-lg border border-[var(--app-line)] bg-white p-5">
-        <div className="grid gap-4 lg:grid-cols-2">
+      <section className={styles.formCard}>
+        <div className={styles.formGridTwo}>
           <Field label="회사명">
             <input
               required
               value={form.name}
               onChange={(event) => update("name", event.target.value)}
-              className={adminInputClass}
+              className={styles.input}
             />
           </Field>
           <Field label="회사 유형">
@@ -193,7 +194,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
               onChange={(event) =>
                 update("type", event.target.value as AdminCompanyType)
               }
-              className={adminInputClass}
+              className={styles.select}
             >
               {COMPANY_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -206,7 +207,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
             <input
               value={form.websiteUrl}
               onChange={(event) => update("websiteUrl", event.target.value)}
-              className={adminInputClass}
+              className={styles.input}
               placeholder="https://example.com"
             />
           </Field>
@@ -214,7 +215,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
             <input
               value={form.logoUrl}
               onChange={(event) => update("logoUrl", event.target.value)}
-              className={adminInputClass}
+              className={styles.input}
               placeholder="/company-logos/example.png"
             />
           </Field>
@@ -222,14 +223,14 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
             <input
               value={form.businessNumber}
               onChange={(event) => update("businessNumber", event.target.value)}
-              className={adminInputClass}
+              className={styles.input}
             />
           </Field>
           <Field label="태그">
             <input
               value={form.tags}
               onChange={(event) => update("tags", event.target.value)}
-              className={adminInputClass}
+              className={styles.input}
               placeholder="감사, 수습, Big4"
             />
           </Field>
@@ -239,7 +240,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
           <textarea
             value={form.description}
             onChange={(event) => update("description", event.target.value)}
-            className={`${adminInputClass} min-h-36`}
+            className={cn(styles.textarea, styles.textareaMedium)}
           />
         </Field>
 
@@ -247,20 +248,20 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
           <textarea
             value={form.externalLinks}
             onChange={(event) => update("externalLinks", event.target.value)}
-            className={`${adminInputClass} min-h-24`}
+            className={cn(styles.textarea, styles.textareaShort)}
             placeholder="한 줄에 하나씩 입력"
           />
         </Field>
       </section>
 
-      <section className="grid gap-4 rounded-lg border border-[var(--app-line)] bg-white p-5 lg:grid-cols-4">
+      <section className={cn(styles.formCard, styles.formGridFour)}>
         <Field label="직원 수">
           <input
             type="number"
             min={0}
             value={form.employeeCount}
             onChange={(event) => update("employeeCount", event.target.value)}
-            className={adminInputClass}
+            className={styles.input}
           />
         </Field>
         <Field label="평균연봉(만원)">
@@ -269,7 +270,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
             min={0}
             value={form.averageSalary}
             onChange={(event) => update("averageSalary", event.target.value)}
-            className={adminInputClass}
+            className={styles.input}
           />
         </Field>
         <Field label="설립연도">
@@ -279,7 +280,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
             max={2100}
             value={form.foundedYear}
             onChange={(event) => update("foundedYear", event.target.value)}
-            className={adminInputClass}
+            className={styles.input}
           />
         </Field>
         <Field label="최근 퇴사율(%)">
@@ -292,7 +293,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
             onChange={(event) =>
               update("recentAttritionRate", event.target.value)
             }
-            className={adminInputClass}
+            className={styles.input}
           />
         </Field>
       </section>
@@ -308,7 +309,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-semibold text-gray-700">
+    <label className={styles.field}>
       {label}
       {children}
     </label>

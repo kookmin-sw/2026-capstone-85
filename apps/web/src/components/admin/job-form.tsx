@@ -35,7 +35,8 @@ import {
   kicpaLabels,
   traineeLabels,
 } from "@/components/admin/admin-demo-data";
-import { adminInputClass } from "@/components/admin/admin-ui";
+import { cn } from "@/lib/utils";
+import styles from "./admin.module.css";
 
 const JOB_STATUSES = ["OPEN", "CLOSED", "DRAFT"] as const;
 
@@ -223,24 +224,24 @@ export function JobForm({ jobId }: { jobId?: string }) {
   }
 
   if (loading) {
-    return <div className="text-sm text-gray-500">공고 정보를 불러오는 중입니다.</div>;
+    return <div className={styles.loadingText}>공고 정보를 불러오는 중입니다.</div>;
   }
 
   return (
-    <form className="grid gap-6" onSubmit={submit}>
-      <div className="flex items-center justify-between">
+    <form className={styles.form} onSubmit={submit}>
+      <div className={styles.pageHeader}>
         <div>
-          <h2 className="text-xl font-bold">
+          <h2 className={styles.pageTitle}>
             {jobId ? "공고 수정" : "공고 생성"}
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className={styles.pageDescription}>
             공개 공고 화면과 충돌하지 않도록 기존 enum과 source를 그대로 사용합니다.
           </p>
         </div>
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--proto-brand)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--proto-brand-dark)] disabled:opacity-60"
+          className={styles.primaryButton}
         >
           <Save size={16} />
           {saving ? "저장 중" : "저장"}
@@ -248,19 +249,19 @@ export function JobForm({ jobId }: { jobId?: string }) {
       </div>
 
       {message && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className={styles.messageError}>
           {message}
         </div>
       )}
 
-      <section className="grid gap-5 rounded-lg border border-[var(--app-line)] bg-white p-5">
-        <div className="grid gap-4 lg:grid-cols-2">
+      <section className={styles.formCard}>
+        <div className={styles.formGridTwo}>
           <Field label="공고 제목">
             <input
               required
               value={form.title}
               onChange={(event) => update("title", event.target.value)}
-              className={adminInputClass}
+              className={styles.input}
             />
           </Field>
           <Field label="원문 URL">
@@ -268,7 +269,7 @@ export function JobForm({ jobId }: { jobId?: string }) {
               required
               value={form.originalUrl}
               onChange={(event) => update("originalUrl", event.target.value)}
-              className={adminInputClass}
+              className={styles.input}
               placeholder="https://example.com/jobs/..."
             />
           </Field>
@@ -277,7 +278,7 @@ export function JobForm({ jobId }: { jobId?: string }) {
               required
               value={form.companyId}
               onChange={(event) => changeCompany(event.target.value)}
-              className={adminInputClass}
+              className={styles.select}
             >
               {companies.map((company) => (
                 <option key={company.id} value={company.id}>
@@ -291,7 +292,7 @@ export function JobForm({ jobId }: { jobId?: string }) {
               required
               value={form.sourceId}
               onChange={(event) => update("sourceId", event.target.value)}
-              className={adminInputClass}
+              className={styles.select}
             >
               {sources.map((source) => (
                 <option key={source.id} value={source.id}>
@@ -307,12 +308,12 @@ export function JobForm({ jobId }: { jobId?: string }) {
             required
             value={form.description}
             onChange={(event) => update("description", event.target.value)}
-            className={`${adminInputClass} min-h-40`}
+            className={cn(styles.textarea, styles.textareaTall)}
           />
         </Field>
       </section>
 
-      <section className="grid gap-4 rounded-lg border border-[var(--app-line)] bg-white p-5 lg:grid-cols-4">
+      <section className={cn(styles.formCard, styles.formGridFour)}>
         <SelectField
           label="상태"
           value={form.status}
@@ -377,7 +378,7 @@ export function JobForm({ jobId }: { jobId?: string }) {
           <input
             value={form.location}
             onChange={(event) => update("location", event.target.value)}
-            className={adminInputClass}
+            className={styles.input}
             placeholder="서울 강남구"
           />
         </Field>
@@ -387,7 +388,7 @@ export function JobForm({ jobId }: { jobId?: string }) {
             min={0}
             value={form.minExperienceYears}
             onChange={(event) => update("minExperienceYears", event.target.value)}
-            className={adminInputClass}
+            className={styles.input}
           />
         </Field>
         <Field label="최대 경력">
@@ -396,7 +397,7 @@ export function JobForm({ jobId }: { jobId?: string }) {
             min={0}
             value={form.maxExperienceYears}
             onChange={(event) => update("maxExperienceYears", event.target.value)}
-            className={adminInputClass}
+            className={styles.input}
           />
         </Field>
         <SelectField
@@ -412,7 +413,7 @@ export function JobForm({ jobId }: { jobId?: string }) {
             value={form.deadline}
             disabled={form.deadlineType !== "FIXED_DATE"}
             onChange={(event) => update("deadline", event.target.value)}
-            className={`${adminInputClass} disabled:bg-gray-50 disabled:text-gray-400`}
+            className={styles.input}
           />
         </Field>
       </section>
@@ -428,7 +429,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-semibold text-gray-700">
+    <label className={styles.field}>
       {label}
       {children}
     </label>
@@ -453,7 +454,7 @@ function SelectField({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={adminInputClass}
+        className={styles.select}
       >
         {options.map((option) => (
           <option key={option} value={option}>
