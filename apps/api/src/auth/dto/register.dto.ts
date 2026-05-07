@@ -44,10 +44,4 @@ export class RegisterDto {
   @IsOptional()
   @IsEnum(CompanyType)
   companyType?: CompanyType;
-
-  @ApiPropertyOptional({ example: '/company-logos/hanbit-accounting.png' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  logoUrl?: string;
 }
