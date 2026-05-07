@@ -44,7 +44,7 @@ export default function CompaniesPage() {
   const [companyTotal, setCompanyTotal] = useState(0);
   const [companyOpenTotal, setCompanyOpenTotal] = useState(0);
   const [companyNoJobTotal, setCompanyNoJobTotal] = useState(0);
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(true);
 
   const companyParams = useMemo(() => {
     const next = new URLSearchParams({ sort: companySort });

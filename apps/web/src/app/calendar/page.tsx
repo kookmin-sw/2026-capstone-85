@@ -118,7 +118,7 @@ export default function CalendarPage() {
   const [calendarRanges, setCalendarRanges] = useState<JobCalendarRange[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(true);
   const { filters, setFilters, ready } = useJobFilterState();
 
   const calendarRange = useMemo(
