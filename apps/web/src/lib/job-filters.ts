@@ -1,6 +1,7 @@
 import type { JobFilterPreference } from "@cpa/shared";
 
 export type JobFilterState = {
+  quick: string;
   search: string;
   jobFamily: string;
   companyType: string;
@@ -9,8 +10,10 @@ export type JobFilterState = {
   employmentType: string;
   kicpaCondition: string;
   deadlineType: string;
+  deadline: string;
   practicalTrainingInstitution: string;
   deadlineWithinDays: string;
+  careerLevel: string;
   minExperienceYears: string;
   maxExperienceYears: string;
   minCompanyAgeYears: string;
@@ -20,6 +23,7 @@ export type JobFilterState = {
 };
 
 export const defaultJobFilters: JobFilterState = {
+  quick: "",
   search: "",
   jobFamily: "",
   companyType: "",
@@ -28,8 +32,10 @@ export const defaultJobFilters: JobFilterState = {
   employmentType: "",
   kicpaCondition: "",
   deadlineType: "",
+  deadline: "",
   practicalTrainingInstitution: "",
   deadlineWithinDays: "",
+  careerLevel: "",
   minExperienceYears: "",
   maxExperienceYears: "",
   minCompanyAgeYears: "",
@@ -38,32 +44,48 @@ export const defaultJobFilters: JobFilterState = {
   sort: "deadlineAsc",
 };
 
-export type QuickJobFilterId = "trainee" | "entry" | "career" | "urgent";
+export type QuickJobFilterId =
+  | "trainee"
+  | "entry"
+  | "experienced"
+  | "deadlineSoon";
 
-export const quickJobFilters: {
+export type QuickJobFilter = {
   id: QuickJobFilterId;
   label: string;
   values: Partial<JobFilterState>;
-}[] = [
+  aliases: Record<string, string>;
+};
+
+export const quickJobFilters: QuickJobFilter[] = [
   {
     id: "trainee",
     label: "실무수습 가능",
     values: { traineeStatus: "AVAILABLE" },
+    aliases: { traineeAvailable: "possible" },
   },
-  { id: "entry", label: "신입·인턴", values: { maxExperienceYears: "0" } },
   {
-    id: "career",
+    id: "entry",
+    label: "신입 가능",
+    values: { careerLevel: "entry" },
+    aliases: { careerLevel: "entry" },
+  },
+  {
+    id: "experienced",
     label: "경력 이직",
-    values: { minExperienceYears: "1" },
+    values: { careerLevel: "junior,experienced" },
+    aliases: { careerLevel: "junior,experienced" },
   },
   {
-    id: "urgent",
+    id: "deadlineSoon",
     label: "마감 임박",
     values: {
+      deadline: "soon",
       deadlineType: "FIXED_DATE",
       deadlineWithinDays: "7",
       sort: "deadlineAsc",
     },
+    aliases: { deadline: "soon" },
   },
 ];
 
@@ -77,6 +99,7 @@ const stringParamKeys = [
   "deadlineType",
   "practicalTrainingInstitution",
   "deadlineWithinDays",
+  "careerLevel",
   "minExperienceYears",
   "maxExperienceYears",
   "minCompanyAgeYears",
@@ -87,6 +110,9 @@ const stringParamKeys = [
 
 export const jobFilterQueryKeys = new Set<string>([
   ...stringParamKeys,
+  "quick",
+  "traineeAvailable",
+  "deadline",
   "locations",
   "location",
 ]);
@@ -105,19 +131,44 @@ export function buildJobFilterParams(filters: JobFilterState) {
 }
 
 export function jobFiltersToQueryString(filters: JobFilterState) {
-  return buildJobFilterParams(filters).toString();
+  return buildJobUrlParams(filters).toString();
 }
 
 export function parseJobFiltersFromParams(params: URLSearchParams) {
-  const filters: JobFilterState = { ...defaultJobFilters };
-  let hasAnyQuery = false;
+  const quick = params.get("quick");
+  const quickFilter = quickJobFilters.find((item) => item.id === quick);
+  const filters: JobFilterState = quickFilter
+    ? quickFilterState(quickFilter)
+    : { ...defaultJobFilters };
+  let hasAnyQuery = Boolean(quickFilter);
 
-  for (const key of stringParamKeys) {
-    const value = params.get(key);
-    if (value !== null) {
-      filters[key] = value;
-      hasAnyQuery = true;
+  if (!quickFilter) {
+    for (const key of stringParamKeys) {
+      const value = params.get(key);
+      if (value !== null) {
+        filters[key] = value;
+        hasAnyQuery = true;
+      }
     }
+  }
+
+  if (params.get("traineeAvailable") === "possible") {
+    filters.traineeStatus = "AVAILABLE";
+    hasAnyQuery = true;
+  }
+
+  const careerLevel = normalizeCommaParam(params.get("careerLevel"));
+  if (careerLevel) {
+    filters.careerLevel = careerLevel;
+    hasAnyQuery = true;
+  }
+
+  if (params.get("deadline") === "soon") {
+    filters.deadline = "soon";
+    filters.deadlineType = "FIXED_DATE";
+    filters.deadlineWithinDays = filters.deadlineWithinDays || "7";
+    filters.sort = "deadlineAsc";
+    hasAnyQuery = true;
   }
 
   const locations = [
@@ -166,11 +217,38 @@ export function jobFiltersToPreference(filters: JobFilterState) {
   return preference;
 }
 
-export function quickFilterState(values: Partial<JobFilterState>) {
+export function quickFilterState(filter: QuickJobFilter) {
   return {
     ...defaultJobFilters,
-    ...values,
-    selectedLocations: values.selectedLocations ?? [],
-    sort: values.sort ?? defaultJobFilters.sort,
+    ...filter.values,
+    quick: filter.id,
+    selectedLocations: filter.values.selectedLocations ?? [],
+    sort: filter.values.sort ?? defaultJobFilters.sort,
   };
+}
+
+export function buildJobUrlParams(filters: JobFilterState) {
+  const quickFilter = quickJobFilters.find((item) => item.id === filters.quick);
+  if (quickFilter) {
+    const next = new URLSearchParams({ quick: quickFilter.id });
+    for (const [key, value] of Object.entries(quickFilter.aliases)) {
+      next.set(key, value);
+    }
+    if (filters.sort) next.set("sort", filters.sort);
+    return next;
+  }
+
+  const next = buildJobFilterParams(filters);
+  if (filters.deadline) next.set("deadline", filters.deadline);
+  return next;
+}
+
+function normalizeCommaParam(value: string | null) {
+  if (!value) return "";
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .filter((item, index, all) => all.indexOf(item) === index)
+    .join(",");
 }

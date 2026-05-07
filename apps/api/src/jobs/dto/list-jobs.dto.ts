@@ -34,6 +34,19 @@ const toOptionalStringArray = (value: unknown) => {
     .filter(Boolean);
 };
 
+const careerLevels = ['entry', 'junior', 'experienced'] as const;
+
+const toOptionalCommaStringArray = (value: unknown) => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const values = Array.isArray(value) ? value : [value];
+  return values
+    .filter((item): item is string => typeof item === 'string')
+    .flatMap((item) => item.split(','))
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .filter((item, index, all) => all.indexOf(item) === index);
+};
+
 export class ListJobsDto {
   @ApiPropertyOptional({ example: '감사' })
   @IsOptional()
@@ -94,6 +107,18 @@ export class ListJobsDto {
   @Min(1)
   @Max(365)
   deadlineWithinDays?: number;
+
+  @ApiPropertyOptional({
+    enum: careerLevels,
+    isArray: true,
+    example: ['junior', 'experienced'],
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    toOptionalCommaStringArray(value),
+  )
+  @IsIn(careerLevels, { each: true })
+  careerLevel?: Array<(typeof careerLevels)[number]>;
 
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()

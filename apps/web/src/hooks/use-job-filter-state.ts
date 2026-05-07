@@ -12,34 +12,50 @@ import {
 } from "@/lib/job-filters";
 
 export function useJobFilterState() {
-  const [initialUrl] = useState(readInitialUrlFilters);
-  const [filters, setFilters] = useState<JobFilterState>(initialUrl.filters);
-  const [ready, setReady] = useState(initialUrl.hasAnyQuery);
+  const [filters, setFilters] = useState<JobFilterState>(defaultJobFilters);
+  const [ready, setReady] = useState(false);
   const [canPersist, setCanPersist] = useState(false);
   const lastSaved = useRef("");
 
   useEffect(() => {
     let ignore = false;
-    fetchJobFilterPreference()
-      .then((data) => {
+    queueMicrotask(() => {
+      const urlFilters = readCurrentUrlFilters();
+      if (urlFilters.hasAnyQuery) {
         if (ignore) return;
-        setCanPersist(data.authenticated);
-        if (!initialUrl.hasAnyQuery) {
+        setFilters(urlFilters.filters);
+        setReady(true);
+        return;
+      }
+
+      fetchJobFilterPreference()
+        .then((data) => {
+          if (ignore) return;
+          setCanPersist(data.authenticated);
           const restored = normalizeJobFilterPreference(data.filter);
           setFilters(restored);
           setReady(true);
-        }
-      })
-      .catch(() => {
-        if (ignore) return;
-        setCanPersist(false);
-        if (!initialUrl.hasAnyQuery) setReady(true);
-      });
+        })
+        .catch(() => {
+          if (ignore) return;
+          setCanPersist(false);
+          setReady(true);
+        });
+    });
+
+    const syncFromHistory = () => {
+      const urlFilters = readCurrentUrlFilters();
+      if (!urlFilters.hasAnyQuery) return;
+      setFilters(urlFilters.filters);
+      setReady(true);
+    };
+    window.addEventListener("popstate", syncFromHistory);
 
     return () => {
       ignore = true;
+      window.removeEventListener("popstate", syncFromHistory);
     };
-  }, [initialUrl.hasAnyQuery]);
+  }, []);
 
   const queryString = useMemo(() => jobFiltersToQueryString(filters), [filters]);
 
@@ -71,7 +87,7 @@ export function useJobFilterState() {
   }, [canPersist, filters, ready]);
 
   const updateFilters = useCallback((next: JobFilterState) => {
-    setFilters(next);
+    setFilters({ ...next, quick: "" });
   }, []);
 
   return {
@@ -83,7 +99,7 @@ export function useJobFilterState() {
   };
 }
 
-function readInitialUrlFilters() {
+function readCurrentUrlFilters() {
   if (typeof window === "undefined") {
     return { filters: defaultJobFilters, hasAnyQuery: false };
   }

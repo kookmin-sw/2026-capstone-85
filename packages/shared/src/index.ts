@@ -148,6 +148,7 @@ export type JobFilterPreference = {
   deadlineType?: string;
   practicalTrainingInstitution?: string;
   deadlineWithinDays?: string;
+  careerLevel?: string;
   minExperienceYears?: string;
   maxExperienceYears?: string;
   minCompanyAgeYears?: string;

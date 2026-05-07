@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { SiteNav } from '@/components/site-nav';
 import { ActionLink } from '@/components/ui/action-button';
 import { IconTile } from '@/components/ui/icon-tile';
-import { buildJobFilterParams, quickJobFilters, quickFilterState, type QuickJobFilterId } from '@/lib/job-filters';
+import { buildJobUrlParams, quickJobFilters, quickFilterState, type QuickJobFilterId } from '@/lib/job-filters';
 import styles from './page.module.css';
 
 const problemCards: Array<{
@@ -77,8 +77,8 @@ const stats: Array<{ icon: LucideIcon; value: string; label: string }> = [
 const quickFilterIcons: Record<QuickJobFilterId, LucideIcon> = {
   trainee: GraduationCap,
   entry: UserRound,
-  career: BriefcaseBusiness,
-  urgent: AlarmClock,
+  experienced: BriefcaseBusiness,
+  deadlineSoon: AlarmClock,
 };
 
 export default function Home() {
@@ -128,7 +128,7 @@ export default function Home() {
           </div>
           <div className={styles.quickGrid}>
             {quickJobFilters.map((item) => {
-              const params = buildJobFilterParams(quickFilterState(item.values));
+              const params = buildJobUrlParams(quickFilterState(item));
               return (
                 <Link className={styles.quickCard} href={`/jobs?${params.toString()}`} key={item.label}>
                   <IconTile icon={quickFilterIcons[item.id]} size="lg" />

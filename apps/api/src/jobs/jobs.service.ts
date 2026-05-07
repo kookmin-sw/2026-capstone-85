@@ -246,7 +246,16 @@ export class JobsService {
       const end = new Date(today);
       end.setDate(today.getDate() + query.deadlineWithinDays);
       end.setHours(23, 59, 59, 999);
-      and.push({ deadline: { gte: today, lte: end } });
+      and.push({
+        deadlineType: DeadlineType.FIXED_DATE,
+        deadline: { gte: today, lte: end },
+      });
+    }
+
+    if (query.careerLevel?.length) {
+      and.push({
+        OR: query.careerLevel.map((level) => this.buildCareerLevelWhere(level)),
+      });
     }
 
     if (
@@ -274,6 +283,29 @@ export class JobsService {
     }
 
     return where;
+  }
+
+  private buildCareerLevelWhere(
+    level: NonNullable<ListJobsDto['careerLevel']>[number],
+  ): Prisma.JobWhereInput {
+    const range =
+      level === 'entry'
+        ? { lower: 0, upper: 0 }
+        : level === 'junior'
+          ? { lower: 1, upper: 3 }
+          : { lower: 4, upper: 50 };
+
+    return {
+      AND: [
+        { minExperienceYears: { lte: range.upper } },
+        {
+          OR: [
+            { maxExperienceYears: { gte: range.lower } },
+            { maxExperienceYears: null },
+          ],
+        },
+      ],
+    };
   }
 
   private buildCompanyWhere(query: ListJobsDto): Prisma.CompanyWhereInput {
