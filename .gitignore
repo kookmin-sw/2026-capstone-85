@@ -9,6 +9,8 @@ coverage/
 apps/web/.next/
 apps/api/dist/
 packages/shared/dist/
+apps/web/public/uploads/company-logos/*
+!apps/web/public/uploads/company-logos/.gitkeep
 
 .env
 .env.*

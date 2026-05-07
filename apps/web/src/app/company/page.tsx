@@ -21,6 +21,7 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   ClipboardList,
+  ImageIcon,
   PencilLine,
   Send,
   Trash2,
@@ -40,6 +41,8 @@ import {
   fetchCompanyJobSubmissions,
   submitCompanyJob,
   submitCompanyJobEdit,
+  updateCompanyLogo,
+  uploadCompanyLogo,
   updateCompanyJobSubmission,
 } from "@/lib/api";
 import {
@@ -69,6 +72,10 @@ type JobForm = {
   deadline: string;
 };
 
+type ProfileImageForm = {
+  logoUrl: string;
+};
+
 const emptyJobForm: JobForm = {
   title: "",
   description: "",
@@ -85,6 +92,10 @@ const emptyJobForm: JobForm = {
   deadline: "",
 };
 
+const emptyProfileImageForm: ProfileImageForm = {
+  logoUrl: "",
+};
+
 export default function CompanyPage() {
   const [dashboard, setDashboard] = useState<CompanyDashboardResponse | null>(
     null,
@@ -92,6 +103,10 @@ export default function CompanyPage() {
   const [managedJobs, setManagedJobs] = useState<CompanyManagedJobItem[]>([]);
   const [jobSubmissions, setJobSubmissions] = useState<JobSubmissionItem[]>([]);
   const [jobForm, setJobForm] = useState<JobForm>(emptyJobForm);
+  const [profileImageForm, setProfileImageForm] =
+    useState<ProfileImageForm>(emptyProfileImageForm);
+  const [profileImageFileName, setProfileImageFileName] = useState("");
+  const [profileImageUploading, setProfileImageUploading] = useState(false);
   const [editingJob, setEditingJob] = useState<CompanyManagedJobItem | null>(
     null,
   );
@@ -112,6 +127,7 @@ export default function CompanyPage() {
         fetchCompanyJobSubmissions(),
       ]);
       setDashboard(dashboardData);
+      setProfileImageForm(toProfileImageForm(dashboardData));
       setManagedJobs(jobsData.items);
       setJobSubmissions(submissionData.items);
     } catch (error) {
@@ -133,6 +149,7 @@ export default function CompanyPage() {
       .then(([dashboardData, jobsData, submissionData]) => {
         if (ignore) return;
         setDashboard(dashboardData);
+        setProfileImageForm(toProfileImageForm(dashboardData));
         setManagedJobs(jobsData.items);
         setJobSubmissions(submissionData.items);
       })
@@ -174,6 +191,52 @@ export default function CompanyPage() {
       setMessage(
         error instanceof Error ? error.message : "요청에 실패했습니다.",
       );
+    }
+  }
+
+  async function submitProfileImage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!dashboard) return;
+
+    setMessage("");
+    const logoUrl = profileImageForm.logoUrl.trim();
+    if (!logoUrl) {
+      setMessage("기업 이미지 파일을 업로드해 주세요.");
+      return;
+    }
+    if (logoUrl === (dashboard.company.logoUrl ?? "")) {
+      setMessage("변경할 기업 이미지 파일을 업로드해 주세요.");
+      return;
+    }
+
+    try {
+      await updateCompanyLogo(logoUrl);
+      setProfileImageFileName("");
+      setMessage("기업 이미지가 바로 변경되었습니다.");
+      await load({ quiet: true });
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "요청에 실패했습니다.",
+      );
+    }
+  }
+
+  async function uploadProfileImage(event: FormEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+
+    setProfileImageUploading(true);
+    setMessage("");
+    try {
+      const logoUrl = await uploadCompanyLogo(file);
+      setProfileImageForm({ logoUrl });
+      setProfileImageFileName(file.name);
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.",
+      );
+    } finally {
+      setProfileImageUploading(false);
     }
   }
 
@@ -306,6 +369,16 @@ export default function CompanyPage() {
             />
           </section>
 
+          <ProfileImageSettings
+            companyName={company.name}
+            currentLogoUrl={company.logoUrl}
+            form={profileImageForm}
+            fileName={profileImageFileName}
+            uploading={profileImageUploading}
+            onFileChange={uploadProfileImage}
+            onSubmit={submitProfileImage}
+          />
+
           <section className={styles.managementGrid}>
             <JobSubmissionForm
               editingJob={editingJob}
@@ -356,6 +429,93 @@ export default function CompanyPage() {
         </div>
       </main>
     </>
+  );
+}
+
+function ProfileImageSettings({
+  companyName,
+  currentLogoUrl,
+  form,
+  fileName,
+  uploading,
+  onFileChange,
+  onSubmit,
+}: {
+  companyName: string;
+  currentLogoUrl: string | null;
+  form: ProfileImageForm;
+  fileName: string;
+  uploading: boolean;
+  onFileChange: (event: FormEvent<HTMLInputElement>) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <form className={styles.form} onSubmit={onSubmit}>
+      <SectionTitle
+        icon={<ImageIcon size={19} />}
+        title="기업 이미지 설정"
+        aside="즉시 반영"
+      />
+      <div className={styles.profileImageGrid}>
+        <LogoPreview
+          label="현재 공개 이미지"
+          logoUrl={currentLogoUrl}
+          name={companyName}
+        />
+        <LogoPreview
+          label="새 이미지 미리보기"
+          logoUrl={form.logoUrl}
+          name={companyName}
+        />
+      </div>
+      <Field label="기업 이미지 파일">
+        <input
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          className="form-input"
+          disabled={uploading}
+          type="file"
+          onChange={onFileChange}
+        />
+      </Field>
+      {(fileName || form.logoUrl !== currentLogoUrl) && (
+        <p className={styles.uploadHint}>
+          {fileName || "새 기업 이미지가 업로드되었습니다."}
+        </p>
+      )}
+      <ActionButton
+        type="submit"
+        className={styles.fitAction}
+        disabled={uploading}
+        iconStart={<Send size={16} />}
+      >
+        {uploading ? "이미지 업로드 중" : "이미지 바로 변경"}
+      </ActionButton>
+    </form>
+  );
+}
+
+function LogoPreview({
+  label,
+  logoUrl,
+  name,
+}: {
+  label: string;
+  logoUrl: string | null | undefined;
+  name: string;
+}) {
+  const src = logoUrl?.trim();
+  return (
+    <div className={styles.logoPreview}>
+      <p className={styles.logoPreviewLabel}>{label}</p>
+      <div className={styles.logoPreviewFrame}>
+        {src ? (
+          // eslint-disable-next-line @next/next/no-img-element -- company image URLs are user-provided local or external paths.
+          <img src={src} alt={`${name} 이미지`} />
+        ) : (
+          <span>{name.slice(0, 2)}</span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -968,6 +1128,14 @@ function toSubmissionForm(submission: JobSubmissionItem): JobForm {
     location: submission.location ?? "",
     deadlineType: submission.deadlineType,
     deadline: submission.deadline ? submission.deadline.slice(0, 10) : "",
+  };
+}
+
+function toProfileImageForm(
+  dashboard: CompanyDashboardResponse,
+): ProfileImageForm {
+  return {
+    logoUrl: dashboard.company.logoUrl ?? "",
   };
 }
 
