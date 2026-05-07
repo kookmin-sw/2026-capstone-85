@@ -12,9 +12,10 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
+import { EmployeeTrendChart } from "./_components/employee-trend-chart";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteNav } from "@/components/site-nav";
 import { actionButtonClassName } from "@/components/ui/action-button";
 import { fetchCompanyDetail } from "@/lib/api";
@@ -97,10 +98,6 @@ export default function CompanyDetailPage() {
 
 function CompanyDetail({ company }: { company: CompanyDetailItem }) {
   const initial = company.name.charAt(0);
-
-  const maxTotal = useMemo(() => {
-    return Math.max(1, ...company.employeeTrend.map((point) => point.total));
-  }, [company.employeeTrend]);
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -212,39 +209,7 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
               <TrendingUp size={17} className={styles.sectionIcon} />
               직원수 추이
             </h2>
-            <div className="grid gap-3">
-              {company.employeeTrend.length ? (
-                company.employeeTrend.map((point) => (
-                  <div
-                    key={point.month}
-                    className="grid gap-3 rounded-xl border border-[var(--app-line)] bg-[#fbfbf8] p-3 text-sm md:grid-cols-[88px_1fr_190px]"
-                  >
-                    <p className="font-semibold">{point.month}</p>
-                    <div className="flex items-center">
-                      <div className="h-3 w-full overflow-hidden rounded-full bg-neutral-200">
-                        <div
-                          className={styles.trendFill}
-                          style={{
-                            width: `${Math.max(8, (point.total / maxTotal) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-xs text-[var(--app-muted)]">
-                      <span className="text-emerald-700">
-                        입사 {point.joined}명
-                      </span>
-                      <span className="text-rose-700">퇴사 {point.left}명</span>
-                      <span>총 {point.total.toLocaleString("ko-KR")}명</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="rounded-xl border border-dashed border-[var(--app-line)] bg-[#fbfbf8] p-4 text-sm text-[var(--app-muted)]">
-                  직원수 추이 데이터가 아직 없습니다.
-                </p>
-              )}
-            </div>
+            <EmployeeTrendChart data={company.employeeTrend} />
           </section>
 
           {/* Open jobs */}

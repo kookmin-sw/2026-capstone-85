@@ -15,6 +15,7 @@ import { JobGridCard } from "@/components/job-card";
 import { jobSortLabels } from "@/components/job-filter-panel";
 import { SiteNav } from "@/components/site-nav";
 import { ActionButton } from "@/components/ui/action-button";
+import { FilterSelect } from "@/components/ui/filter-select";
 import { useJobFilterState } from "@/hooks/use-job-filter-state";
 import { fetchJobCalendar, fetchJobs } from "@/lib/api";
 import { calendarDaysToMap, jobsBetween } from "@/lib/calendar-data";
@@ -579,41 +580,26 @@ export default function JobsPage() {
                     filters={filters}
                     onChange={setFilters}
                   />
-                  <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">
-                      경력 연차
-                    </h3>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs text-gray-500">최소 (년)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={filters.minExperienceYears}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            minExperienceYears: e.target.value,
-                          })
-                        }
-                        placeholder="0"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                      <label className="text-xs text-gray-500">최대 (년)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={filters.maxExperienceYears}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            maxExperienceYears: e.target.value,
-                          })
-                        }
-                        placeholder="15+"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                    </div>
-                  </div>
+                  <FilterSelect
+                    label="경력 연차"
+                    value={`${filters.minExperienceYears}~${filters.maxExperienceYears}`}
+                    options={[
+                      { label: "무관", value: "~" },
+                      { label: "신입", value: "0~1" },
+                      { label: "1~3년", value: "1~3" },
+                      { label: "3~5년", value: "3~5" },
+                      { label: "5~10년", value: "5~10" },
+                      { label: "10년+", value: "10~" },
+                    ]}
+                    onChange={(v) => {
+                      const [min, max] = v.split("~");
+                      setFilters({
+                        ...filters,
+                        minExperienceYears: min === undefined ? "" : min,
+                        maxExperienceYears: max === undefined ? "" : max,
+                      });
+                    }}
+                  />
                   <CheckboxColumn
                     title="수습 CPA 가능"
                     field="traineeStatus"
@@ -634,7 +620,7 @@ export default function JobsPage() {
           <div>
             {!loading && (
               <p className="mb-4 text-sm text-gray-500">
-                검색 결과{" "}
+                공고{" "}
                 <span className="font-bold text-gray-900">
                   {total.toLocaleString("ko-KR")}
                 </span>
