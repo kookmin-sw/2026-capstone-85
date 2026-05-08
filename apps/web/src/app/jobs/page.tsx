@@ -318,6 +318,20 @@ const TRAINEE_OPTS = [
   { value: "UNAVAILABLE", label: "불가능" },
   { value: "UNCLEAR", label: "불명확" },
 ];
+const CAREER_LEVEL_OPTS = [
+  { value: "entry", label: "신입" },
+  { value: "junior", label: "주니어 이직" },
+  { value: "experienced", label: "경력 이직" },
+];
+const EXPERIENCE_RANGE_OPTS = [
+  { label: "무관", value: "~" },
+  { label: "신입", value: "0~1" },
+  { label: "1~3년", value: "1~3" },
+  { label: "3~5년", value: "3~5" },
+  { label: "5~10년", value: "5~10" },
+  { label: "10년+", value: "10~" },
+  { label: "직접 입력", value: "custom" },
+];
 
 function CheckboxColumn({
   title,
@@ -370,13 +384,136 @@ function CheckboxColumn({
   );
 }
 
+function MultiCheckboxColumn({
+  title,
+  field,
+  options,
+  filters,
+  onChange,
+}: {
+  title: string;
+  field: keyof JobFilterState;
+  options: { value: string; label: string }[];
+  filters: JobFilterState;
+  onChange: (f: JobFilterState) => void;
+}) {
+  const selected = splitMultiValue(filters[field] as string);
+  const update = (next: string[]) => {
+    onChange({ ...filters, [field]: next.join(",") });
+  };
+
+  return (
+    <div className="min-w-[130px]">
+      <h3 className="mb-2 text-xs font-bold text-gray-800">{title}</h3>
+      <div className="flex flex-col gap-1.5">
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+          <input
+            type="checkbox"
+            checked={selected.length === 0}
+            onChange={() => update([])}
+            className="h-3.5 w-3.5 accent-[#E8457A]"
+          />
+          전체
+        </label>
+        {options.map((opt) => (
+          <label
+            key={opt.value}
+            className="flex cursor-pointer items-center gap-2 text-xs text-gray-700"
+          >
+            <input
+              type="checkbox"
+              checked={selected.includes(opt.value)}
+              onChange={() =>
+                update(
+                  selected.includes(opt.value)
+                    ? selected.filter((value) => value !== opt.value)
+                    : [...selected, opt.value],
+                )
+              }
+              className="h-3.5 w-3.5 accent-[#E8457A]"
+            />
+            {opt.label}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DeadlineSoonColumn({
+  filters,
+  onChange,
+}: {
+  filters: JobFilterState;
+  onChange: (f: JobFilterState) => void;
+}) {
+  const checked = filters.deadline === "soon";
+
+  return (
+    <div className="min-w-[120px]">
+      <h3 className="mb-2 text-xs font-bold text-gray-800">마감일</h3>
+      <div className="flex flex-col gap-1.5">
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+          <input
+            type="checkbox"
+            checked={!checked}
+            onChange={() =>
+              onChange({
+                ...filters,
+                deadline: "",
+                deadlineType: "",
+                deadlineWithinDays: "",
+              })
+            }
+            className="h-3.5 w-3.5 accent-[#E8457A]"
+          />
+          전체
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={() =>
+              onChange(
+                checked
+                  ? {
+                      ...filters,
+                      deadline: "",
+                      deadlineType: "",
+                      deadlineWithinDays: "",
+                    }
+                  : {
+                      ...filters,
+                      deadline: "soon",
+                      deadlineType: "FIXED_DATE",
+                      deadlineWithinDays: "7",
+                      sort: "deadlineAsc",
+                    },
+              )
+            }
+            className="h-3.5 w-3.5 accent-[#E8457A]"
+          />
+          마감 임박
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function splitMultiValue(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 /* ── 메인 페이지 ── */
 export default function JobsPage() {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(true);
   const [miniMonth, setMiniMonth] = useState(() => new Date());
   const [calendarDays, setCalendarDays] = useState<JobCalendarDay[]>([]);
   const [calendarLoading, setCalendarLoading] = useState(true);
@@ -466,6 +603,12 @@ export default function JobsPage() {
   // weekJobs를 urgentJobs fallback으로 활용
   const sidebarUrgentJobs =
     urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
+  const experienceRangeValue = `${filters.minExperienceYears}~${filters.maxExperienceYears}`;
+  const selectedExperienceRange = EXPERIENCE_RANGE_OPTS.some(
+    (option) => option.value === experienceRangeValue,
+  )
+    ? experienceRangeValue
+    : "custom";
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -580,28 +723,88 @@ export default function JobsPage() {
                     filters={filters}
                     onChange={setFilters}
                   />
+                  <DeadlineSoonColumn filters={filters} onChange={setFilters} />
+                  <div className="min-w-[120px]">
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      마감 기간
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs text-gray-500">
+                        N일 이내
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={filters.deadlineWithinDays}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            deadlineWithinDays: e.target.value,
+                          })
+                        }
+                        placeholder="7"
+                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
+                      />
+                    </div>
+                  </div>
+                  <MultiCheckboxColumn
+                    title="요구 연차 및 경력"
+                    field="careerLevel"
+                    options={CAREER_LEVEL_OPTS}
+                    filters={filters}
+                    onChange={setFilters}
+                  />
                   <FilterSelect
-                    label="경력 연차"
-                    value={`${filters.minExperienceYears}~${filters.maxExperienceYears}`}
-                    options={[
-                      { label: "무관", value: "~" },
-                      { label: "신입", value: "0~1" },
-                      { label: "1~3년", value: "1~3" },
-                      { label: "3~5년", value: "3~5" },
-                      { label: "5~10년", value: "5~10" },
-                      { label: "10년+", value: "10~" },
-                    ]}
-                    onChange={(v) => {
-                      const [min, max] = v.split("~");
+                    label="경력 빠른 선택"
+                    value={selectedExperienceRange}
+                    options={EXPERIENCE_RANGE_OPTS}
+                    onChange={(value) => {
+                      if (value === "custom") return;
+                      const [min = "", max = ""] = value.split("~");
                       setFilters({
                         ...filters,
-                        minExperienceYears: min === undefined ? "" : min,
-                        maxExperienceYears: max === undefined ? "" : max,
+                        minExperienceYears: min,
+                        maxExperienceYears: max,
                       });
                     }}
                   />
+                  <div className="min-w-[120px]">
+                    <h3 className="mb-2 text-xs font-bold text-gray-800">
+                      연차 직접 입력
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs text-gray-500">최소 (년)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={filters.minExperienceYears}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            minExperienceYears: e.target.value,
+                          })
+                        }
+                        placeholder="0"
+                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
+                      />
+                      <label className="text-xs text-gray-500">최대 (년)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={filters.maxExperienceYears}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            maxExperienceYears: e.target.value,
+                          })
+                        }
+                        placeholder="15+"
+                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
+                      />
+                    </div>
+                  </div>
                   <CheckboxColumn
-                    title="수습 CPA 가능"
+                    title="수습 CPA 가능 여부"
                     field="traineeStatus"
                     options={TRAINEE_OPTS}
                     filters={filters}

@@ -12,6 +12,7 @@ const stringFilterKeys = [
   'deadlineType',
   'practicalTrainingInstitution',
   'deadlineWithinDays',
+  'careerLevel',
   'minExperienceYears',
   'maxExperienceYears',
   'minCompanyAgeYears',
