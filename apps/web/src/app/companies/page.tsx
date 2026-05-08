@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { SiteNav } from "@/components/site-nav";
 import { ActionButton, ActionLink } from "@/components/ui/action-button";
+import { FilterInput, FilterSelect } from "@/components/ui/filter-select";
 import { fetchCompanies } from "@/lib/api";
 import { companyTypeLabels } from "@/lib/labels";
 import styles from "./companies-page.module.css";
@@ -109,7 +110,7 @@ export default function CompaniesPage() {
       {/* 페이지 헤더 — 배경색 통일 */}
       <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
         <div className="mx-auto max-w-7xl px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">회사 탐색</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">회사소개</h1>
           <p className="mt-1 text-sm leading-relaxed text-gray-500">
             현재 공고가 없는 회사까지 포함해 회사 프로필을 확인하세요.
           </p>
@@ -269,109 +270,79 @@ export default function CompaniesPage() {
                   </div>
 
                   {/* 태그 */}
-                  <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">
-                      태그
-                    </h3>
-                    <input
-                      value={companyTag}
-                      onChange={(e) => setCompanyTag(e.target.value)}
-                      placeholder="ESG, 감사"
-                      className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                    />
-                  </div>
+                  <FilterInput
+                    label="태그"
+                    value={companyTag}
+                    placeholder="ESG, 감사"
+                    onChange={setCompanyTag}
+                  />
 
                   {/* 직원수 */}
-                  <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">
-                      직원수 (명)
-                    </h3>
-                    <div className="flex flex-col gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        value={minEmployeeCount}
-                        onChange={(e) => setMinEmployeeCount(e.target.value)}
-                        placeholder="최소"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                      <input
-                        type="number"
-                        min={0}
-                        value={maxEmployeeCount}
-                        onChange={(e) => setMaxEmployeeCount(e.target.value)}
-                        placeholder="최대"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                    </div>
-                  </div>
+                  <FilterSelect
+                    label="직원수 (명)"
+                    value={`${minEmployeeCount}~${maxEmployeeCount}`}
+                    options={[
+                      { label: "무관", value: "~" },
+                      { label: "~50명", value: "~50" },
+                      { label: "50~200명", value: "50~200" },
+                      { label: "200~1000명", value: "200~1000" },
+                      { label: "1000명+", value: "1000~" },
+                    ]}
+                    onChange={(v) => {
+                      const [min, max] = v.split("~");
+                      setMinEmployeeCount(min === undefined ? "" : min);
+                      setMaxEmployeeCount(max === undefined ? "" : max);
+                    }}
+                  />
 
                   {/* 평균연봉 */}
-                  <div className="min-w-[120px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">
-                      평균연봉 (만원)
-                    </h3>
-                    <div className="flex flex-col gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        value={minAverageSalary}
-                        onChange={(e) => setMinAverageSalary(e.target.value)}
-                        placeholder="최소"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                      <input
-                        type="number"
-                        min={0}
-                        value={maxAverageSalary}
-                        onChange={(e) => setMaxAverageSalary(e.target.value)}
-                        placeholder="최대"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                    </div>
-                  </div>
+                  <FilterSelect
+                    label="평균연봉 (만원)"
+                    value={`${minAverageSalary}~${maxAverageSalary}`}
+                    options={[
+                      { label: "무관", value: "~" },
+                      { label: "~3000만", value: "~3000" },
+                      { label: "3000~5000만", value: "3000~5000" },
+                      { label: "5000~7000만", value: "5000~7000" },
+                      { label: "7000만+", value: "7000~" },
+                    ]}
+                    onChange={(v) => {
+                      const [min, max] = v.split("~");
+                      setMinAverageSalary(min === undefined ? "" : min);
+                      setMaxAverageSalary(max === undefined ? "" : max);
+                    }}
+                  />
 
                   {/* 업력 */}
-                  <div className="min-w-[100px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">
-                      업력 (년)
-                    </h3>
-                    <div className="flex flex-col gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        value={companyMinAgeYears}
-                        onChange={(e) => setCompanyMinAgeYears(e.target.value)}
-                        placeholder="최소"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                      <input
-                        type="number"
-                        min={0}
-                        value={companyMaxAgeYears}
-                        onChange={(e) => setCompanyMaxAgeYears(e.target.value)}
-                        placeholder="최대"
-                        className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                      />
-                    </div>
-                  </div>
+                  <FilterSelect
+                    label="업력 (년)"
+                    value={`${companyMinAgeYears}~${companyMaxAgeYears}`}
+                    options={[
+                      { label: "무관", value: "~" },
+                      { label: "~3년", value: "~3" },
+                      { label: "3~7년", value: "3~7" },
+                      { label: "7~15년", value: "7~15" },
+                      { label: "15년+", value: "15~" },
+                    ]}
+                    onChange={(v) => {
+                      const [min, max] = v.split("~");
+                      setCompanyMinAgeYears(min === undefined ? "" : min);
+                      setCompanyMaxAgeYears(max === undefined ? "" : max);
+                    }}
+                  />
 
                   {/* 퇴사율 */}
-                  <div className="min-w-[100px]">
-                    <h3 className="mb-2 text-xs font-bold text-gray-800">
-                      퇴사율 이하
-                    </h3>
-                    <input
-                      type="number"
-                      min={0}
-                      value={companyMaxAttritionRate}
-                      onChange={(e) =>
-                        setCompanyMaxAttritionRate(e.target.value)
-                      }
-                      placeholder="10%"
-                      className="w-full rounded-lg border border-[var(--app-line)] px-2 py-1.5 text-xs outline-none focus:border-[var(--brand)]"
-                    />
-                  </div>
+                  <FilterSelect
+                    label="퇴사율 이하"
+                    value={companyMaxAttritionRate}
+                    options={[
+                      { label: "무관", value: "" },
+                      { label: "5% 이하", value: "5" },
+                      { label: "10% 이하", value: "10" },
+                      { label: "20% 이하", value: "20" },
+                    ]}
+                    onChange={setCompanyMaxAttritionRate}
+                  />
                 </div>
               </div>
             )}
@@ -383,7 +354,7 @@ export default function CompaniesPage() {
         {/* Stats row */}
         <div className="mb-5 flex flex-wrap gap-4 text-sm text-gray-500">
           <span>
-            전체{" "}
+            회사{" "}
             <strong className="text-gray-900">
               {companyTotal.toLocaleString("ko-KR")}
             </strong>

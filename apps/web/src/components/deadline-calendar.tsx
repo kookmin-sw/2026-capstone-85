@@ -224,59 +224,51 @@ export function FullDeadlineCalendar({
 
   return (
     <section className="grid gap-4 rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal">채용 캘린더</h1>
-          <p className="text-sm text-[var(--app-muted)]">
-            필터에 맞는 공고의 시작 일정과 마감 일정을 함께 확인하세요.
+      <div className="relative flex items-center justify-center py-1">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              onMonthChange(
+                new Date(
+                  monthDate.getFullYear(),
+                  monthDate.getMonth() - 1,
+                  1,
+                ),
+              )
+            }
+            className="rounded-md border border-[var(--app-line)] p-2"
+            aria-label="이전 달"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <p className="min-w-32 text-center font-semibold">
+            {monthDate.getFullYear()}년 {monthDate.getMonth() + 1}월
           </p>
+          <button
+            type="button"
+            onClick={() =>
+              onMonthChange(
+                new Date(
+                  monthDate.getFullYear(),
+                  monthDate.getMonth() + 1,
+                  1,
+                ),
+              )
+            }
+            className="rounded-md border border-[var(--app-line)] p-2"
+            aria-label="다음 달"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
-        <div className="grid gap-3 sm:justify-items-end">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                onMonthChange(
-                  new Date(
-                    monthDate.getFullYear(),
-                    monthDate.getMonth() - 1,
-                    1,
-                  ),
-                )
-              }
-              className="rounded-md border border-[var(--app-line)] p-2"
-              aria-label="이전 달"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <p className="min-w-32 text-center font-semibold">
-              {monthDate.getFullYear()}년 {monthDate.getMonth() + 1}월
-            </p>
-            <button
-              type="button"
-              onClick={() =>
-                onMonthChange(
-                  new Date(
-                    monthDate.getFullYear(),
-                    monthDate.getMonth() + 1,
-                    1,
-                  ),
-                )
-              }
-              className="rounded-md border border-[var(--app-line)] p-2"
-              aria-label="다음 달"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs font-semibold">
-            <span className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-gray-700">
-              공고 기간
-            </span>
-            <span className="rounded-md border border-[var(--brand-mid)] bg-[var(--brand-soft)] px-2.5 py-1 text-[var(--brand)]">
-              마감 지점
-            </span>
-          </div>
+        <div className="absolute right-0 flex flex-wrap gap-2 text-xs font-semibold">
+          <span className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-gray-700">
+            공고 기간
+          </span>
+          <span className="rounded-md border border-[var(--brand-mid)] bg-[var(--brand-soft)] px-2.5 py-1 text-[var(--brand)]">
+            마감 지점
+          </span>
         </div>
       </div>
 
@@ -322,8 +314,8 @@ export function FullDeadlineCalendar({
                     <span
                       className={
                         isSameDay(day, new Date())
-                          ? "relative z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-semibold text-white"
-                          : "relative z-20 text-xs font-semibold"
+                          ? "absolute left-2 top-2 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-semibold text-white"
+                          : "absolute left-2 top-2 z-20 text-xs font-semibold"
                       }
                     >
                       {day.getDate()}

@@ -15,6 +15,7 @@ import { JobGridCard } from "@/components/job-card";
 import { jobSortLabels } from "@/components/job-filter-panel";
 import { SiteNav } from "@/components/site-nav";
 import { ActionButton } from "@/components/ui/action-button";
+import { FilterSelect } from "@/components/ui/filter-select";
 import { useJobFilterState } from "@/hooks/use-job-filter-state";
 import { fetchJobCalendar, fetchJobs } from "@/lib/api";
 import { calendarDaysToMap, jobsBetween } from "@/lib/calendar-data";
@@ -322,6 +323,15 @@ const CAREER_LEVEL_OPTS = [
   { value: "junior", label: "주니어 이직" },
   { value: "experienced", label: "경력 이직" },
 ];
+const EXPERIENCE_RANGE_OPTS = [
+  { label: "무관", value: "~" },
+  { label: "신입", value: "0~1" },
+  { label: "1~3년", value: "1~3" },
+  { label: "3~5년", value: "3~5" },
+  { label: "5~10년", value: "5~10" },
+  { label: "10년+", value: "10~" },
+  { label: "직접 입력", value: "custom" },
+];
 
 function CheckboxColumn({
   title,
@@ -593,6 +603,12 @@ export default function JobsPage() {
   // weekJobs를 urgentJobs fallback으로 활용
   const sidebarUrgentJobs =
     urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
+  const experienceRangeValue = `${filters.minExperienceYears}~${filters.maxExperienceYears}`;
+  const selectedExperienceRange = EXPERIENCE_RANGE_OPTS.some(
+    (option) => option.value === experienceRangeValue,
+  )
+    ? experienceRangeValue
+    : "custom";
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -738,9 +754,23 @@ export default function JobsPage() {
                     filters={filters}
                     onChange={setFilters}
                   />
+                  <FilterSelect
+                    label="경력 빠른 선택"
+                    value={selectedExperienceRange}
+                    options={EXPERIENCE_RANGE_OPTS}
+                    onChange={(value) => {
+                      if (value === "custom") return;
+                      const [min = "", max = ""] = value.split("~");
+                      setFilters({
+                        ...filters,
+                        minExperienceYears: min,
+                        maxExperienceYears: max,
+                      });
+                    }}
+                  />
                   <div className="min-w-[120px]">
                     <h3 className="mb-2 text-xs font-bold text-gray-800">
-                      경력 연차
+                      연차 직접 입력
                     </h3>
                     <div className="flex flex-col gap-2">
                       <label className="text-xs text-gray-500">최소 (년)</label>
@@ -793,7 +823,7 @@ export default function JobsPage() {
           <div>
             {!loading && (
               <p className="mb-4 text-sm text-gray-500">
-                검색 결과{" "}
+                공고{" "}
                 <span className="font-bold text-gray-900">
                   {total.toLocaleString("ko-KR")}
                 </span>
