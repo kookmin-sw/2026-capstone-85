@@ -12,9 +12,8 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
-import { EmployeeTrendChart } from "./_components/employee-trend-chart";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SiteNav } from "@/components/site-nav";
 import { actionButtonClassName } from "@/components/ui/action-button";
@@ -25,16 +24,20 @@ import {
   jobFamilyLabels,
   traineeLabels,
 } from "@/lib/labels";
+import { jobDetailHref } from "@/lib/routes";
+import { EmployeeTrendChart } from "./_components/employee-trend-chart";
 import styles from "./company-detail.module.css";
 
-export default function CompanyDetailPage() {
-  const params = useParams<{ id: string }>();
-  const id = params.id;
+export function CompanyDetailClient() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const [company, setCompany] = useState<CompanyDetailItem | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     let ignore = false;
     fetchCompanyDetail(id)
       .then((data) => {
@@ -54,6 +57,31 @@ export default function CompanyDetailPage() {
       ignore = true;
     };
   }, [id]);
+
+  if (!id) {
+    return (
+      <main className="min-h-screen bg-[var(--background)]">
+        <SiteNav />
+        <div className="mx-auto max-w-6xl px-5 py-8">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <Link
+              href="/companies"
+              className="inline-flex items-center gap-2 text-sm font-medium text-red-700"
+            >
+              <ArrowLeft size={16} />
+              목록으로 돌아가기
+            </Link>
+            <h1 className="mt-4 text-2xl font-semibold text-red-900">
+              회사를 찾을 수 없습니다.
+            </h1>
+            <p className="mt-2 text-sm text-red-700">
+              회사 ID가 누락되었습니다.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (loading) {
     return (
@@ -103,7 +131,6 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
 
-      {/* Hero banner */}
       <div className={styles.hero}>
         <div className={styles.heroGlow} />
         <div className="mx-auto max-w-6xl px-5 py-8">
@@ -119,10 +146,7 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
             <div className="flex items-end gap-4">
               <div className={styles.logo}>
                 {company.logoUrl ? (
-                  <img
-                    src={company.logoUrl}
-                    alt={company.name}
-                  />
+                  <img src={company.logoUrl} alt={company.name} />
                 ) : (
                   initial
                 )}
@@ -164,7 +188,6 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 py-6 lg:grid-cols-[1fr_300px]">
         <div className="grid gap-5">
-          {/* Company info */}
           <section className="rounded-2xl border border-[var(--app-line)] bg-white p-5">
             <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
               <Building2 size={17} className={styles.sectionIcon} />
@@ -203,7 +226,6 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
             </div>
           </section>
 
-          {/* Employee trend */}
           <section className="rounded-2xl border border-[var(--app-line)] bg-white p-5">
             <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
               <TrendingUp size={17} className={styles.sectionIcon} />
@@ -212,10 +234,9 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
             <EmployeeTrendChart data={company.employeeTrend} />
           </section>
 
-          {/* Open jobs */}
           <section className="rounded-2xl border border-[var(--app-line)] bg-white p-5">
             <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
-                <BriefcaseBusiness size={17} className={styles.sectionIcon} />
+              <BriefcaseBusiness size={17} className={styles.sectionIcon} />
               진행 중인 공고
             </h2>
             <div className="grid gap-3">
@@ -233,7 +254,6 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
           </section>
         </div>
 
-        {/* Sidebar */}
         <aside className="h-fit rounded-2xl border border-[var(--app-line)] bg-white p-5">
           <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
             <Globe2 size={17} className={styles.sectionIcon} />
@@ -336,7 +356,7 @@ function CompanyJobCard({ job }: { job: JobListItem }) {
         </p>
       </div>
       <Link
-        href={`/jobs/${job.id}`}
+        href={jobDetailHref(job.id)}
         className={actionButtonClassName({ size: "sm" })}
       >
         공고 보기

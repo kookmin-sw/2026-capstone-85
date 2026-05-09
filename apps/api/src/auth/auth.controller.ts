@@ -6,49 +6,26 @@ import {
   Post,
   Req,
   Res,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import type { Response } from 'express';
-import {
-  COMPANY_LOGO_FIELD_NAME,
-  COMPANY_LOGO_MAX_BYTES,
-  saveCompanyLogoUpload,
-  type UploadedCompanyLogoFile,
-} from '../uploads/company-logo-upload';
+import { ConfigService } from '@nestjs/config';
+import type { CookieOptions, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import type { RequestWithUser } from './auth.types';
 
-const cookieOptions = {
-  httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: false,
-  path: '/',
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-};
+const ACCESS_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
-
-  @Post('company-logo')
-  @UseInterceptors(
-    FileInterceptor(COMPANY_LOGO_FIELD_NAME, {
-      limits: { fileSize: COMPANY_LOGO_MAX_BYTES },
-    }),
-  )
-  async uploadCompanyLogo(
-    @UploadedFile() file: UploadedCompanyLogoFile | undefined,
-  ) {
-    return { logoUrl: await saveCompanyLogoUpload(file) };
-  }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly config: ConfigService,
+  ) {}
 
   @Post('register')
   async register(
@@ -56,7 +33,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.register(dto);
-    res.cookie('access_token', result.accessToken, cookieOptions);
+    res.cookie('access_token', result.accessToken, this.cookieOptions());
     return { user: result.user };
   }
 
@@ -67,7 +44,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.login(dto);
-    res.cookie('access_token', result.accessToken, cookieOptions);
+    res.cookie('access_token', result.accessToken, this.cookieOptions());
     return { user: result.user };
   }
 
@@ -81,7 +58,23 @@ export class AuthController {
   @HttpCode(200)
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token', { path: '/' });
+    res.clearCookie('access_token', this.clearCookieOptions());
     return { ok: true };
+  }
+
+  private cookieOptions(): CookieOptions {
+    return {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: this.config.get<string>('NODE_ENV') === 'production',
+      path: '/',
+      maxAge: ACCESS_TOKEN_MAX_AGE_MS,
+    };
+  }
+
+  private clearCookieOptions(): CookieOptions {
+    const options = this.cookieOptions();
+    delete options.maxAge;
+    return options;
   }
 }

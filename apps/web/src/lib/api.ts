@@ -19,7 +19,8 @@ import type {
 } from "@cpa/shared";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  (process.env.NODE_ENV === "production" ? "/api" : "http://localhost:4000");
 
 export type JobListResponse = {
   items: JobListItem[];
@@ -47,11 +48,26 @@ export type CompanyProfileSubmissionPayload = {
   name?: string;
   type?: CompanyType;
   websiteUrl?: string;
-  logoUrl?: string;
   description?: string;
   businessNumber?: string;
   externalLinks?: string[];
   tags?: string[];
+};
+
+type CompanyLogoUploadUrlResponse = {
+  assetId: string;
+  uploadUrl: string;
+  method: "PUT";
+  headers: Record<string, string>;
+  publicUrl: string;
+  expiresIn: number;
+};
+
+type CompanyLogoAssetResponse = {
+  asset: {
+    id: string;
+    publicUrl: string;
+  };
 };
 
 export type CompanyJobSubmissionPayload = {
@@ -155,25 +171,80 @@ export async function logoutRequest() {
 }
 
 export async function uploadCompanyLogo(file: File) {
-  const formData = new FormData();
-  formData.append("companyLogo", file);
-
-  const response = await fetch(`${API_BASE_URL}/auth/company-logo`, {
-    method: "POST",
-    credentials: "include",
-    body: formData,
-  });
-  const data = (await response.json()) as {
-    logoUrl?: string;
-    message?: string | string[];
-  };
-  if (!response.ok || !data.logoUrl) {
-    const message = Array.isArray(data.message)
-      ? data.message.join(" ")
-      : data.message;
-    throw new Error(message ?? "기업 이미지 업로드에 실패했습니다.");
+  const uploadUrlResponse = await fetch(
+    `${API_BASE_URL}/assets/company-logo/upload-url`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        fileName: file.name,
+        contentType: file.type,
+        byteSize: file.size,
+      }),
+    },
+  );
+  const uploadUrlData =
+    (await uploadUrlResponse.json()) as CompanyLogoUploadUrlResponse & {
+      message?: string | string[];
+    };
+  if (!uploadUrlResponse.ok || !uploadUrlData.uploadUrl) {
+    throw new Error(
+      readMessage(
+        uploadUrlData.message,
+        "기업 이미지 업로드 URL 생성에 실패했습니다.",
+      ),
+    );
   }
-  return data.logoUrl;
+
+  const s3Response = await fetch(uploadUrlData.uploadUrl, {
+    method: uploadUrlData.method,
+    headers: uploadUrlData.headers,
+    body: file,
+  });
+  if (!s3Response.ok) {
+    throw new Error("S3에 기업 이미지를 업로드하지 못했습니다.");
+  }
+
+  const completeResponse = await fetch(
+    `${API_BASE_URL}/assets/${uploadUrlData.assetId}/complete`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+  const completeData = (await completeResponse.json()) as
+    | CompanyLogoAssetResponse
+    | { message?: string | string[] };
+  if (!completeResponse.ok) {
+    const errorData = completeData as { message?: string | string[] };
+    throw new Error(
+      readMessage(errorData.message, "기업 이미지 업로드 확인에 실패했습니다."),
+    );
+  }
+  if (!("asset" in completeData)) {
+    throw new Error("기업 이미지 업로드 확인에 실패했습니다.");
+  }
+
+  return {
+    assetId: completeData.asset.id,
+    publicUrl: completeData.asset.publicUrl,
+  };
+}
+
+export async function updateCompanyLogo(logoAssetId: string) {
+  const response = await fetch(`${API_BASE_URL}/companies/me/logo`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ logoAssetId }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "기업 이미지 변경에 실패했습니다."),
+    );
+  }
+  return (await response.json()) as CompanyDetailItem;
 }
 
 export async function fetchCurrentUser() {
@@ -220,21 +291,6 @@ export async function submitCompanyProfile(
     );
   }
   return (await response.json()) as CompanyProfileSubmissionItem;
-}
-
-export async function updateCompanyLogo(logoUrl: string) {
-  const response = await fetch(`${API_BASE_URL}/companies/me/logo`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ logoUrl }),
-  });
-  if (!response.ok) {
-    throw new Error(
-      await readApiError(response, "기업 이미지 변경에 실패했습니다."),
-    );
-  }
-  return (await response.json()) as CompanyDetailItem;
 }
 
 export async function submitCompanyJob(payload: CompanyJobSubmissionPayload) {
@@ -521,9 +577,13 @@ export async function reviewAdminAiSuggestion(
 async function readApiError(response: Response, fallback: string) {
   try {
     const data = (await response.json()) as { message?: string | string[] };
-    if (Array.isArray(data.message)) return data.message.join(" ");
-    return data.message ?? fallback;
+    return readMessage(data.message, fallback);
   } catch {
     return fallback;
   }
+}
+
+function readMessage(message: string | string[] | undefined, fallback: string) {
+  if (Array.isArray(message)) return message.join(" ");
+  return message ?? fallback;
 }

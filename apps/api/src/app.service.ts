@@ -6,7 +6,7 @@ export class AppService {
     return {
       ok: true,
       service: 'cpa-job-platform-api',
-      docs: '/docs',
+      docs: process.env.ENABLE_SWAGGER === 'true' ? '/docs' : null,
     };
   }
 }

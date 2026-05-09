@@ -14,7 +14,11 @@ import { ListJobCalendarDto } from './dto/list-job-calendar.dto';
 import { ListJobsDto } from './dto/list-jobs.dto';
 
 const jobInclude = {
-  company: true,
+  company: {
+    include: {
+      logoAsset: { select: { publicUrl: true } },
+    },
+  },
   source: true,
   labels: {
     include: {
@@ -177,7 +181,7 @@ export class JobsService {
       title: job.title,
       companyId: job.companyId,
       companyName: job.company.name,
-      companyLogoUrl: job.company.logoUrl,
+      companyLogoUrl: job.company.logoAsset?.publicUrl ?? null,
       companyType: job.companyType,
       jobFamily: job.jobFamily,
       employmentType: job.employmentType,

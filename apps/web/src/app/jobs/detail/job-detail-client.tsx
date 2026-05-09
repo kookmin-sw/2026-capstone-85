@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { SiteNav } from "@/components/site-nav";
 import { actionButtonClassName } from "@/components/ui/action-button";
@@ -24,17 +24,20 @@ import {
   kicpaLabels,
   traineeLabels,
 } from "@/lib/labels";
+import { companyDetailHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import styles from "./job-detail.module.css";
 
-export default function JobDetailPage() {
-  const params = useParams<{ id: string }>();
-  const id = params.id;
+export function JobDetailClient() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const [job, setJob] = useState<JobDetailItem | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     let ignore = false;
     fetchJobDetail(id)
       .then((data) => {
@@ -54,6 +57,31 @@ export default function JobDetailPage() {
       ignore = true;
     };
   }, [id]);
+
+  if (!id) {
+    return (
+      <main className="min-h-screen bg-[var(--background)]">
+        <SiteNav />
+        <div className="mx-auto max-w-5xl px-5 py-8">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <Link
+              href="/jobs"
+              className="inline-flex items-center gap-2 text-sm font-medium text-red-700"
+            >
+              <ArrowLeft size={16} />
+              목록으로 돌아가기
+            </Link>
+            <h1 className="mt-4 text-2xl font-semibold text-red-900">
+              공고를 찾을 수 없습니다.
+            </h1>
+            <p className="mt-2 text-sm text-red-700">
+              공고 ID가 누락되었습니다.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (loading) {
     return (
@@ -125,7 +153,6 @@ function JobDetail({ job }: { job: JobDetailItem }) {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
 
-      {/* Pink gradient hero banner */}
       <div className={styles.hero}>
         <div className={styles.heroGlow} />
         <div className="mx-auto max-w-6xl px-5 py-8">
@@ -139,13 +166,9 @@ function JobDetail({ job }: { job: JobDetailItem }) {
 
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex items-end gap-4">
-              {/* Company logo / initial */}
               <div className={styles.logo}>
                 {job.companyLogoUrl ? (
-                  <img
-                    src={job.companyLogoUrl}
-                    alt={job.companyName}
-                  />
+                  <img src={job.companyLogoUrl} alt={job.companyName} />
                 ) : (
                   initial
                 )}
@@ -168,7 +191,7 @@ function JobDetail({ job }: { job: JobDetailItem }) {
                   </span>
                 </div>
                 <Link
-                  href={`/companies/${job.companyId}`}
+                  href={companyDetailHref(job.companyId)}
                   className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[var(--brand)]"
                 >
                   <BriefcaseBusiness size={15} />
@@ -195,7 +218,6 @@ function JobDetail({ job }: { job: JobDetailItem }) {
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 py-6 lg:grid-cols-[1fr_300px]">
         <div className="grid gap-5">
-          {/* Info grid */}
           <section className="rounded-2xl border border-[var(--app-line)] bg-white p-5">
             <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
               <FileText size={17} className={styles.sectionIcon} />
@@ -224,7 +246,6 @@ function JobDetail({ job }: { job: JobDetailItem }) {
             </div>
           </section>
 
-          {/* AI 요약 — pink background */}
           <section className={styles.aiSummary}>
             <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-[var(--brand)]">
               <Sparkles size={17} />
@@ -254,7 +275,6 @@ function JobDetail({ job }: { job: JobDetailItem }) {
             )}
           </section>
 
-          {/* Description */}
           <section className="rounded-2xl border border-[var(--app-line)] bg-white p-5">
             <h2 className="mb-4 text-base font-bold text-gray-900">공고 본문</h2>
             <p className="whitespace-pre-line text-sm leading-7 text-neutral-800">
@@ -263,7 +283,6 @@ function JobDetail({ job }: { job: JobDetailItem }) {
           </section>
         </div>
 
-        {/* Sidebar */}
         <aside className="h-fit rounded-2xl border border-[var(--app-line)] bg-white p-5">
           <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900">
             <CheckCircle2 size={17} className={styles.sectionIcon} />
@@ -311,7 +330,7 @@ function JobDetail({ job }: { job: JobDetailItem }) {
           </div>
 
           <Link
-            href={`/companies/${job.companyId}`}
+            href={companyDetailHref(job.companyId)}
             className="mt-5 flex items-center gap-3 rounded-xl border border-[var(--app-line)] p-3 text-sm font-medium text-gray-700 transition-colors hover:border-[var(--brand)] hover:text-[var(--brand)]"
           >
             <div className={styles.companyMiniIcon}>
@@ -364,7 +383,12 @@ function ChipGroup({
   if (!items.length) return null;
   return (
     <div>
-      <h3 className={cn("mb-2 text-sm font-bold", tone === "pink" && styles.brandText)}>
+      <h3
+        className={cn(
+          "mb-2 text-sm font-bold",
+          tone === "pink" && styles.brandText,
+        )}
+      >
         {title}
       </h3>
       <div className="flex flex-wrap gap-2">

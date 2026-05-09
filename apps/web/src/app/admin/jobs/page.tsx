@@ -20,6 +20,7 @@ import {
   traineeLabels,
 } from "@/components/admin/admin-demo-data";
 import styles from "@/components/admin/admin.module.css";
+import { adminJobEditHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS = ["OPEN", "CLOSED", "DRAFT"] as const;
@@ -207,7 +208,7 @@ export default function AdminJobsPage() {
                   <tr key={job.id} className={styles.tableRowTop}>
                     <td>
                       <Link
-                        href={`/admin/jobs/${job.id}`}
+                        href={adminJobEditHref(job.id)}
                         className={styles.tableTitleLink}
                       >
                         {job.title}
@@ -234,7 +235,7 @@ export default function AdminJobsPage() {
                     <td>
                       <div className={styles.rowActions}>
                         <Link
-                          href={`/admin/jobs/${job.id}`}
+                          href={adminJobEditHref(job.id)}
                           className={styles.smallButton}
                         >
                           수정
