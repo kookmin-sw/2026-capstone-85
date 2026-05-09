@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { JobPresetBar } from "@/components/job-preset-bar";
 import { JobGridCard } from "@/components/job-card";
 import { jobSortLabels } from "@/components/job-filter-panel";
 import { SiteNav } from "@/components/site-nav";
@@ -653,6 +654,8 @@ export default function JobsPage() {
               ))}
             </select>
           </div>
+
+          <JobPresetBar filters={filters} onChange={setFilters} />
         </div>
 
         {/* 필터 카드 */}
@@ -729,9 +732,7 @@ export default function JobsPage() {
                       마감 기간
                     </h3>
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs text-gray-500">
-                        N일 이내
-                      </label>
+                      <label className="text-xs text-gray-500">N일 이내</label>
                       <input
                         type="number"
                         min={1}

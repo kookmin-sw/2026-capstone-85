@@ -8,6 +8,7 @@ import type {
 import { RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FullDeadlineCalendar } from "@/components/deadline-calendar";
+import { JobPresetBar } from "@/components/job-preset-bar";
 import { SiteNav } from "@/components/site-nav";
 import { ActionButton } from "@/components/ui/action-button";
 import { useJobFilterState } from "@/hooks/use-job-filter-state";
@@ -169,7 +170,9 @@ export default function CalendarPage() {
       {/* 페이지 헤더 — 배경색 통일 */}
       <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
         <div className="mx-auto max-w-7xl px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">마감일 캘린더</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            마감일 캘린더
+          </h1>
           <p className="mt-1 text-sm leading-relaxed text-gray-500">
             필터에 맞는 공고의 시작 일정과 마감 일정을 함께 확인하세요.
           </p>
@@ -190,13 +193,12 @@ export default function CalendarPage() {
                 className="w-full rounded-xl border border-[var(--app-line)] bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[var(--brand)]"
               />
             </div>
-            <ActionButton
-              type="button"
-              iconStart={<Search size={15} />}
-            >
+            <ActionButton type="button" iconStart={<Search size={15} />}>
               검색
             </ActionButton>
           </div>
+
+          <JobPresetBar filters={filters} onChange={setFilters} />
         </div>
 
         {/* 필터 카드 */}

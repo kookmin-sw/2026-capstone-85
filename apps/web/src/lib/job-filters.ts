@@ -1,7 +1,12 @@
-import type { JobFilterPreference } from "@cpa/shared";
+import {
+  JOB_PRESET_IDS,
+  type JobFilterPreference,
+  type JobPresetId,
+} from "@cpa/shared";
 
 export type JobFilterState = {
   quick: string;
+  preset: "" | JobPresetId;
   search: string;
   jobFamily: string;
   companyType: string;
@@ -24,6 +29,7 @@ export type JobFilterState = {
 
 export const defaultJobFilters: JobFilterState = {
   quick: "",
+  preset: "",
   search: "",
   jobFamily: "",
   companyType: "",
@@ -111,6 +117,7 @@ const stringParamKeys = [
 export const jobFilterQueryKeys = new Set<string>([
   ...stringParamKeys,
   "quick",
+  "preset",
   "traineeAvailable",
   "deadline",
   "locations",
@@ -123,6 +130,7 @@ export function buildJobFilterParams(filters: JobFilterState) {
     const value = filters[key];
     if (value) next.set(key, value);
   }
+  if (filters.preset) next.set("preset", filters.preset);
   if (!next.has("sort")) next.set("sort", defaultJobFilters.sort);
   filters.selectedLocations.forEach((location) => {
     next.append("locations", location);
@@ -141,6 +149,12 @@ export function parseJobFiltersFromParams(params: URLSearchParams) {
     ? quickFilterState(quickFilter)
     : { ...defaultJobFilters };
   let hasAnyQuery = Boolean(quickFilter);
+  const preset = normalizePresetParam(params.get("preset"));
+
+  if (preset) {
+    filters.preset = preset;
+    hasAnyQuery = true;
+  }
 
   if (!quickFilter) {
     for (const key of stringParamKeys) {
@@ -235,12 +249,20 @@ export function buildJobUrlParams(filters: JobFilterState) {
       next.set(key, value);
     }
     if (filters.sort) next.set("sort", filters.sort);
+    if (filters.preset) next.set("preset", filters.preset);
     return next;
   }
 
   const next = buildJobFilterParams(filters);
   if (filters.deadline) next.set("deadline", filters.deadline);
   return next;
+}
+
+function normalizePresetParam(value: string | null): JobPresetId | "" {
+  if (!value) return "";
+  return (JOB_PRESET_IDS as readonly string[]).includes(value)
+    ? (value as JobPresetId)
+    : "";
 }
 
 function normalizeCommaParam(value: string | null) {

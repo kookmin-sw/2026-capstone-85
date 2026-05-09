@@ -18,6 +18,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import type { JobPresetId } from '@cpa/shared';
 
 const toOptionalBoolean = (value: unknown) => {
   if (value === 'true') return true;
@@ -35,6 +36,10 @@ const toOptionalStringArray = (value: unknown) => {
 };
 
 const careerLevels = ['entry', 'junior', 'experienced'] as const;
+const jobPresetIds = [
+  'active-hiring',
+  'career-verified',
+] as const satisfies readonly JobPresetId[];
 
 const toOptionalCommaStringArray = (value: unknown) => {
   if (value === undefined || value === null || value === '') return undefined;
@@ -52,6 +57,11 @@ export class ListJobsDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({ enum: jobPresetIds })
+  @IsOptional()
+  @IsIn([...jobPresetIds])
+  preset?: JobPresetId;
 
   @ApiPropertyOptional({ enum: JobFamily })
   @IsOptional()

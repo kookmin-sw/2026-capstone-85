@@ -12,6 +12,7 @@ import type {
 import { PrismaService } from '../prisma/prisma.service';
 import { ListJobCalendarDto } from './dto/list-job-calendar.dto';
 import { ListJobsDto } from './dto/list-jobs.dto';
+import { buildJobPresetWhere } from './job-presets';
 
 const jobInclude = {
   company: true,
@@ -40,7 +41,7 @@ export class JobsService {
   async list(query: ListJobsDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const where = this.buildWhere(query);
+    const where = await this.buildWhere(query);
     const orderBy = this.buildOrderBy(query.sort);
 
     const [items, total] = await this.prisma.$transaction([
@@ -95,7 +96,7 @@ export class JobsService {
       throw new BadRequestException('from은 to보다 이전 날짜여야 합니다.');
     }
 
-    const where = this.buildCalendarWhere(query, start, end);
+    const where = await this.buildCalendarWhere(query, start, end);
     const items = await this.prisma.job.findMany({
       where,
       include: jobInclude,
@@ -198,7 +199,7 @@ export class JobsService {
     };
   }
 
-  private buildWhere(query: ListJobsDto): Prisma.JobWhereInput {
+  private async buildWhere(query: ListJobsDto): Promise<Prisma.JobWhereInput> {
     const where: Prisma.JobWhereInput = {
       status: JobStatus.OPEN,
       ...(query.jobFamily && { jobFamily: query.jobFamily }),
@@ -238,6 +239,11 @@ export class JobsService {
           location: { contains: location, mode: 'insensitive' },
         })),
       });
+    }
+
+    const presetWhere = await buildJobPresetWhere(this.prisma, query.preset);
+    if (presetWhere) {
+      and.push(presetWhere);
     }
 
     if (query.deadlineWithinDays !== undefined) {
@@ -333,12 +339,12 @@ export class JobsService {
     return companyWhere;
   }
 
-  private buildCalendarWhere(
+  private async buildCalendarWhere(
     query: ListJobCalendarDto,
     start: Date,
     end: Date,
-  ): Prisma.JobWhereInput {
-    const where = this.buildWhere(query);
+  ): Promise<Prisma.JobWhereInput> {
+    const where = await this.buildWhere(query);
     const and = Array.isArray(where.AND)
       ? where.AND
       : where.AND

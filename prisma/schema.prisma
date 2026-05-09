@@ -116,9 +116,21 @@ model Company {
   updatedAt           DateTime    @updatedAt
 
   owner              User                       @relation("CompanyOwner", fields: [ownerUserId], references: [id])
+  metadata           CompanyMetadata?
   jobs               Job[]
   jobSubmissions     JobSubmission[]
   profileSubmissions CompanyProfileSubmission[]
+}
+
+model CompanyMetadata {
+  companyId                 String   @id
+  careerVerificationSignals String[] @default([])
+  careerVerificationNote    String?
+  careerVerificationSource  String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model Source {
