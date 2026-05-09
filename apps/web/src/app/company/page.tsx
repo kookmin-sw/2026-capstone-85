@@ -5,7 +5,7 @@ import type {
   CompanyManagedJobItem,
   JobSubmissionItem,
 } from "@cpa/shared";
-import { BriefcaseBusiness, Clock, CheckCircle2 as CheckCircle, Trash2 as TrashIcon } from "lucide-react";
+import { BriefcaseBusiness, Clock, Trash2 as TrashIcon } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import { JobSubmissionForm } from "./_components/job-submission-form";
 import { ManagedJobCard } from "./_components/managed-job-card";
@@ -39,6 +39,7 @@ import {
   uploadCompanyLogo,
 } from "@/lib/api";
 import { companyTypeLabels } from "@/lib/labels";
+import { companyDetailHref } from "@/lib/routes";
 import styles from "./company-page.module.css";
 
 export default function CompanyPage() {
@@ -48,8 +49,9 @@ export default function CompanyPage() {
   const [managedJobs, setManagedJobs] = useState<CompanyManagedJobItem[]>([]);
   const [jobSubmissions, setJobSubmissions] = useState<JobSubmissionItem[]>([]);
   const [jobForm, setJobForm] = useState<JobForm>(emptyJobForm);
-  const [profileImageForm, setProfileImageForm] =
-    useState<ProfileImageForm>(emptyProfileImageForm);
+  const [profileImageForm, setProfileImageForm] = useState<ProfileImageForm>(
+    emptyProfileImageForm,
+  );
   const [profileImageFileName, setProfileImageFileName] = useState("");
   const [profileImageUploading, setProfileImageUploading] = useState(false);
   const [editingJob, setEditingJob] = useState<CompanyManagedJobItem | null>(
@@ -60,7 +62,9 @@ export default function CompanyPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  function applyPageData(data: Awaited<ReturnType<typeof fetchCompanyPageData>>) {
+  function applyPageData(
+    data: Awaited<ReturnType<typeof fetchCompanyPageData>>,
+  ) {
     setDashboard(data.dashboard);
     setProfileImageForm(toProfileImageForm(data.dashboard));
     setManagedJobs(data.managedJobs);
@@ -139,18 +143,14 @@ export default function CompanyPage() {
     if (!dashboard) return;
 
     setMessage("");
-    const logoUrl = profileImageForm.logoUrl.trim();
-    if (!logoUrl) {
+    const logoAssetId = profileImageForm.logoAssetId.trim();
+    if (!logoAssetId) {
       setMessage("기업 이미지 파일을 업로드해 주세요.");
-      return;
-    }
-    if (logoUrl === (dashboard.company.logoUrl ?? "")) {
-      setMessage("변경할 기업 이미지 파일을 업로드해 주세요.");
       return;
     }
 
     try {
-      await updateCompanyLogo(logoUrl);
+      await updateCompanyLogo(logoAssetId);
       setProfileImageFileName("");
       setMessage("기업 이미지가 바로 변경되었습니다.");
       await load({ quiet: true });
@@ -168,12 +168,17 @@ export default function CompanyPage() {
     setProfileImageUploading(true);
     setMessage("");
     try {
-      const logoUrl = await uploadCompanyLogo(file);
-      setProfileImageForm({ logoUrl });
+      const uploaded = await uploadCompanyLogo(file);
+      setProfileImageForm({
+        logoAssetId: uploaded.assetId,
+        logoUrl: uploaded.publicUrl,
+      });
       setProfileImageFileName(file.name);
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.",
+        error instanceof Error
+          ? error.message
+          : "이미지 업로드에 실패했습니다.",
       );
     } finally {
       setProfileImageUploading(false);
@@ -237,7 +242,9 @@ export default function CompanyPage() {
       <>
         <SiteNav />
         <main className={styles.page}>
-          <p className={styles.loadingText}>기업 공고 관리 정보를 불러오는 중입니다.</p>
+          <p className={styles.loadingText}>
+            기업 공고 관리 정보를 불러오는 중입니다.
+          </p>
         </main>
       </>
     );
@@ -291,11 +298,16 @@ export default function CompanyPage() {
                 <p className={styles.eyebrow}>기업 공고 관리</p>
                 <h1 className={styles.title}>{company.name}</h1>
                 <p className={styles.description}>
-                  {companyTypeLabels[company.type]} · 공개 {openJobs.length}건 · 삭제 {closedJobs.length}건
+                  {companyTypeLabels[company.type]} · 공개 {openJobs.length}건 ·
+                  삭제 {closedJobs.length}건
                 </p>
               </div>
             </div>
-            <ActionLink href={`/companies/${company.id}`} variant="subtle" size="md">
+            <ActionLink
+              href={companyDetailHref(company.id)}
+              variant="subtle"
+              size="md"
+            >
               공개 페이지
             </ActionLink>
           </div>

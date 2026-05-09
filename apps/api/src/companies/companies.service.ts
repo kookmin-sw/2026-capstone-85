@@ -15,6 +15,8 @@ import {
   Job,
   JobStatus,
   Prisma,
+  AssetPurpose,
+  AssetStatus,
   SubmissionStatus,
   SubmissionType,
 } from '@prisma/client';
@@ -25,6 +27,7 @@ import { ListCompaniesDto } from './dto/list-companies.dto';
 import { UpdateCompanyLogoDto } from './dto/update-company-logo.dto';
 
 const companyListInclude = {
+  logoAsset: { select: { publicUrl: true } },
   jobs: {
     where: { status: JobStatus.OPEN },
     select: { id: true },
@@ -32,7 +35,11 @@ const companyListInclude = {
 } satisfies Prisma.CompanyInclude;
 
 const jobInclude = {
-  company: true,
+  company: {
+    include: {
+      logoAsset: { select: { publicUrl: true } },
+    },
+  },
   source: true,
   labels: {
     include: {
@@ -42,6 +49,7 @@ const jobInclude = {
 } satisfies Prisma.JobInclude;
 
 const companyDetailInclude = {
+  logoAsset: { select: { publicUrl: true } },
   jobs: {
     where: { status: JobStatus.OPEN },
     include: jobInclude,
@@ -219,15 +227,29 @@ export class CompaniesService {
 
   async updateLogo(userId: string, dto: UpdateCompanyLogoDto) {
     const company = await this.getOwnedCompanyOrThrow(userId);
-    const logoUrl = this.optionalTrimmed(dto.logoUrl);
+    const logoAssetId = this.optionalTrimmed(dto.logoAssetId);
 
-    if (!logoUrl) {
+    if (!logoAssetId) {
       throw new BadRequestException('기업 이미지 파일을 업로드해 주세요.');
+    }
+    const asset = await this.prisma.asset.findFirst({
+      where: {
+        id: logoAssetId,
+        companyId: company.id,
+        purpose: AssetPurpose.COMPANY_LOGO,
+        status: AssetStatus.READY,
+      },
+      select: { id: true },
+    });
+    if (!asset) {
+      throw new BadRequestException(
+        '사용 가능한 기업 이미지 업로드를 찾을 수 없습니다.',
+      );
     }
 
     const updated = await this.prisma.company.update({
       where: { id: company.id },
-      data: { logoUrl },
+      data: { logoAsset: { connect: { id: asset.id } } },
       include: companyDetailInclude,
     });
 
@@ -459,7 +481,7 @@ export class CompaniesService {
       name: company.name,
       type: company.type,
       websiteUrl: company.websiteUrl,
-      logoUrl: company.logoUrl,
+      logoUrl: this.logoUrl(company),
       description: company.description,
       tags: company.tags,
       employeeCount: company.employeeCount,
@@ -583,7 +605,7 @@ export class CompaniesService {
       title: job.title,
       companyId: job.companyId,
       companyName: job.company.name,
-      companyLogoUrl: job.company.logoUrl,
+      companyLogoUrl: this.logoUrl(job.company),
       companyType: job.companyType,
       jobFamily: job.jobFamily,
       employmentType: job.employmentType,
@@ -725,13 +747,6 @@ export class CompaniesService {
     if (dto.type !== undefined) proposed.type = dto.type;
 
     this.assignNullableString(proposed, 'websiteUrl', dto.websiteUrl);
-    if (dto.logoUrl !== undefined) {
-      const logoUrl = this.optionalTrimmed(dto.logoUrl);
-      if (!logoUrl) {
-        throw new BadRequestException('기업 이미지는 비워둘 수 없습니다.');
-      }
-      proposed.logoUrl = logoUrl;
-    }
     this.assignNullableString(proposed, 'description', dto.description);
     this.assignNullableString(proposed, 'businessNumber', dto.businessNumber);
 
@@ -759,7 +774,6 @@ export class CompaniesService {
     }
     for (const key of [
       'websiteUrl',
-      'logoUrl',
       'description',
       'businessNumber',
     ] as const) {
@@ -796,6 +810,10 @@ export class CompaniesService {
     if (value === undefined) return undefined;
     const trimmed = value.trim();
     return trimmed ? trimmed : undefined;
+  }
+
+  private logoUrl(company: { logoAsset?: { publicUrl: string } | null }) {
+    return company.logoAsset?.publicUrl ?? null;
   }
 
   private normalizeStringArray(values: string[], max: number) {

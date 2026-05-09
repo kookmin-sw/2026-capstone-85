@@ -28,12 +28,6 @@ export class CreateCompanyProfileSubmissionDto {
   @MaxLength(500)
   websiteUrl?: string;
 
-  @ApiPropertyOptional({ example: '/company-logos/hanbit-accounting.png' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  logoUrl?: string;
-
   @ApiPropertyOptional({ example: '감사와 세무에 특화된 회계법인입니다.' })
   @IsOptional()
   @IsString()

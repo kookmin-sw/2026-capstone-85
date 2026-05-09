@@ -37,13 +37,9 @@ export class AuthService {
 
     if (dto.role === UserRole.COMPANY) {
       const companyName = dto.companyName?.trim();
-      const logoUrl = dto.logoUrl?.trim();
 
       if (!companyName) {
         throw new BadRequestException('기업회원은 회사명이 필요합니다.');
-      }
-      if (!logoUrl) {
-        throw new BadRequestException('기업회원은 회사 이미지가 필요합니다.');
       }
       const existingCompany = await this.prisma.company.findUnique({
         where: { name: companyName },
@@ -66,7 +62,6 @@ export class AuthService {
           data: {
             name: companyName,
             type: dto.companyType ?? CompanyType.LOCAL_ACCOUNTING_FIRM,
-            logoUrl,
             ownerUserId: createdUser.id,
           },
         });

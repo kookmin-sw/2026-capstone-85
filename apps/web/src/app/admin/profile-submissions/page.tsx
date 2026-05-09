@@ -21,7 +21,7 @@ function SubmissionStatusBadge({ status }: { status: string }) {
 }
 
 function proposalKeyLabel(key: string) {
-  const labels: Record<string, string> = { name: "회사명", type: "유형", websiteUrl: "웹사이트", logoUrl: "로고", description: "설명", businessNumber: "사업자번호", externalLinks: "외부 링크", tags: "태그" };
+const labels: Record<string, string> = { name: "회사명", type: "유형", websiteUrl: "웹사이트", description: "설명", businessNumber: "사업자번호", externalLinks: "외부 링크", tags: "태그" };
   return labels[key] ?? key;
 }
 

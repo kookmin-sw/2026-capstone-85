@@ -21,6 +21,7 @@ import {
   ActionLink,
   actionButtonClassName,
 } from "@/components/ui/action-button";
+import { jobDetailHref } from "@/lib/routes";
 import styles from "./job-card.module.css";
 
 export function JobCard({ job }: { job: JobListItem }) {
@@ -41,7 +42,7 @@ export function JobCard({ job }: { job: JobListItem }) {
         </div>
         <div className={styles.actions}>
           <ActionLink
-            href={`/jobs/${job.id}`}
+            href={jobDetailHref(job.id)}
             size="sm"
           >
             상세 보기
@@ -150,7 +151,7 @@ export function JobGridCard({ job }: { job: JobListItem }) {
         </div>
         <div className={styles.gridActions}>
           <ActionLink
-            href={`/jobs/${job.id}`}
+            href={jobDetailHref(job.id)}
             size="sm"
             className={styles.fillAction}
           >
@@ -185,7 +186,7 @@ export function CompactJobRow({ job }: { job: JobListItem }) {
           {job.companyName} · {job.location ?? "지역 불명확"}
         </p>
       </div>
-      <ActionLink href={`/jobs/${job.id}`} size="sm">
+      <ActionLink href={jobDetailHref(job.id)} size="sm">
         상세 보기
       </ActionLink>
     </div>
