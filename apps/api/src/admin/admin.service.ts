@@ -38,11 +38,16 @@ type ProfileSubmissionRecord = Prisma.CompanyProfileSubmissionGetPayload<{
 }>;
 
 const adminJobInclude = {
-  company: true,
+  company: {
+    include: {
+      logoAsset: { select: { publicUrl: true } },
+    },
+  },
   source: true,
 } satisfies Prisma.JobInclude;
 
 const adminCompanyInclude = {
+  logoAsset: { select: { publicUrl: true } },
   _count: { select: { jobs: true } },
 } satisfies Prisma.CompanyInclude;
 
@@ -202,10 +207,7 @@ export class AdminService {
     };
   }
 
-  async reviewAiSuggestion(
-    id: string,
-    action: 'approve' | 'reject',
-  ) {
+  async reviewAiSuggestion(id: string, action: 'approve' | 'reject') {
     const suggestion = await this.prisma.aiSuggestion.findUnique({
       where: { id },
       select: { status: true },
@@ -293,7 +295,8 @@ export class AdminService {
         ? payload.type
         : 'LOCAL_ACCOUNTING_FIRM';
 
-    let ownerUserId = typeof payload.ownerUserId === 'string' ? payload.ownerUserId : '';
+    let ownerUserId =
+      typeof payload.ownerUserId === 'string' ? payload.ownerUserId : '';
     if (!ownerUserId) {
       const admin = await this.prisma.user.findFirst({
         where: { role: 'ADMIN' },
@@ -310,9 +313,8 @@ export class AdminService {
     const company = await this.prisma.company.create({
       data: {
         name,
-        type: type as CompanyType,
+        type,
         websiteUrl: (writeData.websiteUrl as string | null) ?? null,
-        logoUrl: (writeData.logoUrl as string | null) ?? null,
         description: (writeData.description as string | null) ?? null,
         businessNumber: (writeData.businessNumber as string | null) ?? null,
         externalLinks: (writeData.externalLinks as string[]) ?? [],
@@ -320,7 +322,8 @@ export class AdminService {
         employeeCount: (writeData.employeeCount as number | null) ?? null,
         averageSalary: (writeData.averageSalary as number | null) ?? null,
         foundedYear: (writeData.foundedYear as number | null) ?? null,
-        recentAttritionRate: (writeData.recentAttritionRate as number | null) ?? null,
+        recentAttritionRate:
+          (writeData.recentAttritionRate as number | null) ?? null,
         owner: { connect: { id: ownerUserId } },
       },
       include: adminCompanyInclude,
@@ -614,7 +617,6 @@ export class AdminService {
     if (proposed.type !== undefined) data.type = proposed.type;
     if (proposed.websiteUrl !== undefined)
       data.websiteUrl = proposed.websiteUrl;
-    if (proposed.logoUrl !== undefined) data.logoUrl = proposed.logoUrl;
     if (proposed.description !== undefined) {
       data.description = proposed.description;
     }
@@ -641,7 +643,6 @@ export class AdminService {
     }
     for (const key of [
       'websiteUrl',
-      'logoUrl',
       'description',
       'businessNumber',
     ] as const) {
@@ -745,7 +746,7 @@ export class AdminService {
       name: company.name,
       type: company.type,
       websiteUrl: company.websiteUrl,
-      logoUrl: company.logoUrl,
+      logoUrl: company.logoAsset?.publicUrl ?? null,
       description: company.description,
       businessNumber: company.businessNumber,
       externalLinks: company.externalLinks,
@@ -848,23 +849,28 @@ export class AdminService {
     };
   }
 
-  private toCompanyWriteData(payload: Record<string, unknown>): Prisma.CompanyUpdateInput {
+  private toCompanyWriteData(
+    payload: Record<string, unknown>,
+  ): Prisma.CompanyUpdateInput {
     const data: Prisma.CompanyUpdateInput = {};
     if (typeof payload.name === 'string') data.name = payload.name.trim();
     if (typeof payload.type === 'string' && this.isCompanyType(payload.type)) {
       data.type = payload.type;
     }
     if (typeof payload.websiteUrl === 'string' || payload.websiteUrl === null) {
-      data.websiteUrl = payload.websiteUrl as string | null;
+      data.websiteUrl = payload.websiteUrl;
     }
-    if (typeof payload.logoUrl === 'string' || payload.logoUrl === null) {
-      data.logoUrl = payload.logoUrl as string | null;
+    if (
+      typeof payload.description === 'string' ||
+      payload.description === null
+    ) {
+      data.description = payload.description;
     }
-    if (typeof payload.description === 'string' || payload.description === null) {
-      data.description = payload.description as string | null;
-    }
-    if (typeof payload.businessNumber === 'string' || payload.businessNumber === null) {
-      data.businessNumber = payload.businessNumber as string | null;
+    if (
+      typeof payload.businessNumber === 'string' ||
+      payload.businessNumber === null
+    ) {
+      data.businessNumber = payload.businessNumber;
     }
     if (Array.isArray(payload.externalLinks)) {
       data.externalLinks = payload.externalLinks.filter(
@@ -876,17 +882,29 @@ export class AdminService {
         (item): item is string => typeof item === 'string',
       );
     }
-    if (typeof payload.employeeCount === 'number' || payload.employeeCount === null) {
-      data.employeeCount = payload.employeeCount as number | null;
+    if (
+      typeof payload.employeeCount === 'number' ||
+      payload.employeeCount === null
+    ) {
+      data.employeeCount = payload.employeeCount;
     }
-    if (typeof payload.averageSalary === 'number' || payload.averageSalary === null) {
-      data.averageSalary = payload.averageSalary as number | null;
+    if (
+      typeof payload.averageSalary === 'number' ||
+      payload.averageSalary === null
+    ) {
+      data.averageSalary = payload.averageSalary;
     }
-    if (typeof payload.foundedYear === 'number' || payload.foundedYear === null) {
-      data.foundedYear = payload.foundedYear as number | null;
+    if (
+      typeof payload.foundedYear === 'number' ||
+      payload.foundedYear === null
+    ) {
+      data.foundedYear = payload.foundedYear;
     }
-    if (typeof payload.recentAttritionRate === 'number' || payload.recentAttritionRate === null) {
-      data.recentAttritionRate = payload.recentAttritionRate as number | null;
+    if (
+      typeof payload.recentAttritionRate === 'number' ||
+      payload.recentAttritionRate === null
+    ) {
+      data.recentAttritionRate = payload.recentAttritionRate;
     }
     return data;
   }

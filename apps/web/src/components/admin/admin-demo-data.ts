@@ -130,7 +130,7 @@ export type AdminJobPayload = Omit<
 
 export type AdminCompanyPayload = Omit<
   AdminCompany,
-  "id" | "jobCount" | "createdAt" | "updatedAt"
+  "id" | "logoUrl" | "jobCount" | "createdAt" | "updatedAt"
 >;
 
 type DemoState = {
@@ -144,7 +144,8 @@ const stateKey = "accountit-admin-demo-state";
 const sessionKey = "accountit-admin-demo-user";
 const sessionUserKey = "accountit-admin-api-user";
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  (process.env.NODE_ENV === "production" ? "/api" : "http://localhost:4000");
 const demoAdminAccounts = [
   { username: "test001", password: "password123" },
 ] as const;

@@ -4,6 +4,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import {
+  AssetPurpose,
+  AssetStatus,
   CompanyType,
   DeadlineType,
   EmploymentType,
@@ -61,7 +63,7 @@ function managedJob(overrides: Record<string, unknown> = {}) {
     company: {
       id: 'company-1',
       name: '테스트회계법인',
-      logoUrl: null,
+      logoAsset: null,
     },
     source: { id: 'source-1', name: '기업회원 제출' },
     labels: [],
@@ -92,7 +94,7 @@ function companyDetail(overrides: Record<string, unknown> = {}) {
     name: '테스트회계법인',
     type: CompanyType.LOCAL_ACCOUNTING_FIRM,
     websiteUrl: null,
-    logoUrl: '/company-logos/old.png',
+    logoAsset: { publicUrl: '/company-logos/old.png' },
     description: null,
     businessNumber: null,
     employeeTrend: null,
@@ -120,6 +122,9 @@ describe('CompaniesService submission ownership', () => {
       findFirst: jest.Mock;
       create: jest.Mock;
     };
+    asset: {
+      findFirst: jest.Mock;
+    };
     jobSubmission: {
       findFirst: jest.Mock;
       findMany: jest.Mock;
@@ -144,6 +149,9 @@ describe('CompaniesService submission ownership', () => {
       companyProfileSubmission: {
         findFirst: jest.fn(),
         create: jest.fn(),
+      },
+      asset: {
+        findFirst: jest.fn(),
       },
       jobSubmission: {
         findFirst: jest.fn(),
@@ -197,68 +205,45 @@ describe('CompaniesService submission ownership', () => {
     expect(prisma.jobSubmission.create).not.toHaveBeenCalled();
   });
 
-  it('rejects blank company image profile submissions', async () => {
+  it('rejects empty profile submissions', async () => {
     prisma.company.findUnique.mockResolvedValue({ id: 'company-1' });
 
     await expect(
-      service.createProfileSubmission('user-1', {
-        logoUrl: '   ',
-      }),
+      service.createProfileSubmission('user-1', {}),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.companyProfileSubmission.create).not.toHaveBeenCalled();
   });
 
-  it('creates a company image profile submission', async () => {
+  it('updates a company image with a ready asset without creating a profile submission', async () => {
     prisma.company.findUnique.mockResolvedValue({ id: 'company-1' });
-    prisma.companyProfileSubmission.findFirst.mockResolvedValue(null);
-    prisma.companyProfileSubmission.create.mockResolvedValue({
-      id: 'profile-submission-1',
-      companyId: 'company-1',
-      company: { name: '테스트회계법인' },
-      submittedBy: { username: 'company-user' },
-      reviewedBy: null,
-      proposed: { logoUrl: '/company-logos/new.png' },
-      status: SubmissionStatus.PENDING,
-      adminNote: null,
-      createdAt,
-      updatedAt: createdAt,
-      reviewedAt: null,
-    });
-
-    const result = await service.createProfileSubmission('user-1', {
-      logoUrl: ' /company-logos/new.png ',
-    });
-
-    expect(prisma.companyProfileSubmission.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: {
-          companyId: 'company-1',
-          submittedById: 'user-1',
-          proposed: { logoUrl: '/company-logos/new.png' },
-        },
-      }),
-    );
-    expect(result.proposed.logoUrl).toBe('/company-logos/new.png');
-  });
-
-  it('updates a company image immediately without creating a profile submission', async () => {
-    prisma.company.findUnique.mockResolvedValue({ id: 'company-1' });
+    prisma.asset.findFirst.mockResolvedValue({ id: 'asset-1' });
     prisma.company.update.mockResolvedValue(
-      companyDetail({ logoUrl: '/uploads/company-logos/new.png' }),
+      companyDetail({
+        logoAsset: { publicUrl: 'https://assets.example.com/logo.png' },
+      }),
     );
 
     const result = await service.updateLogo('user-1', {
-      logoUrl: ' /uploads/company-logos/new.png ',
+      logoAssetId: ' asset-1 ',
     });
 
+    expect(prisma.asset.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 'asset-1',
+        companyId: 'company-1',
+        purpose: AssetPurpose.COMPANY_LOGO,
+        status: AssetStatus.READY,
+      },
+      select: { id: true },
+    });
     expect(prisma.company.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'company-1' },
-        data: { logoUrl: '/uploads/company-logos/new.png' },
+        data: { logoAsset: { connect: { id: 'asset-1' } } },
       }),
     );
     expect(prisma.companyProfileSubmission.create).not.toHaveBeenCalled();
-    expect(result.logoUrl).toBe('/uploads/company-logos/new.png');
+    expect(result.logoUrl).toBe('https://assets.example.com/logo.png');
   });
 
   it('rejects blank immediate company image updates', async () => {
@@ -266,7 +251,19 @@ describe('CompaniesService submission ownership', () => {
 
     await expect(
       service.updateLogo('user-1', {
-        logoUrl: '   ',
+        logoAssetId: '   ',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.company.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects company image updates for unavailable assets', async () => {
+    prisma.company.findUnique.mockResolvedValue({ id: 'company-1' });
+    prisma.asset.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.updateLogo('user-1', {
+        logoAssetId: 'asset-1',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.company.update).not.toHaveBeenCalled();

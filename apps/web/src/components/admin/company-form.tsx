@@ -19,7 +19,6 @@ type CompanyFormState = {
   name: string;
   type: AdminCompanyType;
   websiteUrl: string;
-  logoUrl: string;
   description: string;
   businessNumber: string;
   externalLinks: string;
@@ -34,7 +33,6 @@ const blankForm: CompanyFormState = {
   name: "",
   type: "LOCAL_ACCOUNTING_FIRM",
   websiteUrl: "",
-  logoUrl: "",
   description: "",
   businessNumber: "",
   externalLinks: "",
@@ -79,7 +77,6 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
           name: company.name,
           type: company.type,
           websiteUrl: company.websiteUrl ?? "",
-          logoUrl: company.logoUrl ?? "",
           description: company.description ?? "",
           businessNumber: company.businessNumber ?? "",
           externalLinks: company.externalLinks.join("\n"),
@@ -121,7 +118,6 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
       name: form.name.trim(),
       type: form.type,
       websiteUrl: nullable(form.websiteUrl),
-      logoUrl: nullable(form.logoUrl),
       description: nullable(form.description),
       businessNumber: nullable(form.businessNumber),
       externalLinks: splitList(form.externalLinks),
@@ -141,14 +137,18 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
       }
       router.push("/admin/companies");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "저장에 실패했습니다.");
+      setMessage(
+        error instanceof Error ? error.message : "저장에 실패했습니다.",
+      );
     } finally {
       setSaving(false);
     }
   }
 
   if (loading) {
-    return <div className={styles.loadingText}>회사 정보를 불러오는 중입니다.</div>;
+    return (
+      <div className={styles.loadingText}>회사 정보를 불러오는 중입니다.</div>
+    );
   }
 
   return (
@@ -172,11 +172,7 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
         </button>
       </div>
 
-      {message && (
-        <div className={styles.messageError}>
-          {message}
-        </div>
-      )}
+      {message && <div className={styles.messageError}>{message}</div>}
 
       <section className={styles.formCard}>
         <div className={styles.formGridTwo}>
@@ -209,14 +205,6 @@ export function CompanyForm({ companyId }: { companyId?: string }) {
               onChange={(event) => update("websiteUrl", event.target.value)}
               className={styles.input}
               placeholder="https://example.com"
-            />
-          </Field>
-          <Field label="로고 URL">
-            <input
-              value={form.logoUrl}
-              onChange={(event) => update("logoUrl", event.target.value)}
-              className={styles.input}
-              placeholder="/company-logos/example.png"
             />
           </Field>
           <Field label="사업자번호">

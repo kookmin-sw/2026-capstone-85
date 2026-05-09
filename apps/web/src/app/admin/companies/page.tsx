@@ -10,6 +10,7 @@ import {
   companyTypeLabels,
 } from "@/components/admin/admin-demo-data";
 import styles from "@/components/admin/admin.module.css";
+import { adminCompanyEditHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 function formatNullableNumber(value: number | null, suffix = "") {
@@ -151,7 +152,7 @@ export default function AdminCompaniesPage() {
                   <tr key={company.id} className={styles.tableRowTop}>
                     <td>
                       <Link
-                        href={`/admin/companies/${company.id}`}
+                        href={adminCompanyEditHref(company.id)}
                         className={styles.tableTitleLink}
                       >
                         {company.name}
@@ -179,7 +180,7 @@ export default function AdminCompaniesPage() {
                     </td>
                     <td>
                       <Link
-                        href={`/admin/companies/${company.id}`}
+                        href={adminCompanyEditHref(company.id)}
                         className={styles.smallButton}
                       >
                         수정

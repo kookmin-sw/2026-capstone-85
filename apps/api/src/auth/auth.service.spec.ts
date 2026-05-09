@@ -81,7 +81,6 @@ describe('AuthService', () => {
       displayName: '담당자',
       companyName: '테스트회계법인',
       companyType: CompanyType.LOCAL_ACCOUNTING_FIRM,
-      logoUrl: '/company-logos/test.png',
     });
 
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
@@ -89,7 +88,6 @@ describe('AuthService', () => {
       data: {
         name: '테스트회계법인',
         type: CompanyType.LOCAL_ACCOUNTING_FIRM,
-        logoUrl: '/company-logos/test.png',
         ownerUserId: 'user-1',
       },
     });
@@ -100,7 +98,7 @@ describe('AuthService', () => {
     });
   });
 
-  it('requires a company image when registering a company user', async () => {
+  it('requires a company name when registering a company user', async () => {
     prisma.user.findUnique.mockResolvedValue(null);
 
     await expect(
@@ -108,7 +106,6 @@ describe('AuthService', () => {
         username: 'company-user',
         password: 'password123',
         role: UserRole.COMPANY,
-        companyName: '테스트회계법인',
         companyType: CompanyType.LOCAL_ACCOUNTING_FIRM,
       }),
     ).rejects.toBeInstanceOf(BadRequestException);

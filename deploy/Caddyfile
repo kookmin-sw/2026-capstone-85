@@ -1,0 +1,15 @@
+{$DOMAIN} {
+	encode zstd gzip
+
+	redir /api /api/ 308
+
+	handle_path /api/* {
+		reverse_proxy api:4000
+	}
+
+	handle {
+		reverse_proxy {$S3_WEB_ENDPOINT} {
+			header_up Host {$S3_WEB_HOST}
+		}
+	}
+}

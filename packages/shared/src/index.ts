@@ -195,7 +195,6 @@ export type CompanyProfileProposal = {
   name?: string;
   type?: CompanyType;
   websiteUrl?: string | null;
-  logoUrl?: string | null;
   description?: string | null;
   businessNumber?: string | null;
   externalLinks?: string[];
