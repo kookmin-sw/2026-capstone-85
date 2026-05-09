@@ -30,6 +30,7 @@
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+  cursor: pointer;
   transition:
     border-color 160ms ease,
     background-color 160ms ease,
