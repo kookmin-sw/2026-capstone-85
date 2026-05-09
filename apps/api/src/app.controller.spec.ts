@@ -19,7 +19,15 @@ describe('AppController', () => {
       expect(appController.getHealth()).toEqual({
         ok: true,
         service: 'cpa-job-platform-api',
-        docs: '/docs',
+        docs: null,
+      });
+    });
+
+    it('should expose healthz metadata', () => {
+      expect(appController.getHealthz()).toEqual({
+        ok: true,
+        service: 'cpa-job-platform-api',
+        docs: null,
       });
     });
   });

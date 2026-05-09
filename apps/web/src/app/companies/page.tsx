@@ -17,6 +17,7 @@ import { ActionButton, ActionLink } from "@/components/ui/action-button";
 import { FilterInput, FilterSelect } from "@/components/ui/filter-select";
 import { fetchCompanies } from "@/lib/api";
 import { companyTypeLabels } from "@/lib/labels";
+import { companyDetailHref } from "@/lib/routes";
 import styles from "./companies-page.module.css";
 
 const companySortLabels = {
@@ -471,7 +472,7 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
         )}
 
         <ActionLink
-          href={`/companies/${company.id}`}
+          href={companyDetailHref(company.id)}
           size="sm"
           className={styles.cardAction}
           iconEnd={<ArrowRight size={13} />}

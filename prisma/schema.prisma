@@ -79,6 +79,15 @@ enum AiSuggestionStatus {
   REJECTED
 }
 
+enum AssetPurpose {
+  COMPANY_LOGO
+}
+
+enum AssetStatus {
+  PENDING
+  READY
+}
+
 model User {
   id                  String   @id @default(uuid())
   username            String   @unique
@@ -95,6 +104,7 @@ model User {
   reviewedJobSubmissions            JobSubmission[]            @relation("JobSubmissionReviewer")
   companyProfileSubmissions         CompanyProfileSubmission[] @relation("CompanyProfileSubmissionSubmitter")
   reviewedCompanyProfileSubmissions CompanyProfileSubmission[] @relation("CompanyProfileSubmissionReviewer")
+  uploadedAssets                    Asset[]                    @relation("AssetUploader")
 }
 
 model Company {
@@ -102,7 +112,7 @@ model Company {
   name                String      @unique
   type                CompanyType
   websiteUrl          String?
-  logoUrl             String?
+  logoAssetId         String?     @unique
   description         String?
   businessNumber      String?
   employeeTrend       Json?
@@ -117,10 +127,37 @@ model Company {
   updatedAt           DateTime    @updatedAt
 
   owner              User                       @relation("CompanyOwner", fields: [ownerUserId], references: [id])
+  logoAsset          Asset?                     @relation("CompanyLogoAsset", fields: [logoAssetId], references: [id], onDelete: SetNull)
+  assets             Asset[]                    @relation("CompanyAssets")
   metadata           CompanyMetadata?
   jobs               Job[]
   jobSubmissions     JobSubmission[]
   profileSubmissions CompanyProfileSubmission[]
+}
+
+model Asset {
+  id           String       @id @default(uuid())
+  purpose      AssetPurpose
+  status       AssetStatus  @default(PENDING)
+  bucket       String
+  region       String
+  key          String       @unique
+  publicUrl    String
+  contentType  String
+  byteSize     Int
+  originalName String?
+  uploadedById String
+  companyId    String
+  completedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  uploadedBy     User     @relation("AssetUploader", fields: [uploadedById], references: [id])
+  company        Company  @relation("CompanyAssets", fields: [companyId], references: [id], onDelete: Cascade)
+  logoForCompany Company? @relation("CompanyLogoAsset")
+
+  @@index([companyId, purpose, status])
+  @@index([uploadedById, status])
 }
 
 model CompanyMetadata {

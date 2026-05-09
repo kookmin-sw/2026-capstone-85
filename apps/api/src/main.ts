@@ -5,13 +5,24 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
+type TrustProxyApplication = {
+  set(name: 'trust proxy', value: number): void;
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const expressApp = app
+    .getHttpAdapter()
+    .getInstance() as TrustProxyApplication;
+  expressApp.set('trust proxy', 1);
 
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({
-    origin: process.env.WEB_ORIGIN ?? 'http://localhost:3000',
+    origin: (process.env.WEB_ORIGIN ?? 'http://localhost:3000')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     credentials: true,
   });
   app.useGlobalPipes(
@@ -22,14 +33,16 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('CPA Job Platform API')
-    .setDescription('REST API for CPA-focused job curation prototype')
-    .setVersion('0.1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  if (process.env.ENABLE_SWAGGER === 'true') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('CPA Job Platform API')
+      .setDescription('REST API for CPA-focused job curation prototype')
+      .setVersion('0.1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('docs', app, document);
+  }
 
   await app.listen(process.env.PORT ?? 4000);
 }

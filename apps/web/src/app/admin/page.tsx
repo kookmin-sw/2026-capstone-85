@@ -9,6 +9,7 @@ import {
   type AdminDashboard,
 } from "@/components/admin/admin-demo-data";
 import styles from "@/components/admin/admin.module.css";
+import { adminCompanyEditHref, adminJobEditHref } from "@/lib/routes";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -104,7 +105,7 @@ export default function AdminDashboardPage() {
               dashboard.recentJobs.map((job) => (
                 <Link
                   key={job.id}
-                  href={`/admin/jobs/${job.id}`}
+                  href={adminJobEditHref(job.id)}
                   className={styles.listItem}
                 >
                   <div className={styles.listRowHeader}>
@@ -139,7 +140,7 @@ export default function AdminDashboardPage() {
               dashboard.recentCompanies.map((company) => (
                 <Link
                   key={company.id}
-                  href={`/admin/companies/${company.id}`}
+                  href={adminCompanyEditHref(company.id)}
                   className={styles.listItem}
                 >
                   <div className={styles.listRowHeader}>

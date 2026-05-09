@@ -51,7 +51,6 @@ export function EmployeeTrendChart({ data }: { data: EmployeeTrendPoint[] }) {
             axisLine={false}
             tickLine={false}
           />
-          {/* 두 축 모두 width=40 고정 → 레이블 div와 픽셀 단위 대칭 */}
           <YAxis
             yAxisId="bar"
             width={40}

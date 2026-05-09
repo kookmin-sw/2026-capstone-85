@@ -33,6 +33,7 @@ import {
   type JobFilterState,
 } from "@/lib/job-filters";
 import { employmentLabels, jobFamilyLabels, kicpaLabels } from "@/lib/labels";
+import { jobDetailHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import styles from "./jobs-page.module.css";
 
@@ -212,7 +213,7 @@ function JobsSidebarCalendar({
             {dayMap[selectedDate].jobs.slice(0, 10).map((job) => (
               <Link
                 key={job.id}
-                href={`/jobs/${job.id}`}
+                href={jobDetailHref(job.id)}
                 className="flex items-center justify-between gap-2 rounded-lg px-1 py-2.5 transition-colors hover:bg-gray-50"
               >
                 <div className="min-w-0">
@@ -248,7 +249,7 @@ function JobsSidebarCalendar({
             {urgentJobs.map((job) => (
               <Link
                 key={job.id}
-                href={`/jobs/${job.id}`}
+                href={jobDetailHref(job.id)}
                 className="flex items-center justify-between gap-2 rounded-lg px-1 py-2.5 transition-colors hover:bg-gray-50"
               >
                 <div className="min-w-0">

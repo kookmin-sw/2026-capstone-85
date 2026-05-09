@@ -17,6 +17,7 @@ import {
   isSameDay,
   toDateKey,
 } from "@/lib/date-utils";
+import { jobDetailHref } from "@/lib/routes";
 import { Badge, CompactJobRow, deadlineText } from "./job-card";
 
 const weekLabels = ["월", "화", "수", "목", "금", "토", "일"];
@@ -602,7 +603,7 @@ function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
       </div>
       <div className="grid gap-1">
         <Link
-          href={`/jobs/${event.job.id}`}
+          href={jobDetailHref(event.job.id)}
           className="font-semibold text-[var(--foreground)] hover:text-[var(--brand)]"
         >
           {event.job.title}

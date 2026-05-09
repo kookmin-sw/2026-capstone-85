@@ -14,6 +14,7 @@ import {
   kicpaLabels,
   traineeLabels,
 } from "@/lib/labels";
+import { jobDetailHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import styles from "../company-page.module.css";
 
@@ -55,7 +56,7 @@ export function ManagedJobCard({
             <ActionLink
               variant="subtle"
               size="sm"
-              href={`/jobs/${job.id}`}
+              href={jobDetailHref(job.id)}
             >
               보기
             </ActionLink>

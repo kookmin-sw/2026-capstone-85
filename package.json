@@ -21,8 +21,12 @@
     "test": "npm run test --workspaces --if-present",
     "prisma:generate": "prisma generate --schema=prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=prisma/schema.prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
     "prisma:seed": "tsx prisma/seed.ts",
-    "prisma:mock": "tsx prisma/mock.ts"
+    "prisma:mock": "tsx prisma/mock.ts",
+    "build:web:static": "NEXT_PUBLIC_API_BASE_URL=/api npm run build --workspace @cpa/web",
+    "deploy:web:s3": "bash scripts/deploy-web-s3.sh",
+    "backup:postgres": "bash scripts/backup-postgres.sh"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
