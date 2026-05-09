@@ -1,13 +1,20 @@
 import { NotFoundException } from '@nestjs/common';
-import { JobStatus } from '@prisma/client';
+import { JobStatus, type Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { JobsService } from './jobs.service';
 
-describe('JobsService public detail visibility', () => {
+describe('JobsService', () => {
   let prisma: {
     job: {
       findFirst: jest.Mock;
+      findMany: jest.Mock;
+      count: jest.Mock;
+      groupBy: jest.Mock;
     };
+    companyMetadata: {
+      findMany: jest.Mock;
+    };
+    $transaction: jest.Mock;
   };
   let service: JobsService;
 
@@ -15,7 +22,14 @@ describe('JobsService public detail visibility', () => {
     prisma = {
       job: {
         findFirst: jest.fn(),
+        findMany: jest.fn(),
+        count: jest.fn(),
+        groupBy: jest.fn().mockResolvedValue([]),
       },
+      companyMetadata: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      $transaction: jest.fn().mockResolvedValue([[], 0]),
     };
     service = new JobsService(prisma as unknown as PrismaService);
   });
@@ -32,4 +46,80 @@ describe('JobsService public detail visibility', () => {
       }),
     );
   });
+
+  it('filters active-hiring by companies with at least five open jobs', async () => {
+    prisma.job.groupBy.mockResolvedValue([
+      { companyId: 'company-1', _count: { _all: 5 } },
+      { companyId: 'company-2', _count: { _all: 4 } },
+      { companyId: 'company-3', _count: { _all: 7 } },
+    ]);
+
+    await service.list({ preset: 'active-hiring', search: '감사' });
+
+    expect(prisma.job.groupBy).toHaveBeenCalledWith({
+      by: ['companyId'],
+      where: { status: JobStatus.OPEN },
+      _count: { _all: true },
+    });
+    const where = getLastJobFindManyWhere(prisma);
+    const andItems = getAndItems(where);
+    expect(where.status).toBe(JobStatus.OPEN);
+    expect(andItems).toContainEqual({
+      companyId: { in: ['company-1', 'company-3'] },
+    });
+    expect(JSON.stringify(andItems)).toContain('"contains":"감사"');
+  });
+
+  it('filters career-verified by explicit company metadata signals', async () => {
+    prisma.companyMetadata.findMany.mockResolvedValue([
+      { companyId: 'company-big4' },
+      { companyId: 'company-public' },
+    ]);
+    prisma.job.findMany.mockResolvedValue([]);
+
+    await service.calendar({
+      from: '2026-05-01',
+      to: '2026-05-31',
+      preset: 'career-verified',
+    });
+
+    const metadataArgs = getLastMetadataFindManyArgs(prisma);
+    expect(metadataArgs.where.careerVerificationSignals.hasSome).toEqual(
+      expect.arrayContaining(['BIG4', 'PUBLIC_INSTITUTION']),
+    );
+    expect(metadataArgs.select).toEqual({ companyId: true });
+    const where = getLastJobFindManyWhere(prisma);
+    expect(getAndItems(where)).toContainEqual({
+      companyId: { in: ['company-big4', 'company-public'] },
+    });
+  });
 });
+
+function getLastJobFindManyWhere(prisma: {
+  job: { findMany: jest.Mock };
+}): Prisma.JobWhereInput {
+  const call = prisma.job.findMany.mock.calls.at(-1) as
+    | [{ where?: Prisma.JobWhereInput }]
+    | undefined;
+  return call?.[0].where ?? {};
+}
+
+function getLastMetadataFindManyArgs(prisma: {
+  companyMetadata: { findMany: jest.Mock };
+}) {
+  const call = prisma.companyMetadata.findMany.mock.calls.at(-1) as
+    | [
+        {
+          where: { careerVerificationSignals: { hasSome: string[] } };
+          select: { companyId: true };
+        },
+      ]
+    | undefined;
+  if (!call) throw new Error('companyMetadata.findMany was not called');
+  return call[0];
+}
+
+function getAndItems(where: Prisma.JobWhereInput): Prisma.JobWhereInput[] {
+  if (!where.AND) return [];
+  return Array.isArray(where.AND) ? where.AND : [where.AND];
+}

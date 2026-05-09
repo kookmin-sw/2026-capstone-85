@@ -1,7 +1,13 @@
-import type { JobFilterPreference } from "@cpa/shared";
+import {
+  JOB_PRESET_IDS,
+  type JobFilterPreference,
+  type JobPresetId,
+} from "@cpa/shared";
 
 export type JobFilterState = {
   quick: string;
+  preset: "" | JobPresetId;
+  userPresetId: string;
   search: string;
   jobFamily: string;
   companyType: string;
@@ -24,6 +30,8 @@ export type JobFilterState = {
 
 export const defaultJobFilters: JobFilterState = {
   quick: "",
+  preset: "",
+  userPresetId: "",
   search: "",
   jobFamily: "",
   companyType: "",
@@ -111,6 +119,8 @@ const stringParamKeys = [
 export const jobFilterQueryKeys = new Set<string>([
   ...stringParamKeys,
   "quick",
+  "preset",
+  "userPresetId",
   "traineeAvailable",
   "deadline",
   "locations",
@@ -123,6 +133,7 @@ export function buildJobFilterParams(filters: JobFilterState) {
     const value = filters[key];
     if (value) next.set(key, value);
   }
+  if (filters.preset) next.set("preset", filters.preset);
   if (!next.has("sort")) next.set("sort", defaultJobFilters.sort);
   filters.selectedLocations.forEach((location) => {
     next.append("locations", location);
@@ -141,6 +152,20 @@ export function parseJobFiltersFromParams(params: URLSearchParams) {
     ? quickFilterState(quickFilter)
     : { ...defaultJobFilters };
   let hasAnyQuery = Boolean(quickFilter);
+  const preset = normalizePresetParam(params.get("preset"));
+  const userPresetId = params.get("userPresetId")?.trim() ?? "";
+
+  if (preset) {
+    filters.preset = preset;
+    filters.userPresetId = "";
+    hasAnyQuery = true;
+  }
+
+  if (userPresetId) {
+    filters.userPresetId = userPresetId.slice(0, 80);
+    filters.preset = "";
+    hasAnyQuery = true;
+  }
 
   if (!quickFilter) {
     for (const key of stringParamKeys) {
@@ -217,6 +242,38 @@ export function jobFiltersToPreference(filters: JobFilterState) {
   return preference;
 }
 
+export function jobFiltersToPresetSnapshot(filters: JobFilterState) {
+  const preference = jobFiltersToPreference(filters);
+  if (preference.sort === defaultJobFilters.sort) {
+    delete preference.sort;
+  }
+  return orderJobFilterPreference(preference);
+}
+
+export function jobPresetSignatureFromFilters(filters: JobFilterState) {
+  return JSON.stringify(jobFiltersToPresetSnapshot(filters));
+}
+
+export function isMeaningfulJobPresetSnapshot(filters: JobFilterState) {
+  const snapshot = jobFiltersToPresetSnapshot(filters);
+  if (snapshot.selectedLocations?.length) return true;
+  return stringParamKeys.some(
+    (key) => key !== "sort" && Boolean(snapshot[key]),
+  );
+}
+
+export function userPresetState(
+  preference: JobFilterPreference,
+  userPresetId: string,
+): JobFilterState {
+  return {
+    ...normalizeJobFilterPreference(preference),
+    quick: "",
+    preset: "",
+    userPresetId,
+  };
+}
+
 export function quickFilterState(filter: QuickJobFilter) {
   return {
     ...defaultJobFilters,
@@ -235,12 +292,43 @@ export function buildJobUrlParams(filters: JobFilterState) {
       next.set(key, value);
     }
     if (filters.sort) next.set("sort", filters.sort);
+    appendPresetUrlParams(next, filters);
     return next;
   }
 
   const next = buildJobFilterParams(filters);
   if (filters.deadline) next.set("deadline", filters.deadline);
+  appendPresetUrlParams(next, filters);
   return next;
+}
+
+function orderJobFilterPreference(preference: JobFilterPreference) {
+  const ordered: JobFilterPreference = {};
+  for (const key of stringParamKeys) {
+    const value = preference[key];
+    if (typeof value === "string" && value) {
+      ordered[key] = value;
+    }
+  }
+  if (preference.selectedLocations?.length) {
+    ordered.selectedLocations = [...preference.selectedLocations];
+  }
+  return ordered;
+}
+
+function appendPresetUrlParams(
+  params: URLSearchParams,
+  filters: JobFilterState,
+) {
+  if (filters.preset) params.set("preset", filters.preset);
+  if (filters.userPresetId) params.set("userPresetId", filters.userPresetId);
+}
+
+function normalizePresetParam(value: string | null): JobPresetId | "" {
+  if (!value) return "";
+  return (JOB_PRESET_IDS as readonly string[]).includes(value)
+    ? (value as JobPresetId)
+    : "";
 }
 
 function normalizeCommaParam(value: string | null) {

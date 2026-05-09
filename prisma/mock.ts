@@ -542,6 +542,26 @@ async function upsertJob(jobData: SeedJob, lastCheckedAt = new Date()) {
   });
 }
 
+function buildCareerVerificationMetadata(company: Company) {
+  if (company.type === CompanyType.BIG4) {
+    return {
+      careerVerificationSignals: ['BIG4', 'MAJOR_ACCOUNTING_FIRM'],
+      careerVerificationNote: 'Mock seed: Big4 company type',
+      careerVerificationSource: 'mock-company-type',
+    };
+  }
+
+  if (company.type === CompanyType.PUBLIC_INSTITUTION) {
+    return {
+      careerVerificationSignals: ['PUBLIC_INSTITUTION', 'PUBLIC_EQUIVALENT'],
+      careerVerificationNote: 'Mock seed: public institution company type',
+      careerVerificationSource: 'mock-company-type',
+    };
+  }
+
+  return null;
+}
+
 async function main() {
   const passwordHash = await argon2.hash(MOCK_PASSWORD);
 
@@ -782,6 +802,24 @@ async function main() {
       }),
     ),
   );
+
+  for (const company of companies) {
+    const metadata = buildCareerVerificationMetadata(company);
+    if (metadata) {
+      await prisma.companyMetadata.upsert({
+        where: { companyId: company.id },
+        update: metadata,
+        create: {
+          companyId: company.id,
+          ...metadata,
+        },
+      });
+    } else {
+      await prisma.companyMetadata.deleteMany({
+        where: { companyId: company.id },
+      });
+    }
+  }
 
   const baseJobs: SeedJob[] = [
     {

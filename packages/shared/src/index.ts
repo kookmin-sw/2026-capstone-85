@@ -54,6 +54,66 @@ export type DeadlineType = (typeof DEADLINE_TYPES)[number];
 export const JOB_STATUSES = ["OPEN", "CLOSED", "DRAFT"] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
+export const JOB_PRESET_IDS = ["active-hiring", "career-verified"] as const;
+export type JobPresetId = (typeof JOB_PRESET_IDS)[number];
+
+export const CAREER_VERIFICATION_SIGNALS = [
+  "BIG4",
+  "PUBLIC_INSTITUTION",
+  "MAJOR_ACCOUNTING_FIRM",
+  "LISTED",
+  "CONGLOMERATE",
+  "PUBLIC_EQUIVALENT",
+] as const;
+export type CareerVerificationSignal =
+  (typeof CAREER_VERIFICATION_SIGNALS)[number];
+
+export type ActiveHiringPresetConfig = {
+  id: "active-hiring";
+  label: string;
+  description: string;
+  resolver: "company-open-job-count";
+  criteria: { minOpenJobs: number };
+};
+
+export type CareerVerifiedPresetConfig = {
+  id: "career-verified";
+  label: string;
+  description: string;
+  resolver: "company-career-verification";
+  criteria: { signals: readonly CareerVerificationSignal[] };
+};
+
+export type JobPresetConfig =
+  | ActiveHiringPresetConfig
+  | CareerVerifiedPresetConfig;
+
+export const jobPresetConfigs = [
+  {
+    id: "active-hiring",
+    label: "적극 채용 중",
+    description: "회사 단위로 활성 공고가 많은 채용 신호를 봅니다.",
+    resolver: "company-open-job-count",
+    criteria: { minOpenJobs: 5 },
+  },
+  {
+    id: "career-verified",
+    label: "커리어 검증 기업",
+    description: "명시된 회사 metadata로 설명 가능한 기업만 봅니다.",
+    resolver: "company-career-verification",
+    criteria: {
+      signals: [
+        "BIG4",
+        "PUBLIC_INSTITUTION",
+        "MAJOR_ACCOUNTING_FIRM",
+        "LISTED",
+        "CONGLOMERATE",
+        "PUBLIC_EQUIVALENT",
+      ],
+    },
+  },
+] as const satisfies readonly JobPresetConfig[];
+
 export const SUBMISSION_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
 
@@ -159,6 +219,21 @@ export type JobFilterPreference = {
 
 export type JobFilterPreferenceResponse = {
   filter: JobFilterPreference | null;
+  authenticated: boolean;
+};
+
+export type UserJobPresetItem = {
+  id: string;
+  filterState: JobFilterPreference;
+  autoLabel: string;
+  filterSignature: string;
+  createdAt: string;
+  updatedAt: string;
+  lastUsedAt: string | null;
+};
+
+export type UserJobPresetListResponse = {
+  items: UserJobPresetItem[];
   authenticated: boolean;
 };
 

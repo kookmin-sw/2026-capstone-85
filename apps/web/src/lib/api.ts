@@ -16,6 +16,8 @@ import type {
   JobSubmissionItem,
   KicpaCondition,
   TraineeStatus,
+  UserJobPresetItem,
+  UserJobPresetListResponse,
 } from "@cpa/shared";
 
 const API_BASE_URL =
@@ -432,6 +434,69 @@ export async function saveJobFilterPreference(filter: JobFilterPreference) {
     throw new Error("필터를 저장하지 못했습니다.");
   }
   return (await response.json()) as JobFilterPreferenceResponse;
+}
+
+export async function fetchUserJobPresets() {
+  const response = await fetch(`${API_BASE_URL}/users/me/job-presets`, {
+    cache: "no-store",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "개인 프리셋을 불러오지 못했습니다."),
+    );
+  }
+  return (await response.json()) as UserJobPresetListResponse;
+}
+
+export async function createUserJobPreset(
+  filter: JobFilterPreference,
+  name?: string,
+) {
+  const response = await fetch(`${API_BASE_URL}/users/me/job-presets`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ filter, name }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "개인 프리셋을 저장하지 못했습니다."),
+    );
+  }
+  return (await response.json()) as UserJobPresetItem;
+}
+
+export async function markUserJobPresetUsed(id: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/users/me/job-presets/${id}/use`,
+    {
+      method: "PATCH",
+      credentials: "include",
+    },
+  );
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(
+        response,
+        "개인 프리셋 사용 기록을 저장하지 못했습니다.",
+      ),
+    );
+  }
+  return (await response.json()) as UserJobPresetItem;
+}
+
+export async function deleteUserJobPreset(id: string) {
+  const response = await fetch(`${API_BASE_URL}/users/me/job-presets/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "개인 프리셋을 삭제하지 못했습니다."),
+    );
+  }
+  return (await response.json()) as UserJobPresetItem;
 }
 
 export async function fetchAdminHealth() {

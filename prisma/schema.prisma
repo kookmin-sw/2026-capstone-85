@@ -99,6 +99,7 @@ model User {
   updatedAt           DateTime @updatedAt
 
   ownedCompany                      Company?                   @relation("CompanyOwner")
+  jobPresets                        UserJobPreset[]
   jobSubmissions                    JobSubmission[]            @relation("JobSubmissionSubmitter")
   reviewedJobSubmissions            JobSubmission[]            @relation("JobSubmissionReviewer")
   companyProfileSubmissions         CompanyProfileSubmission[] @relation("CompanyProfileSubmissionSubmitter")
@@ -128,6 +129,7 @@ model Company {
   owner              User                       @relation("CompanyOwner", fields: [ownerUserId], references: [id])
   logoAsset          Asset?                     @relation("CompanyLogoAsset", fields: [logoAssetId], references: [id], onDelete: SetNull)
   assets             Asset[]                    @relation("CompanyAssets")
+  metadata           CompanyMetadata?
   jobs               Job[]
   jobSubmissions     JobSubmission[]
   profileSubmissions CompanyProfileSubmission[]
@@ -156,6 +158,17 @@ model Asset {
 
   @@index([companyId, purpose, status])
   @@index([uploadedById, status])
+}
+
+model CompanyMetadata {
+  companyId                 String   @id
+  careerVerificationSignals String[] @default([])
+  careerVerificationNote    String?
+  careerVerificationSource  String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model Source {
@@ -222,6 +235,22 @@ model JobLabel {
   label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@id([jobId, labelId])
+}
+
+model UserJobPreset {
+  id              String    @id @default(uuid())
+  userId          String
+  filterState     Json
+  autoLabel       String
+  filterSignature String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastUsedAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, filterSignature])
+  @@index([userId, createdAt])
 }
 
 model JobSubmission {
