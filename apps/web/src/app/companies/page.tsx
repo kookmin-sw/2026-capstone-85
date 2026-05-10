@@ -2,7 +2,6 @@
 
 import type { CompanyListItem } from "@cpa/shared";
 import {
-  ArrowRight,
   Building2,
   CircleDollarSign,
   RefreshCw,
@@ -11,10 +10,12 @@ import {
   TrendingDown,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteNav } from "@/components/site-nav";
-import { ActionButton, ActionLink } from "@/components/ui/action-button";
+import { ActionButton } from "@/components/ui/action-button";
 import { FilterInput, FilterSelect } from "@/components/ui/filter-select";
+import { Pagination } from "@/components/ui/pagination";
 import { fetchCompanies } from "@/lib/api";
 import { companyTypeLabels } from "@/lib/labels";
 import { companyDetailHref } from "@/lib/routes";
@@ -26,6 +27,8 @@ const companySortLabels = {
   averageSalaryDesc: "평균연봉 높은순",
   companyAgeDesc: "업력 높은순",
 };
+
+const PAGE_SIZE = 12;
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
@@ -47,6 +50,7 @@ export default function CompaniesPage() {
   const [companyOpenTotal, setCompanyOpenTotal] = useState(0);
   const [companyNoJobTotal, setCompanyNoJobTotal] = useState(0);
   const [filterOpen, setFilterOpen] = useState(true);
+  const [companyPage, setCompanyPage] = useState(1);
 
   const companyParams = useMemo(() => {
     const next = new URLSearchParams({ sort: companySort });
@@ -77,6 +81,24 @@ export default function CompaniesPage() {
     minAverageSalary,
     minEmployeeCount,
   ]);
+
+  // 필터 변경 시 페이지를 1로 리셋
+  const companyParamsStr = useMemo(() => companyParams.toString(), [companyParams]);
+  const isFirstCompanyRender = useRef(true);
+  useEffect(() => {
+    if (isFirstCompanyRender.current) {
+      isFirstCompanyRender.current = false;
+      return;
+    }
+    setCompanyPage(1);
+  }, [companyParamsStr]);
+
+  // 클라이언트 사이드 페이지네이션
+  const pagedCompanies = useMemo(() => {
+    const start = (companyPage - 1) * PAGE_SIZE;
+    return companies.slice(start, start + PAGE_SIZE);
+  }, [companies, companyPage]);
+  const totalCompanyPages = Math.ceil(companies.length / PAGE_SIZE);
 
   useEffect(() => {
     let ignore = false;
@@ -133,17 +155,6 @@ export default function CompaniesPage() {
             <ActionButton type="button" iconStart={<Search size={15} />}>
               검색
             </ActionButton>
-            <select
-              value={companySort}
-              onChange={(e) => setCompanySort(e.target.value)}
-              className="rounded-xl border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm font-medium text-gray-700 outline-none"
-            >
-              {Object.entries(companySortLabels).map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 
@@ -352,30 +363,45 @@ export default function CompaniesPage() {
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-6">
-        {/* Stats row */}
-        <div className="mb-5 flex flex-wrap gap-4 text-sm text-gray-500">
-          <span>
-            회사{" "}
-            <strong className="text-gray-900">
-              {companyTotal.toLocaleString("ko-KR")}
-            </strong>
-            개
-          </span>
-          <span>
-            채용 중{" "}
-            <strong className={styles.brandText}>
-              {companyOpenTotal.toLocaleString("ko-KR")}
-            </strong>
-            개
-          </span>
-          <span>
-            공고 없음{" "}
-            <strong className="text-gray-900">
-              {companyNoJobTotal.toLocaleString("ko-KR")}
-            </strong>
-            개
-          </span>
-        </div>
+        {/* Stats + sort row */}
+        {!companiesLoading && (
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+              <span>
+                회사{" "}
+                <strong className="text-gray-900">
+                  {companyTotal.toLocaleString("ko-KR")}
+                </strong>
+                개
+              </span>
+              <span>
+                채용 중{" "}
+                <strong className={styles.brandText}>
+                  {companyOpenTotal.toLocaleString("ko-KR")}
+                </strong>
+                개
+              </span>
+              <span>
+                공고 없음{" "}
+                <strong className="text-gray-900">
+                  {companyNoJobTotal.toLocaleString("ko-KR")}
+                </strong>
+                개
+              </span>
+            </div>
+            <select
+              value={companySort}
+              onChange={(e) => setCompanySort(e.target.value)}
+              className="rounded-xl border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm font-medium text-gray-700 outline-none"
+            >
+              {Object.entries(companySortLabels).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {companyError && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -392,9 +418,9 @@ export default function CompaniesPage() {
               />
             ))}
           </div>
-        ) : companies.length ? (
+        ) : pagedCompanies.length ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {companies.map((company) => (
+            {pagedCompanies.map((company) => (
               <CompanyCard key={company.id} company={company} />
             ))}
           </div>
@@ -402,6 +428,13 @@ export default function CompaniesPage() {
           <div className="rounded-2xl border border-[var(--app-line)] bg-white p-10 text-center text-sm text-[var(--app-muted)]">
             검색 조건에 맞는 회사가 없습니다.
           </div>
+        )}
+        {!companiesLoading && (
+          <Pagination
+            page={companyPage}
+            totalPages={totalCompanyPages}
+            onPageChange={setCompanyPage}
+          />
         )}
       </div>
     </main>
@@ -413,7 +446,7 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
   const hasJobs = company.openJobCount > 0;
 
   return (
-    <article className={styles.companyCard}>
+    <Link href={companyDetailHref(company.id)} className={styles.companyCard}>
       <div className={styles.banner}>
         {hasJobs && (
           <span className={styles.openBadge}>
@@ -470,17 +503,8 @@ function CompanyCard({ company }: { company: CompanyListItem }) {
             ))}
           </div>
         )}
-
-        <ActionLink
-          href={companyDetailHref(company.id)}
-          size="sm"
-          className={styles.cardAction}
-          iconEnd={<ArrowRight size={13} />}
-        >
-          상세 보기
-        </ActionLink>
       </div>
-    </article>
+    </Link>
   );
 }
 

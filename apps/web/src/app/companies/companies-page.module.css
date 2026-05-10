@@ -15,25 +15,32 @@
   border-radius: 1.25rem;
   background: var(--surface);
   box-shadow: var(--shadow-md);
+  border: 1px solid var(--app-line);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
   transition:
     transform 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    border-color 160ms ease;
 }
 
 .companyCard:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-lg);
+  border-color: var(--brand);
 }
 
 .banner {
   position: relative;
   display: flex;
   align-items: flex-end;
-  min-height: 6rem;
+  min-height: 10rem;
   background:
-    radial-gradient(circle at 90% 12%, rgba(232, 69, 122, 0.12), transparent 8rem),
+    radial-gradient(circle at 90% 15%, rgba(232, 69, 122, 0.18), transparent 12rem),
+    radial-gradient(circle at 10% 80%, rgba(232, 69, 122, 0.06), transparent 8rem),
     var(--gray-50);
-  padding: 1rem 1.25rem 0.75rem;
+  padding: 1rem 1.25rem 0.85rem;
 }
 
 .openBadge {
