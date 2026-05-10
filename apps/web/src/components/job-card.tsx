@@ -8,6 +8,7 @@ import {
   MapPin,
   UserRound,
 } from "lucide-react";
+import Link from "next/link";
 import {
   companyTypeLabels,
   deadlineTypeLabels,
@@ -17,16 +18,13 @@ import {
   traineeLabels,
 } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import {
-  ActionLink,
-  actionButtonClassName,
-} from "@/components/ui/action-button";
+import { actionButtonClassName } from "@/components/ui/action-button";
 import { jobDetailHref } from "@/lib/routes";
 import styles from "./job-card.module.css";
 
 export function JobCard({ job }: { job: JobListItem }) {
   return (
-    <article className={styles.card}>
+    <Link href={jobDetailHref(job.id)} className={styles.card}>
       <div className={styles.header}>
         <div className="min-w-0 flex-1">
           <div className={styles.badgeRow}>
@@ -41,21 +39,18 @@ export function JobCard({ job }: { job: JobListItem }) {
           </p>
         </div>
         <div className={styles.actions}>
-          <ActionLink
-            href={jobDetailHref(job.id)}
-            size="sm"
-          >
-            상세 보기
-          </ActionLink>
-          <a
-            href={job.originalUrl}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(job.originalUrl, "_blank", "noreferrer");
+            }}
             className={actionButtonClassName({ variant: "outline", size: "sm" })}
           >
             원문
             <ExternalLink size={14} />
-          </a>
+          </button>
         </div>
       </div>
 
@@ -94,7 +89,7 @@ export function JobCard({ job }: { job: JobListItem }) {
           ))}
         </span>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -112,7 +107,7 @@ export function JobGridCard({ job }: { job: JobListItem }) {
   const isUrgent = dDay !== null && dDay >= 0 && dDay <= 7;
 
   return (
-    <article className={styles.gridCard}>
+    <Link href={jobDetailHref(job.id)} className={styles.gridCard}>
       <div className={styles.banner}>
         {dDayLabel && (
           <span
@@ -150,31 +145,27 @@ export function JobGridCard({ job }: { job: JobListItem }) {
           <Fact icon={CalendarRange} text={experienceText(job)} />
         </div>
         <div className={styles.gridActions}>
-          <ActionLink
-            href={jobDetailHref(job.id)}
-            size="sm"
-            className={styles.fillAction}
-          >
-            상세 보기
-          </ActionLink>
-          <a
-            href={job.originalUrl}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(job.originalUrl, "_blank", "noreferrer");
+            }}
             className={actionButtonClassName({ variant: "outline", size: "icon" })}
             aria-label={`${job.title} 원문 보기`}
           >
             <ExternalLink size={13} />
-          </a>
+          </button>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
 export function CompactJobRow({ job }: { job: JobListItem }) {
   return (
-    <div className={styles.compactRow}>
+    <Link href={jobDetailHref(job.id)} className={styles.compactRow}>
       <div>
         <div className={styles.badgeRow}>
           <Badge tone="pink">{deadlineText(job)}</Badge>
@@ -186,10 +177,7 @@ export function CompactJobRow({ job }: { job: JobListItem }) {
           {job.companyName} · {job.location ?? "지역 불명확"}
         </p>
       </div>
-      <ActionLink href={jobDetailHref(job.id)} size="sm">
-        상세 보기
-      </ActionLink>
-    </div>
+    </Link>
   );
 }
 
