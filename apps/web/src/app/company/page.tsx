@@ -282,6 +282,7 @@ export default function CompanyPage() {
     <>
       <SiteNav />
       <main className={styles.page}>
+        <div className={styles.heroWrap}>
         <div className={styles.hero}>
           <div className={styles.heroGlow} />
           <div className={styles.heroInner}>
@@ -311,6 +312,7 @@ export default function CompanyPage() {
               공개 페이지
             </ActionLink>
           </div>
+        </div>
         </div>
 
         <div className={styles.container}>
