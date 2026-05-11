@@ -25,7 +25,7 @@ npm run db:init
 npm run start:dev
 ```
 
-`prisma db push` may fail on some local macOS/runtime combinations due Prisma schema-engine runtime issues.  
+`prisma db push` may fail on some local macOS/runtime combinations due Prisma schema-engine runtime issues.
 For this prototype, `db:init` creates the SQLite schema compatible with the Prisma models used by the app.
 
 ## Swagger
