@@ -81,6 +81,7 @@ RESUME_STORAGE_DRIVER=s3
 NODE_ENV=production
 NEXT_PUBLIC_API_BASE_URL=https://api.accountit.example.com
 WEB_ORIGIN=http://accountit-web.s3-website.ap-northeast-2.amazonaws.com
+AUTH_COOKIE_SECURE=true
 ENABLE_SWAGGER=false
 DEPLOY_BRANCH=develop
 DEPLOY_AUTO_UPDATE_EC2_HOST=true
@@ -91,6 +92,10 @@ DEPLOY_AUTO_UPDATE_EC2_HOST=true
 ```bash
 DATABASE_URL=postgresql://cpa:<password>@postgres:5432/cpa_jobs?schema=public
 ```
+
+Set `AUTH_COOKIE_SECURE=false` only for temporary HTTP EC2 demos where the web
+and API are both accessed through the same EC2 IP over plain HTTP. Keep it true
+for HTTPS deployments.
 
 The EC2 IAM role should allow the API to presign and verify company image
 uploads, and to store private resumes:

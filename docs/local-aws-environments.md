@@ -56,7 +56,12 @@ S3_PUBLIC_BASE_URL=https://accountit-assets.s3.ap-northeast-2.amazonaws.com
 S3_RESUME_BUCKET=accountit-resumes
 S3_RESUME_KEY_PREFIX=resumes
 NEXT_PUBLIC_API_BASE_URL=/api
+AUTH_COOKIE_SECURE=true
 ```
 
 When `APP_ENV=aws`, the API requires `DATABASE_URL` or `AWS_DATABASE_URL`, and
 S3 asset and resume upload settings must be present.
+
+`AUTH_COOKIE_SECURE=false` is only for temporary HTTP EC2 demos where the web
+and API are served from the same IP over plain HTTP. Keep it enabled for HTTPS
+deployments.
