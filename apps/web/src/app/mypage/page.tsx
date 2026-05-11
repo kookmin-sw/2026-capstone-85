@@ -8,6 +8,7 @@ import type {
 } from "@cpa/shared";
 import {
   Bookmark,
+  Download,
   FileText,
   Trash2,
   Upload,
@@ -24,6 +25,7 @@ import {
   fetchMyBookmarks,
   fetchMyProfile,
   fetchMyResumes,
+  getMyResumeDownloadUrl,
   updateMyProfile,
   uploadMyResume,
 } from "@/lib/api";
@@ -31,6 +33,9 @@ import { jobDetailHref, companyDetailHref } from "@/lib/routes";
 import styles from "./mypage.module.css";
 
 type Tab = "profile" | "bookmarks" | "resumes";
+
+const RESUME_MAX_BYTES = 10 * 1024 * 1024;
+const RESUME_EXTENSIONS = new Set(["pdf", "doc", "docx", "hwp", "hwpx"]);
 
 export default function MyPage() {
   const [tab, setTab] = useState<Tab>("profile");
@@ -43,6 +48,7 @@ export default function MyPage() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [message, setMessage] = useState("");
+  const [uploadingResume, setUploadingResume] = useState(false);
 
   // Profile edit state
   const [editingProfile, setEditingProfile] = useState(false);
@@ -120,6 +126,15 @@ export default function MyPage() {
     const file = event.currentTarget.files?.[0];
     if (!file) return;
     setMessage("");
+
+    const validationMessage = validateResumeFile(file);
+    if (validationMessage) {
+      setMessage(validationMessage);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingResume(true);
     try {
       const resume = await uploadMyResume(file);
       setResumes((prev) => [resume, ...prev]);
@@ -130,6 +145,8 @@ export default function MyPage() {
           ? error.message
           : "이력서 업로드에 실패했습니다.",
       );
+    } finally {
+      setUploadingResume(false);
     }
     // reset input
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -390,33 +407,29 @@ export default function MyPage() {
 
           {tab === "resumes" && (
             <section className={styles.section}>
-              <div
+              <button
+                type="button"
                 className={styles.uploadArea}
                 onClick={() => {
+                  if (uploadingResume) return;
                   if (resumes.length >= 5) {
                     setMessage("이력서는 최대 5개까지 업로드할 수 있습니다.");
                     return;
                   }
                   fileInputRef.current?.click();
                 }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    if (resumes.length >= 5) {
-                      setMessage("이력서는 최대 5개까지 업로드할 수 있습니다.");
-                      return;
-                    }
-                    fileInputRef.current?.click();
-                  }
-                }}
+                disabled={uploadingResume}
               >
                 <Upload size={24} className={styles.uploadAreaIcon} />
-                <span>이력서 파일을 선택하세요</span>
+                <span>
+                  {uploadingResume
+                    ? "이력서를 업로드하는 중입니다."
+                    : "이력서 파일을 선택하세요"}
+                </span>
                 <span className={styles.uploadHint}>
                   PDF, DOCX 등 · 최대 10MB · 최대 5개
                 </span>
-              </div>
+              </button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -443,21 +456,28 @@ export default function MyPage() {
                           </div>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        className={styles.deleteBtn}
-                        onClick={() => void handleDeleteResume(resume.id)}
-                        aria-label="이력서 삭제"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      <div className={styles.resumeActions}>
+                        <a
+                          href={getMyResumeDownloadUrl(resume.id)}
+                          className={styles.downloadBtn}
+                          aria-label="이력서 다운로드"
+                        >
+                          <Download size={15} />
+                        </a>
+                        <button
+                          type="button"
+                          className={styles.deleteBtn}
+                          onClick={() => void handleDeleteResume(resume.id)}
+                          aria-label="이력서 삭제"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className={styles.empty}>
-                  업로드된 이력서가 없습니다.
-                </div>
+                <div className={styles.empty}>업로드된 이력서가 없습니다.</div>
               )}
             </section>
           )}
@@ -471,4 +491,18 @@ function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes}B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)}KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+function validateResumeFile(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (!extension || !RESUME_EXTENSIONS.has(extension)) {
+    return "이력서는 PDF, DOC, DOCX, HWP, HWPX 파일만 업로드할 수 있습니다.";
+  }
+  if (file.size <= 0) {
+    return "빈 이력서 파일은 업로드할 수 없습니다.";
+  }
+  if (file.size > RESUME_MAX_BYTES) {
+    return "이력서는 10MB 이하로 업로드해 주세요.";
+  }
+  return "";
 }

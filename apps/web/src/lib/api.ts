@@ -833,16 +833,14 @@ export async function fetchMyResumes() {
 }
 
 export async function uploadMyResume(file: File) {
-  // 1. 서버에 메타데이터 등록
   const response = await fetch(`${API_BASE_URL}/mypage/resumes`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+      "X-File-Name": encodeURIComponent(file.name),
+    },
     credentials: "include",
-    body: JSON.stringify({
-      fileName: file.name,
-      contentType: file.type || "application/octet-stream",
-      byteSize: file.size,
-    }),
+    body: file,
   });
   if (!response.ok) {
     throw new Error(
@@ -850,6 +848,10 @@ export async function uploadMyResume(file: File) {
     );
   }
   return (await response.json()) as ResumeItem;
+}
+
+export function getMyResumeDownloadUrl(id: string) {
+  return `${API_BASE_URL}/mypage/resumes/${encodeURIComponent(id)}/download`;
 }
 
 export async function deleteMyResume(id: string) {
