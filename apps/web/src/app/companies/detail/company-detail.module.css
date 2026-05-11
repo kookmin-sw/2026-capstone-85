@@ -19,6 +19,8 @@
   pointer-events: none;
 }
 
+/* ─── Logo ────────────────────────────────────────────────── */
+
 .logo,
 .sidebarLogo {
   display: flex;
@@ -31,12 +33,13 @@
 }
 
 .logo {
-  width: 5rem;
-  height: 5rem;
+  width: 4rem;
+  height: 4rem;
   overflow: hidden;
-  border-radius: 1rem;
-  box-shadow: var(--shadow-lg);
-  font-size: 1.875rem;
+  border-radius: 0.625rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+  font-size: 1.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 .logo img {
@@ -45,35 +48,194 @@
   object-fit: cover;
 }
 
+/* ─── Type badge ──────────────────────────────────────────── */
+
 .typeBadge {
   border-radius: 999px;
-  background: var(--brand-soft);
+  background: white;
   color: var(--brand);
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 900;
+  border: 1px solid rgba(232, 69, 122, 0.25);
+  padding: 0.2rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
 }
 
-.sectionIcon,
+/* ─── Section icon ────────────────────────────────────────── */
+
+.sectionIcon {
+  color: var(--brand);
+}
+
+/* ─── Info grid (2-col stacked) ───────────────────────────── */
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 2rem;
+  row-gap: 0;
+}
+
+.infoGrid > div {
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.infoGrid > div:nth-last-child(-n+2) {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--app-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+
+.infoValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+/* ─── Icon info ───────────────────────────────────────────── */
+
+.iconInfoLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .iconInfo {
   color: var(--brand);
 }
 
-.trendFill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--brand);
+/* ─── Sidebar logo ────────────────────────────────────────── */
+
+.sidebarLogo {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
 }
 
+/* ─── Body layout ─────────────────────────────────────────── */
+
+.body {
+  margin: 0 auto;
+  display: grid;
+  max-width: 72rem;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .body {
+    grid-template-columns: 1fr 268px;
+  }
+}
+
+/* ─── Section card ────────────────────────────────────────── */
+
+.section {
+  border-radius: 0.75rem;
+  border: 1px solid var(--app-line);
+  background: white;
+  padding: 1rem;
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────── */
+
+.aside {
+  height: fit-content;
+  border-radius: 0.75rem;
+  border: 1px solid var(--app-line);
+  background: white;
+  padding: 1rem;
+}
+
+/* ─── External link button ────────────────────────────────── */
+
+.externalLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--app-line);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  text-decoration: none;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.externalLink:hover {
+  border-color: var(--gray-400);
+  color: var(--gray-900);
+}
+
+/* ─── Sidebar info section ────────────────────────────────── */
+
+.sidebarInfoSection {
+  margin-top: 1rem;
+  border-top: 1px solid var(--app-line);
+  padding-top: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* ─── Tags section ────────────────────────────────────────── */
+
+.tagsSection {
+  margin-top: 1rem;
+  border-top: 1px solid var(--app-line);
+  padding-top: 0.75rem;
+}
+
+.tagsTitle {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--app-muted);
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tagChip {
+  border-radius: 999px;
+  border: 1px solid var(--app-line);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--gray-600);
+}
+
+/* ─── Empty jobs ──────────────────────────────────────────── */
+
+.emptyJobs {
+  border-radius: 0.5rem;
+  border: 1px dashed var(--app-line);
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--app-muted);
+}
+
+/* ─── Chart (used by employee-trend-chart.tsx) ────────────── */
+
 .chartWrap {
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
   width: 100%;
 }
 
 .chartAxisLabels {
   display: flex;
   justify-content: space-between;
-  padding: 0;
   font-size: 0.6875rem;
   color: var(--app-muted);
   margin-bottom: 0.25rem;
@@ -81,16 +243,9 @@
 
 .emptyChart {
   border: 1px dashed var(--app-line);
-  border-radius: var(--radius-md);
+  border-radius: 0.5rem;
   background: #fbfbf8;
   padding: 1rem;
   font-size: 0.875rem;
   color: var(--app-muted);
-}
-
-.sidebarLogo {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 1rem;
-  font-size: 1.5rem;
 }
