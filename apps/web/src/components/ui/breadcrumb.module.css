@@ -1,0 +1,45 @@
+.bar {
+  border-bottom: 1px solid var(--app-line);
+  background: var(--background);
+}
+
+.inner {
+  margin: 0 auto;
+  max-width: 80rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--gray-500);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: color 160ms ease;
+}
+
+.link:hover {
+  color: var(--gray-700);
+}
+
+.separator {
+  color: var(--gray-300);
+  flex: none;
+}
+
+.current {
+  font-weight: 600;
+  color: var(--gray-800);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  max-width: 28rem;
+}

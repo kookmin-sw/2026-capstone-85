@@ -1,0 +1,34 @@
+.heroWrap {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.875rem;
+  border: 1px solid #cdd1d8;
+  background-color: #e8eaed;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      transparent 38px,
+      rgba(0, 0, 0, 0.013) 38px,
+      rgba(0, 0, 0, 0.013) 39px
+    ),
+    linear-gradient(160deg, #d6dae2 0%, #e8eaed 55%, #dde1e8 100%);
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.22) 100%);
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  padding: 1.25rem;
+}
