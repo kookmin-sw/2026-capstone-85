@@ -71,7 +71,9 @@
   font-weight: 700;
   color: var(--app-muted);
   border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
   cursor: pointer;
 }
 
@@ -248,7 +250,9 @@
   cursor: pointer;
   padding: 0.25rem;
   border-radius: var(--radius-md);
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .deleteBtn:hover {
@@ -301,7 +305,31 @@
   font-size: 0.75rem;
 }
 
+.resumeActions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.downloadBtn {
+  flex: none;
+  color: var(--app-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+
+.downloadBtn:hover {
+  color: var(--brand);
+  background: var(--proto-brand-light);
+}
+
 .uploadArea {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -310,15 +338,29 @@
   padding: 2rem;
   border: 2px dashed var(--app-line);
   border-radius: var(--radius-lg);
+  background: var(--surface);
   color: var(--app-muted);
+  font: inherit;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .uploadArea:hover {
   border-color: var(--brand);
   background: var(--proto-brand-light);
+}
+
+.uploadArea:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.uploadArea:disabled:hover {
+  border-color: var(--app-line);
+  background: transparent;
 }
 
 .uploadAreaIcon {
