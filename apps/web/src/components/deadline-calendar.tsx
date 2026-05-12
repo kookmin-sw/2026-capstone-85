@@ -28,7 +28,7 @@ type CalendarModalEntryType = JobCalendarEventType | "ONGOING";
 
 const calendarEventMeta: Record<
   CalendarModalEntryType,
-  { label: string; barClassName: string; badgeTone?: "pink" }
+  { label: string; barClassName: string }
 > = {
   START: {
     label: "시작",
@@ -36,12 +36,11 @@ const calendarEventMeta: Record<
   },
   DEADLINE: {
     label: "마감",
-    barClassName: "border-[var(--brand-mid)] bg-[var(--brand-soft)] text-[var(--brand)]",
-    badgeTone: "pink",
+    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
   },
   ONGOING: {
     label: "진행 중",
-    barClassName: "border-gray-100 bg-white text-gray-600",
+    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
   },
 };
 
@@ -619,10 +618,10 @@ function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
   const meta = calendarEventMeta[event.type];
 
   return (
-    <article className={`grid gap-3 rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${meta.barClassName}`}>
+    <article className={`group grid cursor-pointer gap-3 rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${meta.barClassName}`}>
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={meta.badgeTone}>{meta.label}</Badge>
-        <Badge>{deadlineText(event.job)}</Badge>
+        <Badge>{meta.label}</Badge>
+        {event.type !== "DEADLINE" && <Badge>{deadlineText(event.job)}</Badge>}
         <span className="text-xs font-medium text-[var(--app-muted)]">
           {event.job.companyName}
         </span>
@@ -630,7 +629,7 @@ function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
       <div className="grid gap-1">
         <Link
           href={jobDetailHref(event.job.id)}
-          className="font-semibold text-[var(--foreground)] hover:text-[var(--brand)]"
+          className="font-semibold text-[var(--foreground)] transition-colors group-hover:text-[var(--brand)]"
         >
           {event.job.title}
         </Link>
