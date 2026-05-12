@@ -9,6 +9,7 @@ import type {
 } from "@cpa/shared";
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
+import type { MouseEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
   daysBetween,
@@ -27,7 +28,7 @@ type CalendarModalEntryType = JobCalendarEventType | "ONGOING";
 
 const calendarEventMeta: Record<
   CalendarModalEntryType,
-  { label: string; barClassName: string; badgeTone?: "pink" }
+  { label: string; barClassName: string }
 > = {
   START: {
     label: "시작",
@@ -35,12 +36,11 @@ const calendarEventMeta: Record<
   },
   DEADLINE: {
     label: "마감",
-    barClassName: "border-[var(--brand-mid)] bg-[var(--brand-soft)] text-[var(--brand)]",
-    badgeTone: "pink",
+    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
   },
   ONGOING: {
     label: "진행 중",
-    barClassName: "border-gray-100 bg-white text-gray-600",
+    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
   },
 };
 
@@ -95,7 +95,7 @@ export function MiniDeadlineCalendar({
                 new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1),
               )
             }
-            className="rounded-md border border-[var(--app-line)] p-2"
+            className="cursor-pointer rounded-md border border-[var(--app-line)] p-2"
             aria-label="이전 달"
           >
             <ChevronLeft size={16} />
@@ -110,7 +110,7 @@ export function MiniDeadlineCalendar({
                 new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1),
               )
             }
-            className="rounded-md border border-[var(--app-line)] p-2"
+            className="cursor-pointer rounded-md border border-[var(--app-line)] p-2"
             aria-label="다음 달"
           >
             <ChevronRight size={16} />
@@ -138,15 +138,15 @@ export function MiniDeadlineCalendar({
               aria-label={`${dateKey} 마감 공고 ${deadlineCount}건`}
               className={
                 inMonth
-                  ? "min-h-16 rounded-lg border border-[var(--app-line)] bg-white p-1 text-left transition-colors hover:border-[var(--brand)] hover:bg-[var(--brand-soft)]"
-                  : "min-h-16 rounded-lg border border-transparent bg-gray-50 p-1 text-left text-gray-300"
+                  ? "min-h-16 cursor-pointer rounded-lg border border-[var(--app-line)] bg-white p-1 text-left transition-colors hover:border-[var(--brand)] hover:bg-[var(--brand-soft)]"
+                  : "min-h-16 cursor-pointer rounded-lg border border-transparent bg-gray-50 p-1 text-left text-gray-300"
               }
             >
               <span
                 className={
                   isSameDay(day, new Date())
-                    ? "inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-semibold text-white"
-                    : "text-xs font-semibold"
+                    ? "inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-[var(--brand)] text-xs font-semibold text-white"
+                    : "cursor-pointer text-xs font-semibold"
                 }
               >
                 {day.getDate()}
@@ -238,7 +238,7 @@ export function FullDeadlineCalendar({
                 ),
               )
             }
-            className="rounded-md border border-[var(--app-line)] p-2"
+            className="cursor-pointer rounded-md border border-[var(--app-line)] p-2"
             aria-label="이전 달"
           >
             <ChevronLeft size={18} />
@@ -257,7 +257,7 @@ export function FullDeadlineCalendar({
                 ),
               )
             }
-            className="rounded-md border border-[var(--app-line)] p-2"
+            className="cursor-pointer rounded-md border border-[var(--app-line)] p-2"
             aria-label="다음 달"
           >
             <ChevronRight size={18} />
@@ -308,15 +308,15 @@ export function FullDeadlineCalendar({
                     aria-label={`${dateKey} 채용 기간 ${activeRanges.length}건`}
                     className={
                       inMonth
-                        ? "relative min-h-44 border-r border-[var(--app-line)] bg-white p-2 text-left align-top transition-colors hover:bg-[#FFF8FA]"
-                        : "relative min-h-44 border-r border-[var(--app-line)] bg-gray-50 p-2 text-left text-gray-300"
+                        ? "relative min-h-44 cursor-pointer border-r border-[var(--app-line)] bg-white p-2 text-left align-top transition-colors hover:bg-[#FFF8FA]"
+                        : "relative min-h-44 cursor-pointer border-r border-[var(--app-line)] bg-gray-50 p-2 text-left text-gray-300"
                     }
                   >
                     <span
                       className={
                         isSameDay(day, new Date())
-                          ? "absolute left-2 top-2 z-20 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-semibold text-white"
-                          : "absolute left-2 top-2 z-20 text-xs font-semibold"
+                          ? "absolute left-2 top-2 z-20 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[var(--brand)] text-xs font-semibold text-white"
+                          : "absolute left-2 top-2 z-20 cursor-pointer text-xs font-semibold"
                       }
                     >
                       {day.getDate()}
@@ -334,14 +334,25 @@ export function FullDeadlineCalendar({
                 {(rangeSegments[weekIndex] ?? []).map((segment) => (
                   <div
                     key={`${segment.range.job.id}-${segment.startColumn}-${segment.endColumn}`}
-                    className={`mx-1 flex h-7 items-center overflow-hidden border px-2 text-xs font-semibold shadow-sm ${rangeSegmentClassName(segment)}`}
+                    className={`pointer-events-auto mx-1 flex h-7 cursor-pointer items-center overflow-hidden border px-2 text-xs font-semibold shadow-sm ${rangeSegmentClassName(segment)}`}
                     style={{
                       gridColumn: `${segment.startColumn + 1} / ${
                         segment.endColumn + 2
                       }`,
                       gridRow: segment.lane + 1,
                     }}
-                    aria-hidden="true"
+                    role="button"
+                    tabIndex={0}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setSelectedDate(dateFromRangeSegmentClick(event, week, segment));
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedDate(segment.range.endDate ?? segment.range.startDate);
+                      }
+                    }}
                   >
                     <span className="truncate">
                       {rangeSegmentLabel(segment)}
@@ -479,6 +490,20 @@ function rangeContainsDateKey(range: JobCalendarRange, dateKey: string) {
   return value >= rangeStart && value <= rangeEnd;
 }
 
+function dateFromRangeSegmentClick(
+  event: MouseEvent<HTMLDivElement>,
+  week: Date[],
+  segment: CalendarRangeSegment,
+) {
+  const rect = event.currentTarget.getBoundingClientRect();
+  const columns = segment.endColumn - segment.startColumn + 1;
+  const rawColumn = Math.floor(
+    ((event.clientX - rect.left) / Math.max(rect.width, 1)) * columns,
+  );
+  const column = Math.min(Math.max(rawColumn, 0), columns - 1);
+  return toDateKey(week[segment.startColumn + column]);
+}
+
 function rangeSegmentClassName(segment: CalendarRangeSegment) {
   const rangeHasDeadline = segment.range.endDate !== null;
   const colorClassName = rangeHasDeadline
@@ -563,7 +588,7 @@ function CalendarDayModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 transition-colors hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
+            className="cursor-pointer rounded-xl p-2 transition-colors hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
             aria-label="닫기"
           >
             <X size={24} />
@@ -593,10 +618,10 @@ function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
   const meta = calendarEventMeta[event.type];
 
   return (
-    <article className={`grid gap-3 rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${meta.barClassName}`}>
+    <article className={`group grid cursor-pointer gap-3 rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${meta.barClassName}`}>
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={meta.badgeTone}>{meta.label}</Badge>
-        <Badge>{deadlineText(event.job)}</Badge>
+        <Badge>{meta.label}</Badge>
+        {event.type !== "DEADLINE" && <Badge>{deadlineText(event.job)}</Badge>}
         <span className="text-xs font-medium text-[var(--app-muted)]">
           {event.job.companyName}
         </span>
@@ -604,7 +629,7 @@ function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
       <div className="grid gap-1">
         <Link
           href={jobDetailHref(event.job.id)}
-          className="font-semibold text-[var(--foreground)] hover:text-[var(--brand)]"
+          className="font-semibold text-[var(--foreground)] transition-colors group-hover:text-[var(--brand)]"
         >
           {event.job.title}
         </Link>

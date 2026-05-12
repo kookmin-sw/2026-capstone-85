@@ -47,6 +47,12 @@ export class JobsService {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const where = await this.buildWhere(query);
+    if ((query.sort ?? 'deadlineAsc') === 'deadlineAsc') {
+      return this.listByDeadlineAsc(where, page, pageSize);
+    }
+    if (query.sort === 'expired') {
+      return this.listExpired(where, page, pageSize);
+    }
     const orderBy = this.buildOrderBy(query.sort);
 
     const [items, total] = await this.prisma.$transaction([
@@ -58,6 +64,109 @@ export class JobsService {
         take: pageSize,
       }),
       this.prisma.job.count({ where }),
+    ]);
+
+    return {
+      items: items.map((job) => this.toListItem(job)),
+      page,
+      pageSize,
+      total,
+    };
+  }
+
+  private async listByDeadlineAsc(
+    where: Prisma.JobWhereInput,
+    page: number,
+    pageSize: number,
+  ) {
+    const today = startOfToday();
+    const buckets = [
+      {
+        where: this.withAnd(where, {
+          deadlineType: DeadlineType.FIXED_DATE,
+          deadline: { gte: today },
+        }),
+        orderBy: [{ deadline: 'asc' as const }, { createdAt: 'desc' as const }],
+      },
+      {
+        where: this.withAnd(where, {
+          OR: [
+            { deadlineType: { not: DeadlineType.FIXED_DATE } },
+            { deadline: null },
+          ],
+        }),
+        orderBy: [{ createdAt: 'desc' as const }],
+      },
+      {
+        where: this.withAnd(where, {
+          deadlineType: DeadlineType.FIXED_DATE,
+          deadline: { lt: today },
+        }),
+        orderBy: [
+          { deadline: 'desc' as const },
+          { createdAt: 'desc' as const },
+        ],
+      },
+    ];
+
+    const counts = await this.prisma.$transaction(
+      buckets.map((bucket) => this.prisma.job.count({ where: bucket.where })),
+    );
+    const total = counts.reduce((sum, count) => sum + count, 0);
+    const items: JobWithRelations[] = [];
+    let skipped = (page - 1) * pageSize;
+    let remaining = pageSize;
+
+    for (let index = 0; index < buckets.length && remaining > 0; index += 1) {
+      const count = counts[index];
+      if (skipped >= count) {
+        skipped -= count;
+        continue;
+      }
+
+      const bucketItems = await this.prisma.job.findMany({
+        where: buckets[index].where,
+        include: jobInclude,
+        orderBy: buckets[index].orderBy,
+        skip: skipped,
+        take: remaining,
+      });
+      items.push(...bucketItems);
+      remaining -= bucketItems.length;
+      skipped = 0;
+    }
+
+    return {
+      items: items.map((job) => this.toListItem(job)),
+      page,
+      pageSize,
+      total,
+    };
+  }
+
+  private async listExpired(
+    where: Prisma.JobWhereInput,
+    page: number,
+    pageSize: number,
+  ) {
+    const expiredWhere = this.withAnd(where, {
+      deadlineType: DeadlineType.FIXED_DATE,
+      deadline: { lt: startOfToday() },
+    });
+    const orderBy = [
+      { deadline: 'desc' as const },
+      { createdAt: 'desc' as const },
+    ];
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.job.findMany({
+        where: expiredWhere,
+        include: jobInclude,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.job.count({ where: expiredWhere }),
     ]);
 
     return {
@@ -208,12 +317,22 @@ export class JobsService {
   private async buildWhere(query: ListJobsDto): Promise<Prisma.JobWhereInput> {
     const where: Prisma.JobWhereInput = {
       status: JobStatus.OPEN,
-      ...(query.jobFamily && { jobFamily: query.jobFamily }),
-      ...(query.companyType && { companyType: query.companyType }),
-      ...(query.traineeStatus && { traineeStatus: query.traineeStatus }),
-      ...(query.employmentType && { employmentType: query.employmentType }),
-      ...(query.kicpaCondition && { kicpaCondition: query.kicpaCondition }),
-      ...(query.deadlineType && { deadlineType: query.deadlineType }),
+      ...(query.jobFamily?.length && { jobFamily: { in: query.jobFamily } }),
+      ...(query.companyType?.length && {
+        companyType: { in: query.companyType },
+      }),
+      ...(query.traineeStatus?.length && {
+        traineeStatus: { in: query.traineeStatus },
+      }),
+      ...(query.employmentType?.length && {
+        employmentType: { in: query.employmentType },
+      }),
+      ...(query.kicpaCondition?.length && {
+        kicpaCondition: { in: query.kicpaCondition },
+      }),
+      ...(query.deadlineType?.length && {
+        deadlineType: { in: query.deadlineType },
+      }),
       ...(query.practicalTrainingInstitution !== undefined && {
         practicalTrainingInstitution: query.practicalTrainingInstitution,
       }),
@@ -317,6 +436,21 @@ export class JobsService {
           ],
         },
       ],
+    };
+  }
+
+  private withAnd(
+    where: Prisma.JobWhereInput,
+    condition: Prisma.JobWhereInput,
+  ): Prisma.JobWhereInput {
+    const existingAnd = Array.isArray(where.AND)
+      ? where.AND
+      : where.AND
+        ? [where.AND]
+        : [];
+    return {
+      ...where,
+      AND: [...existingAnd, condition],
     };
   }
 
@@ -430,4 +564,10 @@ function formatKstDateKey(date: Date) {
 function isDateWithinRange(date: Date, start: Date, end: Date) {
   const time = date.getTime();
   return time >= start.getTime() && time <= end.getTime();
+}
+
+function startOfToday() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
 }

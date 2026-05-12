@@ -63,15 +63,21 @@ export class ListJobsDto {
   @IsIn([...jobPresetIds])
   preset?: JobPresetId;
 
-  @ApiPropertyOptional({ enum: JobFamily })
+  @ApiPropertyOptional({ enum: JobFamily, isArray: true })
   @IsOptional()
-  @IsEnum(JobFamily)
-  jobFamily?: JobFamily;
+  @Transform(({ value }: { value: unknown }) =>
+    toOptionalCommaStringArray(value),
+  )
+  @IsEnum(JobFamily, { each: true })
+  jobFamily?: JobFamily[];
 
-  @ApiPropertyOptional({ enum: CompanyType })
+  @ApiPropertyOptional({ enum: CompanyType, isArray: true })
   @IsOptional()
-  @IsEnum(CompanyType)
-  companyType?: CompanyType;
+  @Transform(({ value }: { value: unknown }) =>
+    toOptionalCommaStringArray(value),
+  )
+  @IsEnum(CompanyType, { each: true })
+  companyType?: CompanyType[];
 
   @ApiPropertyOptional({ example: '서울' })
   @IsOptional()
@@ -84,25 +90,37 @@ export class ListJobsDto {
   @IsString({ each: true })
   locations?: string[];
 
-  @ApiPropertyOptional({ enum: TraineeStatus })
+  @ApiPropertyOptional({ enum: TraineeStatus, isArray: true })
   @IsOptional()
-  @IsEnum(TraineeStatus)
-  traineeStatus?: TraineeStatus;
+  @Transform(({ value }: { value: unknown }) =>
+    toOptionalCommaStringArray(value),
+  )
+  @IsEnum(TraineeStatus, { each: true })
+  traineeStatus?: TraineeStatus[];
 
-  @ApiPropertyOptional({ enum: EmploymentType })
+  @ApiPropertyOptional({ enum: EmploymentType, isArray: true })
   @IsOptional()
-  @IsEnum(EmploymentType)
-  employmentType?: EmploymentType;
+  @Transform(({ value }: { value: unknown }) =>
+    toOptionalCommaStringArray(value),
+  )
+  @IsEnum(EmploymentType, { each: true })
+  employmentType?: EmploymentType[];
 
-  @ApiPropertyOptional({ enum: KicpaCondition })
+  @ApiPropertyOptional({ enum: KicpaCondition, isArray: true })
   @IsOptional()
-  @IsEnum(KicpaCondition)
-  kicpaCondition?: KicpaCondition;
+  @Transform(({ value }: { value: unknown }) =>
+    toOptionalCommaStringArray(value),
+  )
+  @IsEnum(KicpaCondition, { each: true })
+  kicpaCondition?: KicpaCondition[];
 
-  @ApiPropertyOptional({ enum: DeadlineType })
+  @ApiPropertyOptional({ enum: DeadlineType, isArray: true })
   @IsOptional()
-  @IsEnum(DeadlineType)
-  deadlineType?: DeadlineType;
+  @Transform(({ value }: { value: unknown }) =>
+    toOptionalCommaStringArray(value),
+  )
+  @IsEnum(DeadlineType, { each: true })
+  deadlineType?: DeadlineType[];
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -171,12 +189,12 @@ export class ListJobsDto {
   maxAttritionRate?: number;
 
   @ApiPropertyOptional({
-    enum: ['deadlineAsc', 'latest', 'experienceAsc', 'companyType'],
+    enum: ['deadlineAsc', 'latest', 'experienceAsc', 'companyType', 'expired'],
     default: 'deadlineAsc',
   })
   @IsOptional()
-  @IsIn(['deadlineAsc', 'latest', 'experienceAsc', 'companyType'])
-  sort?: 'deadlineAsc' | 'latest' | 'experienceAsc' | 'companyType';
+  @IsIn(['deadlineAsc', 'latest', 'experienceAsc', 'companyType', 'expired'])
+  sort?: 'deadlineAsc' | 'latest' | 'experienceAsc' | 'companyType' | 'expired';
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()

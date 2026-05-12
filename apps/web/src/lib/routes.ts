@@ -11,6 +11,10 @@ export function companyDetailHref(id: string) {
   return withId("/companies/detail/", id);
 }
 
+export function companyDetailJobsHref(id: string) {
+  return `${companyDetailHref(id)}#open-jobs`;
+}
+
 export function adminJobEditHref(id: string) {
   return withId("/admin/jobs/edit/", id);
 }

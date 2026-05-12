@@ -113,10 +113,27 @@ export function JobGridCard({
         : dDay === 0
           ? "D-Day"
           : `D-${dDay}`;
-  const isUrgent = dDay !== null && dDay >= 0 && dDay <= 7;
 
   return (
     <Link href={jobDetailHref(job.id)} className={styles.gridCard}>
+      {onToggleBookmark && (
+        <button
+          type="button"
+          className={styles.bookmarkBtn}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleBookmark(job.id);
+          }}
+          aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
+        >
+          <Bookmark
+            size={18}
+            fill={bookmarked ? "#facc15" : "none"}
+            stroke={bookmarked ? "#facc15" : "currentColor"}
+          />
+        </button>
+      )}
       <div className={styles.banner}>
         {job.companyBackgroundUrl ? (
           <>
@@ -129,13 +146,6 @@ export function JobGridCard({
             <div className={styles.bannerOverlay} />
           </>
         ) : null}
-        {dDayLabel && (
-          <span
-            className={cn(styles.dDay, isUrgent && styles.urgent)}
-          >
-            {dDayLabel}
-          </span>
-        )}
         <div className={styles.logo}>
           {job.companyLogoUrl ? (
             <img
@@ -153,9 +163,16 @@ export function JobGridCard({
       </div>
 
       <div className={styles.gridBody}>
-        <div className={styles.badgeRow}>
-          <Badge tone="pink">{jobFamilyLabels[job.jobFamily]}</Badge>
-          <Badge>{employmentLabels[job.employmentType]}</Badge>
+        {dDayLabel && (
+          <span className={cn(styles.dDay, dDayToneClassName(dDay))}>
+            {dDayLabel}
+          </span>
+        )}
+        <div className={styles.gridTopRow}>
+          <div className={styles.badgeRow}>
+            <Badge tone="pink">{jobFamilyLabels[job.jobFamily]}</Badge>
+            <Badge>{employmentLabels[job.employmentType]}</Badge>
+          </div>
         </div>
         <h3 className={styles.gridTitle}>{job.title}</h3>
         <div className={styles.factGrid}>
@@ -180,28 +197,19 @@ export function JobGridCard({
           >
             <ExternalLink size={13} />
           </button>
-          {onToggleBookmark && (
-            <button
-              type="button"
-              className={styles.bookmarkBtn}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleBookmark(job.id);
-              }}
-              aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
-            >
-              <Bookmark
-                size={16}
-                fill={bookmarked ? "#facc15" : "none"}
-                stroke={bookmarked ? "#facc15" : "currentColor"}
-              />
-            </button>
-          )}
         </div>
       </div>
     </Link>
   );
+}
+
+function dDayToneClassName(dDay: number | null) {
+  if (dDay === null) return styles.dDayMuted;
+  if (dDay < 0) return styles.dDayExpired;
+  if (dDay === 0) return styles.dDayToday;
+  if (dDay <= 3) return styles.dDaySoon;
+  if (dDay <= 7) return styles.dDayWeek;
+  return styles.dDayMuted;
 }
 
 export function CompactJobRow({ job }: { job: JobListItem }) {

@@ -25,7 +25,7 @@ import {
   fetchMyBookmarks,
 } from "@/lib/api";
 import { companyTypeLabels } from "@/lib/labels";
-import { companyDetailHref } from "@/lib/routes";
+import { companyDetailHref, companyDetailJobsHref } from "@/lib/routes";
 import styles from "./companies-page.module.css";
 
 const companySortLabels = {
@@ -56,7 +56,7 @@ export default function CompaniesPage() {
   const [companyTotal, setCompanyTotal] = useState(0);
   const [companyOpenTotal, setCompanyOpenTotal] = useState(0);
   const [companyNoJobTotal, setCompanyNoJobTotal] = useState(0);
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [companyPage, setCompanyPage] = useState(1);
   const [bookmarkedCompanyIds, setBookmarkedCompanyIds] = useState<
     Set<string>
@@ -205,7 +205,7 @@ export default function CompaniesPage() {
                 value={companySearch}
                 onChange={(e) => setCompanySearch(e.target.value)}
                 placeholder="회사명, 유형, 태그로 검색"
-                className="w-full rounded-xl border border-[var(--app-line)] bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[var(--brand)]"
+                className="h-10 w-full rounded-xl border border-[var(--app-line)] bg-white pl-9 pr-4 text-sm outline-none focus:border-[var(--brand)]"
               />
             </div>
             <ActionButton type="button" iconStart={<Search size={15} />}>
@@ -229,7 +229,7 @@ export default function CompaniesPage() {
               >
                 필터
                 <span className="text-xs font-medium text-gray-400">
-                  {filterOpen ? "필터 닫기 ∧" : "필터 열기 ∨"}
+                  {filterOpen ? "닫기 ∧" : "열기 ∨"}
                 </span>
               </ActionButton>
               {filterOpen && (
@@ -259,7 +259,7 @@ export default function CompaniesPage() {
             {/* 체크박스 필터 컬럼들 */}
             {filterOpen && (
               <div className="overflow-x-auto border-t border-[var(--app-line)] px-5 py-4">
-                <div className="flex gap-8">
+                <div className="flex gap-5">
                   {/* 회사 유형 */}
                   <div className="min-w-[120px]">
                     <h3 className="mb-2 text-xs font-bold text-gray-800">
@@ -296,7 +296,7 @@ export default function CompaniesPage() {
                                   : opt.value,
                               )
                             }
-                            className="h-3.5 w-3.5 accent-[#E8457A]"
+                            className="h-3.5 w-3.5 cursor-pointer accent-[#E8457A]"
                           />
                           {opt.label}
                         </label>
@@ -329,7 +329,7 @@ export default function CompaniesPage() {
                                   : opt.value,
                               )
                             }
-                            className="h-3.5 w-3.5 accent-[#E8457A]"
+                            className="h-3.5 w-3.5 cursor-pointer accent-[#E8457A]"
                           />
                           {opt.label}
                         </label>
@@ -445,17 +445,16 @@ export default function CompaniesPage() {
                 개
               </span>
             </div>
-            <select
+            <FilterSelect
+              label="정렬"
+              hideLabel
               value={companySort}
-              onChange={(e) => setCompanySort(e.target.value)}
-              className="rounded-xl border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm font-medium text-gray-700 outline-none"
-            >
-              {Object.entries(companySortLabels).map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
+              options={Object.entries(companySortLabels).map(
+                ([value, label]) => ({ value, label }),
+              )}
+              onChange={setCompanySort}
+              className={styles.sortFilterSelect}
+            />
           </div>
         )}
 
@@ -517,97 +516,99 @@ function CompanyCard({
   const hasJobs = company.openJobCount > 0;
 
   return (
-    <Link href={companyDetailHref(company.id)} className={styles.companyCard}>
-      <div className={styles.banner}>
-        {company.backgroundUrl ? (
-          <>
-            <img
-              src={company.backgroundUrl}
-              alt=""
-              aria-hidden="true"
-              className={styles.bannerImage}
-            />
-            <div className={styles.bannerOverlay} />
-          </>
-        ) : null}
-        {hasJobs && (
-          <span className={styles.openBadge}>
-            채용 중 {company.openJobCount}
-          </span>
-        )}
-        <div className={styles.logo}>
-          {company.logoUrl ? (
-            <img src={company.logoUrl} alt={company.name} />
-          ) : (
-            initial
-          )}
-        </div>
-      </div>
-
-      <div className={styles.body}>
-        <span className={styles.typeBadge}>
-          {companyTypeLabels[company.type]}
-        </span>
-        <h3 className={styles.title}>{company.name}</h3>
-        <p className={styles.description}>
-          {company.description ?? "회사 소개가 준비 중입니다."}
-        </p>
-
-        <div className={styles.factGrid}>
-          <CompanyFact
-            icon={Building2}
-            text={formatCompanyAge(company.foundedYear)}
+    <article className={styles.companyCard}>
+      {onToggleBookmark && (
+        <button
+          type="button"
+          className={styles.bookmarkBtn}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onToggleBookmark(company.id);
+          }}
+          aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
+        >
+          <Bookmark
+            size={18}
+            fill={bookmarked ? "#facc15" : "none"}
+            stroke={bookmarked ? "#facc15" : "currentColor"}
           />
-          <CompanyFact
-            icon={Users}
-            text={
-              company.employeeCount
-                ? `${company.employeeCount.toLocaleString("ko-KR")}명`
-                : "미공개"
-            }
-          />
-          <CompanyFact
-            icon={CircleDollarSign}
-            text={formatSalary(company.averageSalary)}
-          />
-          <CompanyFact
-            icon={TrendingDown}
-            text={`퇴사율 ${formatRate(company.recentAttritionRate)}`}
-          />
-        </div>
-
-        {company.tags.length > 0 && (
-          <div className={styles.tags}>
-            {company.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className={styles.tag}>
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className={styles.cardActions}>
-          {onToggleBookmark && (
-            <button
-              type="button"
-              className={styles.bookmarkBtn}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onToggleBookmark(company.id);
-              }}
-              aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
-            >
-              <Bookmark
-                size={16}
-                fill={bookmarked ? "#facc15" : "none"}
-                stroke={bookmarked ? "#facc15" : "currentColor"}
+        </button>
+      )}
+      <Link href={companyDetailHref(company.id)} className={styles.cardMainLink}>
+        <div className={styles.banner}>
+          {company.backgroundUrl ? (
+            <>
+              <img
+                src={company.backgroundUrl}
+                alt=""
+                aria-hidden="true"
+                className={styles.bannerImage}
               />
-            </button>
+              <div className={styles.bannerOverlay} />
+            </>
+          ) : null}
+          <div className={styles.logo}>
+            {company.logoUrl ? (
+              <img src={company.logoUrl} alt={company.name} />
+            ) : (
+              initial
+            )}
+          </div>
+        </div>
+
+        <div className={styles.body}>
+          <span className={styles.typeBadge}>
+            {companyTypeLabels[company.type]}
+          </span>
+          <h3 className={styles.title}>{company.name}</h3>
+          <p className={styles.description}>
+            {company.description ?? "회사 소개가 준비 중입니다."}
+          </p>
+
+          <div className={styles.factGrid}>
+            <CompanyFact
+              icon={Building2}
+              text={formatCompanyAge(company.foundedYear)}
+            />
+            <CompanyFact
+              icon={Users}
+              text={
+                company.employeeCount
+                  ? `${company.employeeCount.toLocaleString("ko-KR")}명`
+                  : "미공개"
+              }
+            />
+            <CompanyFact
+              icon={CircleDollarSign}
+              text={formatSalary(company.averageSalary)}
+            />
+            <CompanyFact
+              icon={TrendingDown}
+              text={`퇴사율 ${formatRate(company.recentAttritionRate)}`}
+            />
+          </div>
+
+          {company.tags.length > 0 && (
+            <div className={styles.tags}>
+              {company.tags.slice(0, 3).map((tag) => (
+                <span key={tag} className={styles.tag}>
+                  #{tag}
+                </span>
+              ))}
+            </div>
           )}
         </div>
-      </div>
-    </Link>
+      </Link>
+      {hasJobs ? (
+        <Link href={companyDetailJobsHref(company.id)} className={styles.openJobsLink}>
+          채용 중 공고 {company.openJobCount.toLocaleString("ko-KR")}개
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : (
+        <span className={styles.noJobsText}>현재 채용 중인 공고 없음</span>
+      )}
+    </article>
   );
 }
 

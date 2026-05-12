@@ -123,6 +123,16 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
       }
     : undefined;
 
+  useEffect(() => {
+    if (window.location.hash !== "#open-jobs") return;
+    window.requestAnimationFrame(() => {
+      document.getElementById("open-jobs")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, []);
+
   return (
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
@@ -212,7 +222,7 @@ function CompanyDetail({ company }: { company: CompanyDetailItem }) {
             <EmployeeTrendChart data={company.employeeTrend} />
           </section>
 
-          <section className={styles.section}>
+          <section id="open-jobs" className={styles.section}>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-900">
               <BriefcaseBusiness size={15} className={styles.sectionIcon} />
               진행 중인 공고
