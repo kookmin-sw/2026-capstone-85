@@ -118,6 +118,7 @@ describe('AuthService', () => {
       id: 'user-1',
       username: 'jobseeker',
       displayName: '수습 CPA',
+      profileImageUrl: null,
       role: UserRole.JOB_SEEKER,
       ownedCompany: null,
       profileImageAsset: {
@@ -139,6 +140,7 @@ describe('AuthService', () => {
         id: true,
         username: true,
         displayName: true,
+        profileImageUrl: true,
         role: true,
         ownedCompany: { select: { id: true } },
         profileImageAsset: { select: { publicUrl: true } },

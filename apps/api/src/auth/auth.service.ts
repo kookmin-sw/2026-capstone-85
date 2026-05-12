@@ -11,7 +11,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
-type SafeUserRecord = Pick<User, 'id' | 'username' | 'displayName' | 'role'> & {
+type SafeUserRecord = Pick<
+  User,
+  'id' | 'username' | 'displayName' | 'profileImageUrl' | 'role'
+> & {
   ownedCompany?: { id: string } | null;
   profileImageAsset?: { publicUrl: string } | null;
 };
@@ -119,6 +122,7 @@ export class AuthService {
         id: true,
         username: true,
         displayName: true,
+        profileImageUrl: true,
         role: true,
         ownedCompany: { select: { id: true } },
         profileImageAsset: { select: { publicUrl: true } },
@@ -145,7 +149,8 @@ export class AuthService {
       id: user.id,
       username: user.username,
       displayName: user.displayName,
-      profileImageUrl: user.profileImageAsset?.publicUrl ?? null,
+      profileImageUrl:
+        user.profileImageAsset?.publicUrl ?? user.profileImageUrl ?? null,
       role: user.role,
       companyId,
     };

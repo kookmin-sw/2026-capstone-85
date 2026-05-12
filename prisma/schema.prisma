@@ -135,6 +135,7 @@ model User {
   passwordHash        String
   displayName         String?
   profileImageAssetId String?  @unique
+  profileImageUrl     String?
   role                UserRole
   jobFilterPreference Json?
   createdAt           DateTime @default(now())

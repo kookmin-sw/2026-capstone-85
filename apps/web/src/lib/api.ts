@@ -27,6 +27,7 @@ import type {
   JobSubmissionItem,
   KicpaCondition,
   MyProfileResponse,
+  MyCommunityActivityListResponse,
   PersonalVerificationRequestItem,
   PersonalVerificationRequestListResponse,
   ReviewPersonalVerificationRequestPayload,
@@ -434,15 +435,19 @@ export async function fetchCurrentUser() {
   return data.user ?? null;
 }
 
-export async function fetchCommunityPosts(options: {
-  board?: CommunityBoardType;
-  search?: string;
-  sort?: "latest" | "popular";
-} = {}) {
+export async function fetchCommunityPosts(
+  options: {
+    board?: CommunityBoardType;
+    search?: string;
+    sort?: "latest" | "popular";
+    mine?: boolean;
+  } = {},
+) {
   const params = new URLSearchParams();
   if (options.board) params.set("board", options.board);
   if (options.search?.trim()) params.set("search", options.search.trim());
   if (options.sort) params.set("sort", options.sort);
+  if (options.mine) params.set("mine", "true");
   const query = params.toString();
   const response = await fetch(
     `${API_BASE_URL}/community/posts${query ? `?${query}` : ""}`,
@@ -475,9 +480,7 @@ export async function fetchCommunityPost(id: string) {
   return (await response.json()) as CommunityPostDetailResponse;
 }
 
-export async function createCommunityPost(
-  payload: CreateCommunityPostPayload,
-) {
+export async function createCommunityPost(payload: CreateCommunityPostPayload) {
   const response = await fetch(`${API_BASE_URL}/community/posts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -522,7 +525,9 @@ export async function likeCommunityPost(id: string) {
     },
   );
   if (!response.ok) {
-    throw new Error(await readApiError(response, "좋아요 처리에 실패했습니다."));
+    throw new Error(
+      await readApiError(response, "좋아요 처리에 실패했습니다."),
+    );
   }
   return (await response.json()) as CommunityPostItem;
 }
@@ -536,7 +541,9 @@ export async function likeCommunityAnswer(id: string) {
     },
   );
   if (!response.ok) {
-    throw new Error(await readApiError(response, "좋아요 처리에 실패했습니다."));
+    throw new Error(
+      await readApiError(response, "좋아요 처리에 실패했습니다."),
+    );
   }
   return (await response.json()) as CommunityAnswerItem;
 }
@@ -1004,6 +1011,7 @@ export async function fetchMyProfile() {
 export async function updateMyProfile(data: {
   displayName?: string;
   profileImageAssetId?: string;
+  profileImageUrl?: string | null;
 }) {
   const response = await fetch(`${API_BASE_URL}/mypage/profile`, {
     method: "PATCH",
@@ -1030,6 +1038,60 @@ export async function deleteMyProfileImage() {
     );
   }
   return (await response.json()) as MyProfileResponse;
+}
+
+export async function updateMyPassword(data: {
+  currentPassword: string;
+  newPassword: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/mypage/password`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "비밀번호 변경에 실패했습니다."),
+    );
+  }
+  return (await response.json()) as { ok: boolean };
+}
+
+type MyCommunityActivityOptions =
+  | number
+  | {
+      take?: number;
+      page?: number;
+      pageSize?: number;
+    };
+
+export async function fetchMyCommunityActivity(
+  options: MyCommunityActivityOptions = 20,
+) {
+  const params = new URLSearchParams();
+  if (typeof options === "number") {
+    params.set("take", String(options));
+  } else {
+    if (options.take !== undefined) params.set("take", String(options.take));
+    if (options.page !== undefined) params.set("page", String(options.page));
+    if (options.pageSize !== undefined) {
+      params.set("pageSize", String(options.pageSize));
+    }
+  }
+  const response = await fetch(
+    `${API_BASE_URL}/mypage/community-activity?${params.toString()}`,
+    {
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "커뮤니티 활동을 불러오지 못했습니다."),
+    );
+  }
+  return (await response.json()) as MyCommunityActivityListResponse;
 }
 
 export async function submitMyCpaVerificationRequest(

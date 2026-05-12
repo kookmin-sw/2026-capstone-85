@@ -26,11 +26,13 @@ import {
 import type {
   BookmarkItem,
   BookmarkListResponse,
+  MyCommunityActivityListResponse,
   MyProfileResponse,
   PersonalVerificationRequestItem,
   ResumeItem,
   ResumeListResponse,
 } from '@cpa/shared';
+import argon2 from 'argon2';
 import { randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
@@ -137,6 +139,12 @@ type VerificationRequestRecord = Prisma.PersonalVerificationRequestGetPayload<{
   include: typeof verificationRequestInclude;
 }>;
 
+type ListCommunityActivityOptions = {
+  take?: number;
+  page?: number;
+  pageSize?: number;
+};
+
 @Injectable()
 export class MypageService implements OnModuleInit {
   private readonly s3Clients = new Map<string, S3Client>();
@@ -164,12 +172,17 @@ export class MypageService implements OnModuleInit {
 
   async updateProfile(
     userId: string,
-    data: { displayName?: string; profileImageAssetId?: string },
+    data: {
+      displayName?: string;
+      profileImageAssetId?: string;
+      profileImageUrl?: string | null;
+    },
   ): Promise<MyProfileResponse> {
-    const updateData: Record<string, unknown> = {};
+    const updateData: Prisma.UserUpdateInput = {};
     if (data.displayName !== undefined) {
       updateData.displayName = data.displayName.trim() || null;
     }
+
     if (data.profileImageAssetId !== undefined) {
       const profileImageAssetId = this.optionalTrimmed(
         data.profileImageAssetId,
@@ -209,6 +222,23 @@ export class MypageService implements OnModuleInit {
       }
 
       updateData.profileImageAsset = { connect: { id: asset.id } };
+      updateData.profileImageUrl = null;
+    } else if (data.profileImageUrl !== undefined) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { profileImageAssetId: true },
+      });
+      if (!current) throw new NotFoundException('User not found.');
+
+      if (current.profileImageAssetId) {
+        await this.assetsService.deleteAsset(
+          userId,
+          current.profileImageAssetId,
+          [AssetPurpose.USER_PROFILE_IMAGE],
+        );
+      }
+
+      updateData.profileImageUrl = data.profileImageUrl?.trim() || null;
     }
 
     await this.prisma.user.update({
@@ -222,7 +252,7 @@ export class MypageService implements OnModuleInit {
   async deleteProfileImage(userId: string): Promise<MyProfileResponse> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { profileImageAssetId: true },
+      select: { profileImageAssetId: true, profileImageUrl: true },
     });
     if (!user) throw new NotFoundException('User not found.');
 
@@ -232,7 +262,95 @@ export class MypageService implements OnModuleInit {
       ]);
     }
 
+    if (user.profileImageUrl) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { profileImageUrl: null },
+      });
+    }
+
     return this.getProfile(userId);
+  }
+
+  async updatePassword(
+    userId: string,
+    data: { currentPassword: string; newPassword: string },
+  ): Promise<{ ok: boolean }> {
+    if (data.currentPassword === data.newPassword) {
+      throw new BadRequestException(
+        '새 비밀번호는 현재 비밀번호와 다르게 입력해 주세요.',
+      );
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true },
+    });
+    if (!user) throw new NotFoundException('User not found.');
+
+    const matches = await argon2.verify(
+      user.passwordHash,
+      data.currentPassword,
+    );
+    if (!matches) {
+      throw new BadRequestException('현재 비밀번호가 올바르지 않습니다.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: await argon2.hash(data.newPassword) },
+    });
+
+    return { ok: true };
+  }
+
+  async listCommunityActivity(
+    userId: string,
+    options: number | ListCommunityActivityOptions = {},
+  ): Promise<MyCommunityActivityListResponse> {
+    const normalized =
+      typeof options === 'number' ? { take: options } : options;
+    const takeMode =
+      normalized.take !== undefined &&
+      normalized.page === undefined &&
+      normalized.pageSize === undefined;
+    const page = takeMode ? 1 : this.clampPositiveInt(normalized.page, 1);
+    const pageSize = takeMode
+      ? this.clampPositiveInt(normalized.take, 20, 50)
+      : this.clampPositiveInt(normalized.pageSize, 20, 50);
+    const where = { authorId: userId };
+
+    const [total, posts] = await Promise.all([
+      this.prisma.communityPost.count({ where }),
+      this.prisma.communityPost.findMany({
+        where,
+        select: {
+          id: true,
+          boardType: true,
+          title: true,
+          likeCount: true,
+          createdAt: true,
+          _count: { select: { answers: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+
+    return {
+      items: posts.map((post) => ({
+        id: post.id,
+        boardType: post.boardType,
+        title: post.title,
+        commentCount: post._count.answers,
+        likeCount: post.likeCount,
+        createdAt: post.createdAt.toISOString(),
+      })),
+      page,
+      pageSize,
+      total,
+    };
   }
 
   async createPersonalVerificationRequest(
@@ -824,7 +942,8 @@ export class MypageService implements OnModuleInit {
       id: user.id,
       username: user.username,
       displayName: user.displayName,
-      profileImageUrl: user.profileImageAsset?.publicUrl ?? null,
+      profileImageUrl:
+        user.profileImageAsset?.publicUrl ?? user.profileImageUrl ?? null,
       role: user.role,
       createdAt: user.createdAt.toISOString(),
       cpaVerificationStatus,
@@ -885,5 +1004,15 @@ export class MypageService implements OnModuleInit {
   private registrationNumberLast4(value: string) {
     const normalized = value.replace(/[^0-9A-Za-z]/g, '');
     return normalized ? normalized.slice(-4) : null;
+  }
+
+  private clampPositiveInt(
+    value: number | undefined,
+    fallback: number,
+    max = Number.MAX_SAFE_INTEGER,
+  ) {
+    const normalized = Math.floor(Number(value));
+    if (!Number.isFinite(normalized) || normalized < 1) return fallback;
+    return Math.min(normalized, max);
   }
 }

@@ -28,6 +28,7 @@ import { Roles } from '../auth/roles.decorator';
 import type { RequestWithUser } from '../auth/auth.types';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { CreatePersonalVerificationRequestDto } from './dto/create-personal-verification-request.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { MypageService, RESUME_MAX_BYTES } from './mypage.service';
 
@@ -54,6 +55,28 @@ export class MypageController {
   @Delete('profile/image')
   deleteProfileImage(@Req() req: RequestWithUser) {
     return this.mypageService.deleteProfileImage(req.user!.id);
+  }
+
+  @Patch('password')
+  updatePassword(@Req() req: RequestWithUser, @Body() dto: UpdatePasswordDto) {
+    return this.mypageService.updatePassword(req.user!.id, dto);
+  }
+
+  @Get('community-activity')
+  @ApiQuery({ name: 'take', required: false, example: 20 })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'pageSize', required: false, example: 10 })
+  listCommunityActivity(
+    @Req() req: RequestWithUser,
+    @Query('take') take?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.mypageService.listCommunityActivity(req.user!.id, {
+      take: take ? Number(take) : undefined,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
+    });
   }
 
   @Post('cpa-verification-requests')

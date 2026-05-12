@@ -8,11 +8,13 @@ import {
   AssetPurpose,
   AssetStatus,
   CpaVerificationStatus,
+  CommunityBoardType,
   EmploymentHistoryStatus,
   PersonalCareerStage,
   PersonalVerificationRequestStatus,
   UserRole,
 } from '@prisma/client';
+import argon2 from 'argon2';
 import {
   mkdir,
   mkdtemp,
@@ -307,7 +309,10 @@ describe('MypageService profile images', () => {
     );
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
-      data: { profileImageAsset: { connect: { id: 'asset-new' } } },
+      data: {
+        profileImageAsset: { connect: { id: 'asset-new' } },
+        profileImageUrl: null,
+      },
     });
     expect(result.profileImageUrl).toBe(
       'https://assets.example.com/profile.png',
@@ -437,6 +442,151 @@ describe('MypageService CPA verification requests', () => {
   });
 });
 
+describe('MypageService account settings', () => {
+  let prisma: {
+    user: {
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
+    communityPost: {
+      count: jest.Mock;
+      findMany: jest.Mock;
+    };
+  };
+  let service: MypageService;
+
+  beforeEach(() => {
+    prisma = {
+      user: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+      },
+      communityPost: {
+        count: jest.fn().mockResolvedValue(0),
+        findMany: jest.fn(),
+      },
+    };
+    service = new MypageService(
+      prisma as unknown as PrismaService,
+      createConfig({}),
+      { deleteAsset: jest.fn() } as unknown as AssetsService,
+    );
+  });
+
+  it('changes passwords only after checking the current password', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      passwordHash: await argon2.hash('password123'),
+    });
+    prisma.user.update.mockResolvedValue({ id: 'user-1' });
+
+    await expect(
+      service.updatePassword('user-1', {
+        currentPassword: 'password123',
+        newPassword: 'newpassword123',
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    const updateArg = firstMockArg<{
+      where: { id: string };
+      data: { passwordHash: string };
+    }>(prisma.user.update);
+    expect(updateArg.where).toEqual({ id: 'user-1' });
+    await expect(
+      argon2.verify(updateArg.data.passwordHash, 'newpassword123'),
+    ).resolves.toBe(true);
+  });
+
+  it('rejects password changes with a wrong current password', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      passwordHash: await argon2.hash('password123'),
+    });
+
+    await expect(
+      service.updatePassword('user-1', {
+        currentPassword: 'wrongpass123',
+        newPassword: 'newpassword123',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('lists the current users community posts in latest order', async () => {
+    prisma.communityPost.count.mockResolvedValue(12);
+    prisma.communityPost.findMany.mockResolvedValue([
+      {
+        id: 'post-1',
+        boardType: CommunityBoardType.FREE,
+        title: '회계법인 면접 후기 공유합니다',
+        likeCount: 8,
+        createdAt,
+        _count: { answers: 12 },
+      },
+    ]);
+
+    const result = await service.listCommunityActivity('user-1', 5);
+
+    expect(prisma.communityPost.findMany).toHaveBeenCalledWith({
+      where: { authorId: 'user-1' },
+      select: {
+        id: true,
+        boardType: true,
+        title: true,
+        likeCount: true,
+        createdAt: true,
+        _count: { select: { answers: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: 0,
+      take: 5,
+    });
+    expect(result).toEqual({
+      items: [
+        {
+          id: 'post-1',
+          boardType: CommunityBoardType.FREE,
+          title: '회계법인 면접 후기 공유합니다',
+          commentCount: 12,
+          likeCount: 8,
+          createdAt: createdAt.toISOString(),
+        },
+      ],
+      page: 1,
+      pageSize: 5,
+      total: 12,
+    });
+  });
+
+  it('paginates current users community activity', async () => {
+    prisma.communityPost.count.mockResolvedValue(12);
+    prisma.communityPost.findMany.mockResolvedValue([]);
+
+    const result = await service.listCommunityActivity('user-1', {
+      page: 2,
+      pageSize: 10,
+    });
+
+    expect(prisma.communityPost.count).toHaveBeenCalledWith({
+      where: { authorId: 'user-1' },
+    });
+    expect(prisma.communityPost.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { authorId: 'user-1' },
+        orderBy: { createdAt: 'desc' },
+        skip: 10,
+        take: 10,
+      }),
+    );
+    expect(result).toMatchObject({
+      items: [],
+      page: 2,
+      pageSize: 10,
+      total: 12,
+    });
+  });
+});
+
 function resumeRecord(overrides: Record<string, unknown> = {}) {
   return {
     id: 'resume-1',
@@ -461,6 +611,7 @@ function profileUserRecord(overrides: Record<string, unknown> = {}) {
     personalProfile: null,
     personalVerificationRequests: [],
     profileImageAsset: null,
+    profileImageUrl: null,
     ...overrides,
   };
 }
