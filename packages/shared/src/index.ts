@@ -417,6 +417,7 @@ export type MyProfileResponse = {
   id: string;
   username: string;
   displayName: string | null;
+  profileImageUrl: string | null;
   role: string;
   createdAt: string;
   cpaVerificationStatus: CpaVerificationStatus;
@@ -429,6 +430,7 @@ export type MyProfileResponse = {
 
 export type UpdateProfilePayload = {
   displayName?: string;
+  profileImageAssetId?: string;
 };
 
 export type PersonalVerificationRequestItem = {

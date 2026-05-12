@@ -7,4 +7,12 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(50)
   displayName?: string;
+
+  @ApiPropertyOptional({
+    example: 'c9d1ad4f-96f1-4c1b-86bb-5af4c59f64a8',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  profileImageAssetId?: string;
 }

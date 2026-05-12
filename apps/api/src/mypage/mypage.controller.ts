@@ -51,6 +51,11 @@ export class MypageController {
     return this.mypageService.updateProfile(req.user!.id, dto);
   }
 
+  @Delete('profile/image')
+  deleteProfileImage(@Req() req: RequestWithUser) {
+    return this.mypageService.deleteProfileImage(req.user!.id);
+  }
+
   @Post('cpa-verification-requests')
   createPersonalVerificationRequest(
     @Req() req: RequestWithUser,

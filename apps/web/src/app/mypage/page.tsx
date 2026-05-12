@@ -9,6 +9,7 @@ import type {
 } from "@cpa/shared";
 import {
   Bookmark,
+  Camera,
   Download,
   FileText,
   ShieldCheck,
@@ -16,6 +17,7 @@ import {
   Upload,
   User,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   type ChangeEvent,
@@ -27,7 +29,9 @@ import {
 import { SiteNav } from "@/components/site-nav";
 import { ActionButton, ActionLink } from "@/components/ui/action-button";
 import {
+  AUTH_USER_CHANGED_EVENT,
   deleteMyBookmark,
+  deleteMyProfileImage,
   deleteMyResume,
   fetchCurrentUser,
   fetchMyBookmarks,
@@ -36,6 +40,7 @@ import {
   getMyResumeDownloadUrl,
   submitMyCpaVerificationRequest,
   updateMyProfile,
+  uploadMyProfileImage,
   uploadMyResume,
 } from "@/lib/api";
 import { companyDetailHref, jobDetailHref } from "@/lib/routes";
@@ -45,6 +50,13 @@ type Tab = "profile" | "bookmarks" | "resumes";
 
 const RESUME_MAX_BYTES = 10 * 1024 * 1024;
 const RESUME_EXTENSIONS = new Set(["pdf", "doc", "docx", "hwp", "hwpx"]);
+const PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const PROFILE_IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "webp"]);
+const PROFILE_IMAGE_CONTENT_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+]);
 
 const careerStageLabels: Record<PersonalCareerStage, string> = {
   CPA_UNPLACED: "CPA 취득, 수습처 미확정",
@@ -77,6 +89,7 @@ export default function MyPage() {
   const [authorized, setAuthorized] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
+  const [updatingProfileImage, setUpdatingProfileImage] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [displayNameInput, setDisplayNameInput] = useState("");
@@ -87,7 +100,8 @@ export default function MyPage() {
     useState<PersonalCareerStage>("CPA_UNPLACED");
   const [submittingVerification, setSubmittingVerification] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+  const resumeFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -177,6 +191,7 @@ export default function MyPage() {
       });
       setProfile(updated);
       setEditingProfile(false);
+      notifyAuthUserChanged();
       setMessage("프로필을 수정했습니다.");
     } catch (error) {
       setMessage(
@@ -239,7 +254,7 @@ export default function MyPage() {
     const validationMessage = validateResumeFile(file);
     if (validationMessage) {
       setMessage(validationMessage);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (resumeFileInputRef.current) resumeFileInputRef.current.value = "";
       return;
     }
 
@@ -257,7 +272,67 @@ export default function MyPage() {
     } finally {
       setUploadingResume(false);
     }
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (resumeFileInputRef.current) resumeFileInputRef.current.value = "";
+  }
+
+  async function handleUploadProfileImage(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.currentTarget.files?.[0];
+    if (!file || !profile) return;
+    setMessage("");
+
+    const validationMessage = validateProfileImageFile(file);
+    if (validationMessage) {
+      setMessage(validationMessage);
+      if (profileImageInputRef.current) profileImageInputRef.current.value = "";
+      return;
+    }
+
+    setUpdatingProfileImage(true);
+    try {
+      const image = await uploadMyProfileImage(file);
+      const updated = await updateMyProfile({
+        profileImageAssetId: image.assetId,
+      });
+      setProfile(updated);
+      notifyAuthUserChanged();
+      setMessage(
+        profile.profileImageUrl
+          ? "프로필 사진을 변경했습니다."
+          : "프로필 사진을 등록했습니다.",
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "프로필 사진 업로드에 실패했습니다.",
+      );
+    } finally {
+      setUpdatingProfileImage(false);
+    }
+    if (profileImageInputRef.current) profileImageInputRef.current.value = "";
+  }
+
+  async function handleDeleteProfileImage() {
+    if (!profile?.profileImageUrl) return;
+    if (!window.confirm("프로필 사진을 삭제할까요?")) return;
+    setMessage("");
+    setUpdatingProfileImage(true);
+    try {
+      const updated = await deleteMyProfileImage();
+      setProfile(updated);
+      notifyAuthUserChanged();
+      setMessage("프로필 사진을 삭제했습니다.");
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "프로필 사진 삭제에 실패했습니다.",
+      );
+    } finally {
+      setUpdatingProfileImage(false);
+    }
   }
 
   async function handleDeleteResume(id: string) {
@@ -352,7 +427,16 @@ export default function MyPage() {
           <div className={styles.header}>
             <div className={styles.headerLeft}>
               <div className={styles.avatar}>
-                {(profile.displayName ?? profile.username).slice(0, 1)}
+                {profile.profileImageUrl ? (
+                  <Image
+                    src={profile.profileImageUrl}
+                    alt={`${profile.displayName ?? profile.username} 프로필 사진`}
+                    width={56}
+                    height={56}
+                  />
+                ) : (
+                  profileInitial(profile)
+                )}
               </div>
               <div className={styles.headerInfo}>
                 <h1>{profile.displayName ?? profile.username}</h1>
@@ -402,6 +486,63 @@ export default function MyPage() {
           {tab === "profile" && (
             <section className={styles.section}>
               <div className={styles.card}>
+                <div className={styles.profilePhotoRow}>
+                  <div className={styles.profilePhotoPreview}>
+                    {profile.profileImageUrl ? (
+                      <Image
+                        src={profile.profileImageUrl}
+                        alt={`${profile.displayName ?? profile.username} 프로필 사진`}
+                        width={80}
+                        height={80}
+                      />
+                    ) : (
+                      profileInitial(profile)
+                    )}
+                  </div>
+                  <div className={styles.profilePhotoInfo}>
+                    <div>
+                      <h2 className={styles.profilePhotoTitle}>프로필 사진</h2>
+                      <p className={styles.profilePhotoMeta}>
+                        PNG, JPG, WEBP · 최대 2MB
+                      </p>
+                    </div>
+                    <div className={styles.formActions}>
+                      <ActionButton
+                        type="button"
+                        size="sm"
+                        iconStart={<Camera size={14} />}
+                        disabled={updatingProfileImage}
+                        onClick={() => profileImageInputRef.current?.click()}
+                      >
+                        {updatingProfileImage
+                          ? "처리 중"
+                          : profile.profileImageUrl
+                            ? "사진 변경"
+                            : "사진 등록"}
+                      </ActionButton>
+                      {profile.profileImageUrl && (
+                        <ActionButton
+                          type="button"
+                          variant="subtle"
+                          size="sm"
+                          iconStart={<Trash2 size={14} />}
+                          disabled={updatingProfileImage}
+                          onClick={() => void handleDeleteProfileImage()}
+                        >
+                          삭제
+                        </ActionButton>
+                      )}
+                    </div>
+                  </div>
+                  <input
+                    ref={profileImageInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+                    className={styles.hiddenFileInput}
+                    onChange={handleUploadProfileImage}
+                  />
+                </div>
+
                 {editingProfile ? (
                   <form
                     className={styles.profileForm}
@@ -686,7 +827,7 @@ export default function MyPage() {
                     setMessage("이력서는 최대 5개까지 업로드할 수 있습니다.");
                     return;
                   }
-                  fileInputRef.current?.click();
+                  resumeFileInputRef.current?.click();
                 }}
                 disabled={uploadingResume}
               >
@@ -701,7 +842,7 @@ export default function MyPage() {
                 </span>
               </button>
               <input
-                ref={fileInputRef}
+                ref={resumeFileInputRef}
                 type="file"
                 accept=".pdf,.doc,.docx,.hwp,.hwpx"
                 style={{ display: "none" }}
@@ -775,6 +916,31 @@ function validateResumeFile(file: File) {
     return "이력서는 10MB 이하로 업로드해주세요.";
   }
   return "";
+}
+
+function validateProfileImageFile(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (!extension || !PROFILE_IMAGE_EXTENSIONS.has(extension)) {
+    return "프로필 사진은 PNG, JPG, WEBP 파일만 업로드할 수 있습니다.";
+  }
+  if (file.type && !PROFILE_IMAGE_CONTENT_TYPES.has(file.type)) {
+    return "프로필 사진 파일 형식이 올바르지 않습니다.";
+  }
+  if (file.size <= 0) {
+    return "빈 프로필 사진은 업로드할 수 없습니다.";
+  }
+  if (file.size > PROFILE_IMAGE_MAX_BYTES) {
+    return "프로필 사진은 2MB 이하로 업로드해주세요.";
+  }
+  return "";
+}
+
+function profileInitial(profile: MyProfileResponse) {
+  return (profile.displayName ?? profile.username).slice(0, 1).toUpperCase();
+}
+
+function notifyAuthUserChanged() {
+  window.dispatchEvent(new Event(AUTH_USER_CHANGED_EVENT));
 }
 
 function formatBirthDateInput(value: string) {

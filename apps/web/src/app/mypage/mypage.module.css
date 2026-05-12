@@ -41,6 +41,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .headerInfo h1 {
@@ -122,6 +129,60 @@
   display: grid;
   gap: 1rem;
   max-width: 28rem;
+}
+
+.profilePhotoRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.profilePhotoPreview {
+  flex: none;
+  width: 5rem;
+  height: 5rem;
+  border: 1px solid var(--app-line);
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--brand-foreground);
+  font-size: 1.5rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.profilePhotoPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profilePhotoInfo {
+  min-width: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.profilePhotoTitle {
+  color: var(--gray-900);
+  font-size: 0.9375rem;
+  font-weight: 900;
+}
+
+.profilePhotoMeta {
+  margin-top: 0.2rem;
+  color: var(--app-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.hiddenFileInput {
+  display: none;
 }
 
 .field {
@@ -452,6 +513,10 @@
 
   .header {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profilePhotoRow {
     align-items: flex-start;
   }
 

@@ -15,6 +15,8 @@ import {
   type GetObjectCommandOutput,
 } from '@aws-sdk/client-s3';
 import {
+  AssetPurpose,
+  AssetStatus,
   BookmarkTargetType,
   CpaVerificationStatus,
   EmploymentHistoryStatus,
@@ -46,6 +48,7 @@ import {
   isServerRuntime,
   resolveWorkspaceRoot,
 } from '../config/runtime-environment';
+import { AssetsService } from '../assets/assets.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePersonalVerificationRequestDto } from './dto/create-personal-verification-request.dto';
 
@@ -116,6 +119,7 @@ const verificationRequestInclude = {
 } satisfies Prisma.PersonalVerificationRequestInclude;
 
 const profileInclude = {
+  profileImageAsset: { select: { id: true, publicUrl: true } },
   personalProfile: true,
   personalVerificationRequests: {
     where: { status: PersonalVerificationRequestStatus.PENDING },
@@ -140,6 +144,7 @@ export class MypageService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly assetsService: AssetsService,
   ) {}
 
   onModuleInit() {
@@ -159,17 +164,73 @@ export class MypageService implements OnModuleInit {
 
   async updateProfile(
     userId: string,
-    data: { displayName?: string },
+    data: { displayName?: string; profileImageAssetId?: string },
   ): Promise<MyProfileResponse> {
     const updateData: Record<string, unknown> = {};
     if (data.displayName !== undefined) {
       updateData.displayName = data.displayName.trim() || null;
+    }
+    if (data.profileImageAssetId !== undefined) {
+      const profileImageAssetId = this.optionalTrimmed(
+        data.profileImageAssetId,
+      );
+      if (!profileImageAssetId) {
+        throw new BadRequestException('프로필 사진 자산 ID가 필요합니다.');
+      }
+
+      const asset = await this.prisma.asset.findFirst({
+        where: {
+          id: profileImageAssetId,
+          uploadedById: userId,
+          purpose: AssetPurpose.USER_PROFILE_IMAGE,
+          status: AssetStatus.READY,
+        },
+        select: { id: true },
+      });
+      if (!asset) {
+        throw new BadRequestException(
+          '사용 가능한 프로필 사진 업로드를 찾을 수 없습니다.',
+        );
+      }
+
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { profileImageAssetId: true },
+      });
+      if (
+        current?.profileImageAssetId &&
+        current.profileImageAssetId !== asset.id
+      ) {
+        await this.assetsService.deleteAsset(
+          userId,
+          current.profileImageAssetId,
+          [AssetPurpose.USER_PROFILE_IMAGE],
+        );
+      }
+
+      updateData.profileImageAsset = { connect: { id: asset.id } };
     }
 
     await this.prisma.user.update({
       where: { id: userId },
       data: updateData,
     });
+
+    return this.getProfile(userId);
+  }
+
+  async deleteProfileImage(userId: string): Promise<MyProfileResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { profileImageAssetId: true },
+    });
+    if (!user) throw new NotFoundException('User not found.');
+
+    if (user.profileImageAssetId) {
+      await this.assetsService.deleteAsset(userId, user.profileImageAssetId, [
+        AssetPurpose.USER_PROFILE_IMAGE,
+      ]);
+    }
 
     return this.getProfile(userId);
   }
@@ -749,6 +810,10 @@ export class MypageService implements OnModuleInit {
     return client;
   }
 
+  private optionalTrimmed(value: string | undefined) {
+    return value?.trim() || undefined;
+  }
+
   private toProfileResponse(user: ProfileUserRecord): MyProfileResponse {
     const profile = user.personalProfile;
     const pendingRequest = user.personalVerificationRequests[0] ?? null;
@@ -759,6 +824,7 @@ export class MypageService implements OnModuleInit {
       id: user.id,
       username: user.username,
       displayName: user.displayName,
+      profileImageUrl: user.profileImageAsset?.publicUrl ?? null,
       role: user.role,
       createdAt: user.createdAt.toISOString(),
       cpaVerificationStatus,
