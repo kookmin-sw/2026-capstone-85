@@ -25,7 +25,7 @@ import {
   fetchMyBookmarks,
 } from "@/lib/api";
 import { companyTypeLabels } from "@/lib/labels";
-import { companyDetailHref } from "@/lib/routes";
+import { companyDetailHref, companyDetailJobsHref } from "@/lib/routes";
 import styles from "./companies-page.module.css";
 
 const companySortLabels = {
@@ -516,7 +516,7 @@ function CompanyCard({
   const hasJobs = company.openJobCount > 0;
 
   return (
-    <Link href={companyDetailHref(company.id)} className={styles.companyCard}>
+    <article className={styles.companyCard}>
       {onToggleBookmark && (
         <button
           type="button"
@@ -535,76 +535,80 @@ function CompanyCard({
           />
         </button>
       )}
-      <div className={styles.banner}>
-        {company.backgroundUrl ? (
-          <>
-            <img
-              src={company.backgroundUrl}
-              alt=""
-              aria-hidden="true"
-              className={styles.bannerImage}
-            />
-            <div className={styles.bannerOverlay} />
-          </>
-        ) : null}
-        {hasJobs && (
-          <span className={styles.openBadge}>
-            채용 중 {company.openJobCount}
+      <Link href={companyDetailHref(company.id)} className={styles.cardMainLink}>
+        <div className={styles.banner}>
+          {company.backgroundUrl ? (
+            <>
+              <img
+                src={company.backgroundUrl}
+                alt=""
+                aria-hidden="true"
+                className={styles.bannerImage}
+              />
+              <div className={styles.bannerOverlay} />
+            </>
+          ) : null}
+          <div className={styles.logo}>
+            {company.logoUrl ? (
+              <img src={company.logoUrl} alt={company.name} />
+            ) : (
+              initial
+            )}
+          </div>
+        </div>
+
+        <div className={styles.body}>
+          <span className={styles.typeBadge}>
+            {companyTypeLabels[company.type]}
           </span>
-        )}
-        <div className={styles.logo}>
-          {company.logoUrl ? (
-            <img src={company.logoUrl} alt={company.name} />
-          ) : (
-            initial
+          <h3 className={styles.title}>{company.name}</h3>
+          <p className={styles.description}>
+            {company.description ?? "회사 소개가 준비 중입니다."}
+          </p>
+
+          <div className={styles.factGrid}>
+            <CompanyFact
+              icon={Building2}
+              text={formatCompanyAge(company.foundedYear)}
+            />
+            <CompanyFact
+              icon={Users}
+              text={
+                company.employeeCount
+                  ? `${company.employeeCount.toLocaleString("ko-KR")}명`
+                  : "미공개"
+              }
+            />
+            <CompanyFact
+              icon={CircleDollarSign}
+              text={formatSalary(company.averageSalary)}
+            />
+            <CompanyFact
+              icon={TrendingDown}
+              text={`퇴사율 ${formatRate(company.recentAttritionRate)}`}
+            />
+          </div>
+
+          {company.tags.length > 0 && (
+            <div className={styles.tags}>
+              {company.tags.slice(0, 3).map((tag) => (
+                <span key={tag} className={styles.tag}>
+                  #{tag}
+                </span>
+              ))}
+            </div>
           )}
         </div>
-      </div>
-
-      <div className={styles.body}>
-        <span className={styles.typeBadge}>
-          {companyTypeLabels[company.type]}
-        </span>
-        <h3 className={styles.title}>{company.name}</h3>
-        <p className={styles.description}>
-          {company.description ?? "회사 소개가 준비 중입니다."}
-        </p>
-
-        <div className={styles.factGrid}>
-          <CompanyFact
-            icon={Building2}
-            text={formatCompanyAge(company.foundedYear)}
-          />
-          <CompanyFact
-            icon={Users}
-            text={
-              company.employeeCount
-                ? `${company.employeeCount.toLocaleString("ko-KR")}명`
-                : "미공개"
-            }
-          />
-          <CompanyFact
-            icon={CircleDollarSign}
-            text={formatSalary(company.averageSalary)}
-          />
-          <CompanyFact
-            icon={TrendingDown}
-            text={`퇴사율 ${formatRate(company.recentAttritionRate)}`}
-          />
-        </div>
-
-        {company.tags.length > 0 && (
-          <div className={styles.tags}>
-            {company.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className={styles.tag}>
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className={styles.cardActions} />
-      </div>
-    </Link>
+      </Link>
+      {hasJobs ? (
+        <Link href={companyDetailJobsHref(company.id)} className={styles.openJobsLink}>
+          채용 중 공고 {company.openJobCount.toLocaleString("ko-KR")}개
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : (
+        <span className={styles.noJobsText}>현재 채용 중인 공고 없음</span>
+      )}
+    </article>
   );
 }
 

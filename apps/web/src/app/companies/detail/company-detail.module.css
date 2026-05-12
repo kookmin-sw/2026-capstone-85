@@ -139,6 +139,7 @@
 /* ─── Section card ────────────────────────────────────────── */
 
 .section {
+  scroll-margin-top: 5rem;
   border-radius: 0.75rem;
   border: 1px solid var(--app-line);
   background: white;
