@@ -33,6 +33,16 @@
     padding-inline: 0.35rem;
     font-size: 0.75rem;
   }
+
+  .boardToolbar {
+    flex-wrap: wrap;
+  }
+
+  .searchInputWrap {
+    flex-basis: 100%;
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
 .boardTab:hover {
@@ -55,6 +65,64 @@
   min-width: 0;
 }
 
+.boardToolbar {
+  display: flex;
+  align-items: center;
+  column-gap: 1.25rem;
+  row-gap: 0.75rem;
+  margin-bottom: 0.875rem;
+  min-height: 2.5rem;
+  flex-wrap: nowrap;
+}
+
+.searchInputWrap {
+  position: relative;
+  flex: 0 1 20rem;
+  width: 20rem;
+  min-width: 16rem;
+  margin-left: auto;
+}
+
+.searchInput {
+  width: 100%;
+  height: 2.5rem;
+  border: 1px solid var(--app-line);
+  border-radius: var(--radius-lg);
+  background: white;
+  padding: 0 2.5rem 0 1rem;
+  color: var(--gray-900);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 160ms ease;
+}
+
+.searchInput:focus {
+  border-color: var(--brand);
+}
+
+.searchSubmitButton {
+  position: absolute;
+  top: 50%;
+  right: 0.375rem;
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--gray-400);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.searchSubmitButton:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
 .sidebar {
   flex: none;
   width: 22rem;
@@ -74,11 +142,14 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: none;
 }
 
 .statsCount {
+  flex: none;
   font-size: 0.875rem;
   color: var(--gray-600);
+  white-space: nowrap;
 }
 
 .statsCount strong {
@@ -86,8 +157,30 @@
 }
 
 .sortSelect {
-  width: 7.5rem;
-  min-width: 7.5rem;
+  width: auto;
+  min-width: 0;
+}
+
+.sortSelect > button {
+  min-height: 2.5rem;
+  gap: 0.125rem;
+  border-color: transparent;
+  background: transparent;
+  padding: 0 0.125rem;
+  font-size: 0.875rem;
+  box-shadow: none;
+}
+
+.sortSelect > button:hover {
+  color: var(--brand);
+}
+
+.sortSelect [role="listbox"] {
+  min-width: 6.25rem;
+}
+
+.writeButton {
+  min-height: 2.5rem;
 }
 
 .postList {
@@ -203,12 +296,6 @@
   text-align: center;
   color: var(--app-muted);
   font-size: 0.9375rem;
-}
-
-.sidebarSpacer {
-  /* statsRow(2rem) + margin-bottom(0.75rem) - sidebar gap(1rem) */
-  height: 1.75rem;
-  flex-shrink: 0;
 }
 
 .sidebarCard {

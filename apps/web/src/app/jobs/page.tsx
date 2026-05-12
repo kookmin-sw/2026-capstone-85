@@ -1,43 +1,33 @@
-"use client";
+'use client';
 
-import type { JobCalendarDay, JobListItem } from "@cpa/shared";
+import type { JobCalendarDay, JobListItem } from '@cpa/shared';
+import { ArrowRight, ChevronLeft, ChevronRight, RefreshCw, Search, SlidersHorizontal } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { JobPresetBar } from '@/components/job-preset-bar';
+import { JobGridCard } from '@/components/job-card';
+import { jobSortLabels } from '@/components/job-filter-panel';
+import { RegionFilterDialog } from '@/components/region-filter-dialog';
+import { SiteNav } from '@/components/site-nav';
+import { ActionButton } from '@/components/ui/action-button';
+import { FilterInput, FilterSelect } from '@/components/ui/filter-select';
+import { Pagination } from '@/components/ui/pagination';
+import { useJobFilterState } from '@/hooks/use-job-filter-state';
 import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  Search,
-  SlidersHorizontal,
-} from "lucide-react";
-import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { JobPresetBar } from "@/components/job-preset-bar";
-import { JobGridCard } from "@/components/job-card";
-import { jobSortLabels } from "@/components/job-filter-panel";
-import { RegionFilterDialog } from "@/components/region-filter-dialog";
-import { SiteNav } from "@/components/site-nav";
-import { ActionButton } from "@/components/ui/action-button";
-import { FilterInput, FilterSelect } from "@/components/ui/filter-select";
-import { Pagination } from "@/components/ui/pagination";
-import { useJobFilterState } from "@/hooks/use-job-filter-state";
-import { fetchJobCalendar, fetchJobs, fetchMyBookmarks, createMyBookmark, deleteMyBookmark, fetchCurrentUser } from "@/lib/api";
-import { calendarDaysToMap, jobsBetween } from "@/lib/calendar-data";
-import {
-  endOfWeek,
-  getCalendarGridRange,
-  isSameDay,
-  startOfWeek,
-  toDateKey,
-} from "@/lib/date-utils";
-import {
-  buildJobFilterParams,
-  defaultJobFilters,
-  type JobFilterState,
-} from "@/lib/job-filters";
-import { employmentLabels, jobFamilyLabels, kicpaLabels } from "@/lib/labels";
-import { jobDetailHref } from "@/lib/routes";
-import { cn } from "@/lib/utils";
-import styles from "./jobs-page.module.css";
+  fetchJobCalendar,
+  fetchJobs,
+  fetchMyBookmarks,
+  createMyBookmark,
+  deleteMyBookmark,
+  fetchCurrentUser,
+} from '@/lib/api';
+import { calendarDaysToMap, jobsBetween } from '@/lib/calendar-data';
+import { endOfWeek, getCalendarGridRange, isSameDay, startOfWeek, toDateKey } from '@/lib/date-utils';
+import { buildJobFilterParams, defaultJobFilters, type JobFilterState } from '@/lib/job-filters';
+import { employmentLabels, jobFamilyLabels, kicpaLabels } from '@/lib/labels';
+import { jobDetailHref } from '@/lib/routes';
+import { cn } from '@/lib/utils';
+import styles from './jobs-page.module.css';
 
 /* ── 일요일 시작 캘린더 그리드 ── */
 function getSundayFirstGrid(monthDate: Date): Date[] {
@@ -58,7 +48,7 @@ function getSundayFirstGrid(monthDate: Date): Date[] {
   return days;
 }
 
-const WEEK_LABELS = ["일", "월", "화", "수", "목", "금", "토"] as const;
+const WEEK_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
 /* ── 사이드바 캘린더 컴포넌트 ── */
 function JobsSidebarCalendar({
@@ -98,11 +88,7 @@ function JobsSidebarCalendar({
         <div className="mb-3 flex items-center justify-between">
           <button
             type="button"
-            onClick={() =>
-              onMonthChange(
-                new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1),
-              )
-            }
+            onClick={() => onMonthChange(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))}
             className={styles.iconButton}
             aria-label="이전 달"
           >
@@ -113,11 +99,7 @@ function JobsSidebarCalendar({
           </span>
           <button
             type="button"
-            onClick={() =>
-              onMonthChange(
-                new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1),
-              )
-            }
+            onClick={() => onMonthChange(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1))}
             className={styles.iconButton}
             aria-label="다음 달"
           >
@@ -128,13 +110,7 @@ function JobsSidebarCalendar({
         {/* 요일 헤더 */}
         <div className="mb-1 grid grid-cols-7">
           {WEEK_LABELS.map((label, i) => (
-            <div
-              key={label}
-              className={cn(
-                styles.weekLabel,
-                i === 0 && styles.weekLabelSunday,
-              )}
-            >
+            <div key={label} className={cn(styles.weekLabel, i === 0 && styles.weekLabelSunday)}>
               {label}
             </div>
           ))}
@@ -163,9 +139,7 @@ function JobsSidebarCalendar({
                 >
                   {day.getDate()}
                 </span>
-                <span className={styles.dayCount}>
-                  {inMonth && count > 0 ? count : ""}
-                </span>
+                <span className={styles.dayCount}>{inMonth && count > 0 ? count : ''}</span>
               </>
             );
 
@@ -175,10 +149,7 @@ function JobsSidebarCalendar({
                   key={dateKey}
                   type="button"
                   onClick={() => setSelectedDate(isSelected ? null : dateKey)}
-                  className={cn(
-                    styles.calendarCell,
-                    isSelected && styles.calendarCellSelected,
-                  )}
+                  className={cn(styles.calendarCell, isSelected && styles.calendarCellSelected)}
                 >
                   {cellContent}
                 </button>
@@ -199,12 +170,10 @@ function JobsSidebarCalendar({
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-bold text-gray-900">
               {(() => {
-                const [, m, d] = selectedDate.split("-");
+                const [, m, d] = selectedDate.split('-');
                 return `${parseInt(m)}월 ${parseInt(d)}일 마감 공고`;
               })()}
-              <span className="ml-1.5 text-xs font-medium text-gray-400">
-                ({dayMap[selectedDate].total}건)
-              </span>
+              <span className="ml-1.5 text-xs font-medium text-gray-400">({dayMap[selectedDate].total}건)</span>
             </span>
             <button
               type="button"
@@ -222,12 +191,9 @@ function JobsSidebarCalendar({
                 className="flex items-center justify-between gap-2 rounded-lg px-1 py-2.5 transition-colors hover:bg-gray-50"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-gray-900">
-                    {job.companyName}
-                  </p>
+                  <p className="truncate text-xs font-bold text-gray-900">{job.companyName}</p>
                   <p className="truncate text-[10px] text-gray-400">
-                    {jobFamilyLabels[job.jobFamily]} |{" "}
-                    {employmentLabels[job.employmentType]} |{" "}
+                    {jobFamilyLabels[job.jobFamily]} | {employmentLabels[job.employmentType]} |{' '}
                     {kicpaLabels[job.kicpaCondition]}
                   </p>
                 </div>
@@ -241,9 +207,7 @@ function JobsSidebarCalendar({
       {/* D-7 마감 임박 카드 */}
       <div className="rounded-2xl bg-white p-5 shadow-md">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-gray-900">
-            D-7 마감 임박 공고
-          </span>
+          <span className="text-sm font-bold text-gray-900">D-7 마감 임박 공고</span>
           <Link href={calendarHref} className={styles.sidebarMore}>
             전체 보기 <ArrowRight size={12} />
           </Link>
@@ -258,29 +222,20 @@ function JobsSidebarCalendar({
                 className="flex items-center justify-between gap-2 rounded-lg px-1 py-2.5 transition-colors hover:bg-gray-50"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-gray-900">
-                    {job.companyName}
-                  </p>
+                  <p className="truncate text-xs font-bold text-gray-900">{job.companyName}</p>
                   <p className="truncate text-[10px] text-gray-400">
-                    {jobFamilyLabels[job.jobFamily]} |{" "}
-                    {employmentLabels[job.employmentType]} |{" "}
+                    {jobFamilyLabels[job.jobFamily]} | {employmentLabels[job.employmentType]} |{' '}
                     {kicpaLabels[job.kicpaCondition]}
                   </p>
                 </div>
-                <span className={styles.sidebarDday}>
-                  {job.dDay === 0 ? "D-Day" : `D-${job.dDay}`}
-                </span>
+                <span className={styles.sidebarDday}>{job.dDay === 0 ? 'D-Day' : `D-${job.dDay}`}</span>
               </Link>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-gray-400">
-            D-7 이내 마감 임박 공고가 없습니다.
-          </p>
+          <p className="text-xs text-gray-400">D-7 이내 마감 임박 공고가 없습니다.</p>
         )}
-        <p className="mt-3 text-[10px] text-gray-400">
-          * D-day는 마감일 기준입니다.
-        </p>
+        <p className="mt-3 text-[10px] text-gray-400">* D-day는 마감일 기준입니다.</p>
       </div>
     </div>
   );
@@ -288,42 +243,42 @@ function JobsSidebarCalendar({
 
 /* ── 필터 체크박스 컬럼 ── */
 const JOB_FAMILY_OPTS = [
-  { value: "AUDIT", label: "감사" },
-  { value: "TAX", label: "세무" },
-  { value: "FAS", label: "FAS" },
-  { value: "DEAL", label: "Deal" },
-  { value: "INTERNAL_ACCOUNTING", label: "내부회계" },
-  { value: "IN_HOUSE", label: "인하우스" },
+  { value: 'AUDIT', label: '감사' },
+  { value: 'TAX', label: '세무' },
+  { value: 'FAS', label: 'FAS' },
+  { value: 'DEAL', label: 'Deal' },
+  { value: 'INTERNAL_ACCOUNTING', label: '내부회계' },
+  { value: 'IN_HOUSE', label: '인하우스' },
 ];
 const COMPANY_TYPE_OPTS = [
-  { value: "BIG4", label: "Big4" },
-  { value: "LOCAL_ACCOUNTING_FIRM", label: "로컬 회계법인" },
-  { value: "MID_SMALL_ACCOUNTING_FIRM", label: "중소 회계법인" },
-  { value: "FINANCIAL_COMPANY", label: "금융사" },
-  { value: "GENERAL_COMPANY", label: "일반 기업" },
-  { value: "PUBLIC_INSTITUTION", label: "공공기관" },
+  { value: 'BIG4', label: 'Big4' },
+  { value: 'LOCAL_ACCOUNTING_FIRM', label: '로컬 회계법인' },
+  { value: 'MID_SMALL_ACCOUNTING_FIRM', label: '중소 회계법인' },
+  { value: 'FINANCIAL_COMPANY', label: '금융사' },
+  { value: 'GENERAL_COMPANY', label: '일반 기업' },
+  { value: 'PUBLIC_INSTITUTION', label: '공공기관' },
 ];
 const EMPLOYMENT_OPTS = [
-  { value: "FULL_TIME", label: "정규직" },
-  { value: "CONTRACT", label: "계약직" },
-  { value: "INTERN", label: "인턴" },
-  { value: "PART_TIME", label: "파트타임" },
+  { value: 'FULL_TIME', label: '정규직' },
+  { value: 'CONTRACT', label: '계약직' },
+  { value: 'INTERN', label: '인턴' },
+  { value: 'PART_TIME', label: '파트타임' },
 ];
 const KICPA_OPTS = [
-  { value: "REQUIRED", label: "필수" },
-  { value: "PREFERRED", label: "우대" },
-  { value: "NONE", label: "무관" },
-  { value: "UNCLEAR", label: "불명확" },
+  { value: 'REQUIRED', label: '필수' },
+  { value: 'PREFERRED', label: '우대' },
+  { value: 'NONE', label: '무관' },
+  { value: 'UNCLEAR', label: '불명확' },
 ];
 const DEADLINE_TYPE_OPTS = [
-  { value: "FIXED_DATE", label: "특정일 마감" },
-  { value: "UNTIL_FILLED", label: "채용시 마감" },
-  { value: "ALWAYS_OPEN", label: "상시채용" },
+  { value: 'FIXED_DATE', label: '특정일 마감' },
+  { value: 'UNTIL_FILLED', label: '채용시 마감' },
+  { value: 'ALWAYS_OPEN', label: '상시채용' },
 ];
 const TRAINEE_OPTS = [
-  { value: "AVAILABLE", label: "가능" },
-  { value: "UNAVAILABLE", label: "불가능" },
-  { value: "UNCLEAR", label: "불명확" },
+  { value: 'AVAILABLE', label: '가능' },
+  { value: 'UNAVAILABLE', label: '불가능' },
+  { value: 'UNCLEAR', label: '불명확' },
 ];
 function CheckboxColumn({
   title,
@@ -340,12 +295,10 @@ function CheckboxColumn({
 }) {
   const selected = splitMultiValue(filters[field] as string);
   const update = (next: string[]) => {
-    const unique = next.filter(
-      (value, index, all) => all.indexOf(value) === index,
-    );
+    const unique = next.filter((value, index, all) => all.indexOf(value) === index);
     onChange({
       ...filters,
-      [field]: unique.length === options.length ? "" : unique.join(","),
+      [field]: unique.length === options.length ? '' : unique.join(','),
     });
   };
 
@@ -363,10 +316,7 @@ function CheckboxColumn({
           전체
         </label>
         {options.map((opt) => (
-          <label
-            key={opt.value}
-            className="flex cursor-pointer items-center gap-2 text-xs text-gray-700"
-          >
+          <label key={opt.value} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
             <input
               type="checkbox"
               checked={selected.includes(opt.value)}
@@ -387,28 +337,20 @@ function CheckboxColumn({
   );
 }
 
-function RegionFilterColumn({
-  filters,
-  onChange,
-}: {
-  filters: JobFilterState;
-  onChange: (f: JobFilterState) => void;
-}) {
+function RegionFilterColumn({ filters, onChange }: { filters: JobFilterState; onChange: (f: JobFilterState) => void }) {
   return (
     <RegionFilterDialog
       className="min-w-[170px]"
       variant="compact"
       selectedLocations={filters.selectedLocations}
-      onChange={(selectedLocations) =>
-        onChange({ ...filters, selectedLocations })
-      }
+      onChange={(selectedLocations) => onChange({ ...filters, selectedLocations })}
     />
   );
 }
 
 function splitMultiValue(value: string) {
   return value
-    .split(",")
+    .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
 }
@@ -419,13 +361,13 @@ const PAGE_SIZE = 12;
 export default function JobsPage() {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
   const [miniMonth, setMiniMonth] = useState(() => new Date());
   const [calendarDays, setCalendarDays] = useState<JobCalendarDay[]>([]);
   const [calendarLoading, setCalendarLoading] = useState(true);
-  const [calendarError, setCalendarError] = useState("");
+  const [calendarError, setCalendarError] = useState('');
   const [page, setPage] = useState(1);
   const { filters, setFilters, ready, queryString } = useJobFilterState();
   const [bookmarkedJobIds, setBookmarkedJobIds] = useState<Set<string>>(new Set());
@@ -437,9 +379,9 @@ export default function JobsPage() {
     fetchCurrentUser()
       .then((user) => {
         if (ignore) return;
-        if (user?.role === "JOB_SEEKER") {
+        if (user?.role === 'JOB_SEEKER') {
           setIsJobSeeker(true);
-          return fetchMyBookmarks("JOB").then((data) => {
+          return fetchMyBookmarks('JOB').then((data) => {
             if (!ignore) {
               setBookmarkedJobIds(new Set(data.items.map((bm) => bm.targetId)));
             }
@@ -447,7 +389,9 @@ export default function JobsPage() {
         }
       })
       .catch(() => {});
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   async function toggleBookmark(jobId: string) {
@@ -455,7 +399,7 @@ export default function JobsPage() {
     if (bookmarkedJobIds.has(jobId)) {
       // 북마크 해제 — 해당 bookmark id를 찾아야 함
       try {
-        const data = await fetchMyBookmarks("JOB");
+        const data = await fetchMyBookmarks('JOB');
         const bm = data.items.find((item) => item.targetId === jobId);
         if (bm) {
           await deleteMyBookmark(bm.id);
@@ -468,7 +412,7 @@ export default function JobsPage() {
       } catch {}
     } else {
       try {
-        await createMyBookmark("JOB", jobId);
+        await createMyBookmark('JOB', jobId);
         setBookmarkedJobIds((prev) => new Set(prev).add(jobId));
       } catch {}
     }
@@ -486,8 +430,8 @@ export default function JobsPage() {
 
   const params = useMemo(() => {
     const p = buildJobFilterParams(filters);
-    p.set("page", String(page));
-    p.set("pageSize", String(PAGE_SIZE));
+    p.set('page', String(page));
+    p.set('pageSize', String(PAGE_SIZE));
     return p;
   }, [filters, page]);
 
@@ -503,8 +447,8 @@ export default function JobsPage() {
 
   const calendarParams = useMemo(() => {
     const next = buildJobFilterParams(filters);
-    next.set("from", toDateKey(calendarRange.from));
-    next.set("to", toDateKey(calendarRange.to));
+    next.set('from', toDateKey(calendarRange.from));
+    next.set('to', toDateKey(calendarRange.to));
     return next;
   }, [calendarRange, filters]);
 
@@ -519,7 +463,7 @@ export default function JobsPage() {
         if (!ignore) {
           setJobs(data.items);
           setTotal(data.total);
-          setError("");
+          setError('');
         }
       })
       .catch((caught: Error) => {
@@ -540,7 +484,7 @@ export default function JobsPage() {
       .then((data) => {
         if (!ignore) {
           setCalendarDays(data.days);
-          setCalendarError("");
+          setCalendarError('');
         }
       })
       .catch((caught: Error) => {
@@ -556,22 +500,17 @@ export default function JobsPage() {
 
   const dayMap = useMemo(() => calendarDaysToMap(calendarDays), [calendarDays]);
   const weekJobs = useMemo(
-    () =>
-      jobsBetween(calendarDays, startOfWeek(new Date()), endOfWeek(new Date())),
+    () => jobsBetween(calendarDays, startOfWeek(new Date()), endOfWeek(new Date())),
     [calendarDays],
   );
   const urgentJobs = useMemo(
-    () =>
-      jobs
-        .filter((j) => j.dDay !== null && j.dDay >= 0 && j.dDay <= 7)
-        .slice(0, 5),
+    () => jobs.filter((j) => j.dDay !== null && j.dDay >= 0 && j.dDay <= 7).slice(0, 5),
     [jobs],
   );
-  const calendarHref = `/calendar${queryString ? `?${queryString}` : ""}`;
+  const calendarHref = `/calendar${queryString ? `?${queryString}` : ''}`;
 
   // weekJobs를 urgentJobs fallback으로 활용
-  const sidebarUrgentJobs =
-    urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
+  const sidebarUrgentJobs = urgentJobs.length > 0 ? urgentJobs : weekJobs.slice(0, 5);
   return (
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
@@ -587,15 +526,10 @@ export default function JobsPage() {
           {/* 검색바 */}
           <div className="mt-4 flex items-center gap-2">
             <div className="relative flex-1">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 value={filters.search}
-                onChange={(e) =>
-                  setFilters({ ...filters, search: e.target.value })
-                }
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 placeholder="회사명, 직무, 키워드로 검색"
                 className="h-10 w-full rounded-xl border border-[var(--app-line)] bg-white pl-9 pr-4 text-sm outline-none focus:border-[var(--brand)]"
               />
@@ -620,16 +554,10 @@ export default function JobsPage() {
                   iconStart={<SlidersHorizontal size={15} />}
                 >
                   필터
-                  <span className="text-xs font-medium text-gray-400">
-                    {filterOpen ? "필터 닫기 ∧" : "필터 열기 ∨"}
-                  </span>
+                  <span className="text-xs font-medium text-gray-400">{filterOpen ? '닫기 ∧' : '열기 ∨'}</span>
                 </ActionButton>
                 {!filterOpen && (
-                  <JobPresetBar
-                    filters={filters}
-                    onChange={setFilters}
-                    className={styles.inlinePresetBar}
-                  />
+                  <JobPresetBar filters={filters} onChange={setFilters} className={styles.inlinePresetBar} />
                 )}
               </div>
               {filterOpen && (
@@ -690,9 +618,7 @@ export default function JobsPage() {
                     min={1}
                     value={filters.deadlineWithinDays}
                     placeholder="N일 이내"
-                    onChange={(deadlineWithinDays) =>
-                      setFilters({ ...filters, deadlineWithinDays })
-                    }
+                    onChange={(deadlineWithinDays) => setFilters({ ...filters, deadlineWithinDays })}
                   />
                   <CheckboxColumn
                     title="수습 CPA 가능 여부"
@@ -715,11 +641,7 @@ export default function JobsPage() {
             {!loading && (
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm text-gray-500">
-                  공고{" "}
-                  <span className="font-bold text-gray-900">
-                    {total.toLocaleString("ko-KR")}
-                  </span>
-                  건
+                  공고 <span className="font-bold text-gray-900">{total.toLocaleString('ko-KR')}</span>건
                 </p>
                 <FilterSelect
                   label="정렬"
@@ -742,10 +664,7 @@ export default function JobsPage() {
             {loading ? (
               <div className="grid grid-cols-2 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-64 animate-pulse rounded-2xl bg-gray-100"
-                  />
+                  <div key={i} className="h-64 animate-pulse rounded-2xl bg-gray-100" />
                 ))}
               </div>
             ) : jobs.length ? (
@@ -764,17 +683,11 @@ export default function JobsPage() {
                 검색 조건에 맞는 공고가 없습니다.
               </div>
             )}
-            {!loading && (
-              <Pagination
-                page={page}
-                totalPages={Math.ceil(total / PAGE_SIZE)}
-                onPageChange={setPage}
-              />
-            )}
+            {!loading && <Pagination page={page} totalPages={Math.ceil(total / PAGE_SIZE)} onPageChange={setPage} />}
           </div>
 
           {/* 우측 사이드바 — 새 캘린더 UI */}
-          <aside className="h-fit">
+          <aside className={cn('h-fit', !loading && 'lg:pt-14')}>
             {calendarError && (
               <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
                 {calendarError}

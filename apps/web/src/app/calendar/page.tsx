@@ -252,7 +252,7 @@ export default function CalendarPage() {
                 >
                   필터
                   <span className="text-xs font-medium text-gray-400">
-                    {filterOpen ? "필터 닫기 ∧" : "필터 열기 ∨"}
+                    {filterOpen ? "닫기 ∧" : "열기 ∨"}
                   </span>
                 </ActionButton>
                 {!filterOpen && (
