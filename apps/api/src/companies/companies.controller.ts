@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { CompaniesService } from './companies.service';
+import { CreateCompanyJobAutofillDto } from './dto/create-company-job-autofill.dto';
 import { CreateCompanyJobSubmissionDto } from './dto/create-company-job-submission.dto';
 import { CreateCompanyProfileSubmissionDto } from './dto/create-company-profile-submission.dto';
 import { ListCompaniesDto } from './dto/list-companies.dto';
@@ -39,6 +40,14 @@ export class CompaniesController {
   @Get('me')
   me(@Req() req: RequestWithUser) {
     return this.companiesService.me(req.user!.id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.COMPANY)
+  @Get('me/analytics')
+  analytics(@Req() req: RequestWithUser) {
+    return this.companiesService.analytics(req.user!.id);
   }
 
   @ApiBearerAuth()
@@ -69,6 +78,17 @@ export class CompaniesController {
     @Body() dto: UpdateCompanyBackgroundDto,
   ) {
     return this.companiesService.updateBackground(req.user!.id, dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.COMPANY)
+  @Post('me/job-submissions/ai-draft')
+  createJobAutofillDraft(
+    @Req() req: RequestWithUser,
+    @Body() dto: CreateCompanyJobAutofillDto,
+  ) {
+    return this.companiesService.createJobAutofillDraft(req.user!.id, dto);
   }
 
   @ApiBearerAuth()

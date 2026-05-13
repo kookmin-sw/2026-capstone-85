@@ -2,8 +2,10 @@ import type {
   BookmarkItem,
   BookmarkListResponse,
   BookmarkTargetType,
+  CompanyAnalyticsDashboardResponse,
   CompanyDashboardResponse,
   CompanyDetailItem,
+  CompanyJobAutofillResponse,
   CompanyListItem,
   CompanyManagedJobItem,
   CompanyProfileSubmissionItem,
@@ -21,6 +23,7 @@ import type {
   JobFamily,
   JobCalendarResponse,
   JobDetailItem,
+  JobEngagementEventType,
   JobFilterPreference,
   JobFilterPreferenceResponse,
   JobListItem,
@@ -120,6 +123,11 @@ export type CompanyJobSubmissionPayload = {
   deadline?: string;
 };
 
+export type CompanyJobAutofillPayload = {
+  sourceText: string;
+  originalUrl?: string;
+};
+
 export async function fetchJobs(params: URLSearchParams) {
   const response = await fetch(`${API_BASE_URL}/jobs?${params.toString()}`, {
     cache: "no-store",
@@ -138,6 +146,27 @@ export async function fetchJobDetail(id: string) {
     throw new Error("공고 상세를 불러오지 못했습니다.");
   }
   return (await response.json()) as JobDetailItem;
+}
+
+export async function recordJobEngagement(
+  id: string,
+  type: Extract<JobEngagementEventType, "DETAIL_VIEW" | "ORIGINAL_CLICK">,
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/jobs/${encodeURIComponent(id)}/engagements`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ type }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "공고 관심도 기록에 실패했습니다."),
+    );
+  }
+  return (await response.json()) as { ok: boolean };
 }
 
 export async function fetchJobCalendar(params: URLSearchParams) {
@@ -584,6 +613,19 @@ export async function fetchCompanyDashboard() {
   return (await response.json()) as CompanyDashboardResponse;
 }
 
+export async function fetchCompanyAnalytics() {
+  const response = await fetch(`${API_BASE_URL}/companies/me/analytics`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "지원자 관심도 분석을 불러오지 못했습니다."),
+    );
+  }
+  return (await response.json()) as CompanyAnalyticsDashboardResponse;
+}
+
 export async function submitCompanyProfile(
   payload: CompanyProfileSubmissionPayload,
 ) {
@@ -617,6 +659,26 @@ export async function submitCompanyJob(payload: CompanyJobSubmissionPayload) {
     );
   }
   return (await response.json()) as JobSubmissionItem;
+}
+
+export async function generateCompanyJobDraft(
+  payload: CompanyJobAutofillPayload,
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/companies/me/job-submissions/ai-draft`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "AI 자동입력에 실패했습니다."),
+    );
+  }
+  return (await response.json()) as CompanyJobAutofillResponse;
 }
 
 export async function fetchCompanyJobSubmissions() {

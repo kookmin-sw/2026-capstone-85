@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import type { CSSProperties, MouseEvent } from "react";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
   addMonths,
@@ -27,30 +27,11 @@ import {
   toDateKey,
 } from "@/lib/date-utils";
 import { jobDetailHref } from "@/lib/routes";
-import { Badge, CompactJobRow, deadlineText } from "./job-card";
+import { CompactJobRow, deadlineText } from "./job-card";
 
 const weekLabels = ["월", "화", "수", "목", "금", "토", "일"];
 const miniDotLimit = 4;
-const fullCalendarRangeLimit = 3;
 type CalendarModalEntryType = JobCalendarEventType | "ONGOING";
-
-const calendarEventMeta: Record<
-  CalendarModalEntryType,
-  { label: string; barClassName: string }
-> = {
-  START: {
-    label: "시작",
-    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
-  },
-  DEADLINE: {
-    label: "마감",
-    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
-  },
-  ONGOING: {
-    label: "진행 중",
-    barClassName: "border-gray-200 bg-gray-50 text-gray-800",
-  },
-};
 
 type CalendarModalEntry = {
   date: string;
@@ -136,7 +117,10 @@ export function MiniDeadlineCalendar({
 
       <div className="grid grid-cols-7 gap-1 text-center text-xs">
         {weekLabels.map((label) => (
-          <div key={label} className="py-1 font-semibold text-[var(--app-muted)]">
+          <div
+            key={label}
+            className="py-1 font-semibold text-[var(--app-muted)]"
+          >
             {label}
           </div>
         ))}
@@ -230,155 +214,134 @@ export function FullDeadlineCalendar({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const days = useMemo(() => getCalendarGridDays(monthDate), [monthDate]);
   const weeks = useMemo(() => chunkCalendarWeeks(days), [days]);
-  const rangeSegments = useMemo(
-    () => buildCalendarRangeSegments(weeks, ranges),
-    [ranges, weeks],
-  );
   const rangesByDate = useMemo(
     () => buildCalendarRangesByDate(days, ranges),
     [days, ranges],
   );
 
   return (
-    <section className="grid gap-4 rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
-      <div className="relative flex items-center justify-center py-1">
-        <div className="flex items-center gap-2">
+    <section className="grid gap-0 rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[var(--app-line)] px-6 py-4">
+        <h2 className="text-lg font-bold text-gray-900">
+          {monthDate.getFullYear()}년 {monthDate.getMonth() + 1}월
+        </h2>
+        <div className="flex items-center gap-1">
+          <span className="mr-3 text-xs text-gray-400">
+            공개 일정만 대응 가능합니다.
+          </span>
           <button
             type="button"
             onClick={() =>
               onMonthChange(
-                new Date(
-                  monthDate.getFullYear(),
-                  monthDate.getMonth() - 1,
-                  1,
-                ),
+                new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1),
               )
             }
-            className="cursor-pointer rounded-md border border-[var(--app-line)] p-2"
+            className="cursor-pointer rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100"
             aria-label="이전 달"
           >
             <ChevronLeft size={18} />
           </button>
-          <p className="min-w-32 text-center font-semibold">
-            {monthDate.getFullYear()}년 {monthDate.getMonth() + 1}월
-          </p>
           <button
             type="button"
             onClick={() =>
               onMonthChange(
-                new Date(
-                  monthDate.getFullYear(),
-                  monthDate.getMonth() + 1,
-                  1,
-                ),
+                new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1),
               )
             }
-            className="cursor-pointer rounded-md border border-[var(--app-line)] p-2"
+            className="cursor-pointer rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100"
             aria-label="다음 달"
           >
             <ChevronRight size={18} />
           </button>
         </div>
-        <div className="absolute right-0 flex flex-wrap gap-2 text-xs font-semibold">
-          <span className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-gray-700">
-            공고 기간
-          </span>
-          <span className="rounded-md border border-[var(--brand-mid)] bg-[var(--brand-soft)] px-2.5 py-1 text-[var(--brand)]">
-            마감 지점
-          </span>
-        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[820px] border-l border-t border-[var(--app-line)] text-sm">
-          <div className="grid grid-cols-7">
-            {weekLabels.map((label) => (
-              <div
-                key={label}
-                className="border-b border-r border-[var(--app-line)] bg-gray-50 px-2 py-2 text-center text-xs font-semibold text-gray-500"
-              >
-                {label}
-              </div>
-            ))}
+      {/* Weekday header */}
+      <div className="grid grid-cols-7 border-b border-[var(--app-line)]">
+        {weekLabels.map((label) => (
+          <div
+            key={label}
+            className="border-r border-[var(--app-line)] px-3 py-2.5 text-center text-xs font-bold text-gray-500 last:border-r-0"
+          >
+            {label}
           </div>
+        ))}
+      </div>
 
-          {weeks.map((week, weekIndex) => (
-            <div
-              key={toDateKey(week[0])}
-              className="relative grid grid-cols-7 border-b border-[var(--app-line)]"
-            >
-              {week.map((day) => {
-                const dateKey = toDateKey(day);
-                const activeRanges = rangesByDate[dateKey] ?? [];
-                const inMonth = day.getMonth() === monthDate.getMonth();
-                const overflow = Math.max(
-                  activeRanges.length - fullCalendarRangeLimit,
-                  0,
-                );
+      {/* Calendar grid */}
+      <div className="overflow-x-auto">
+        {weeks.map((week) => (
+          <div
+            key={toDateKey(week[0])}
+            className="grid min-h-[8.5rem] grid-cols-7 border-b border-[var(--app-line)] last:border-b-0"
+          >
+            {week.map((day) => {
+              const dateKey = toDateKey(day);
+              const calendarDay = dayMap[dateKey];
+              const inMonth = day.getMonth() === monthDate.getMonth();
+              const isToday = isSameDay(day, new Date());
+              const deadlineJobs = calendarDay?.jobs ?? [];
+              const events = eventMap[dateKey] ?? [];
 
-                return (
-                  <button
-                    key={dateKey}
-                    type="button"
-                    onClick={() => setSelectedDate(dateKey)}
-                    aria-label={`${dateKey} 채용 기간 ${activeRanges.length}건`}
-                    className={
-                      inMonth
-                        ? "relative min-h-44 cursor-pointer border-r border-[var(--app-line)] bg-white p-2 text-left align-top transition-colors hover:bg-[#FFF8FA]"
-                        : "relative min-h-44 cursor-pointer border-r border-[var(--app-line)] bg-gray-50 p-2 text-left text-gray-300"
-                    }
+              // 마감 공고 + 시작 공고 합치기
+              const displayItems = buildDayDisplayItems(deadlineJobs, events);
+
+              return (
+                <button
+                  key={dateKey}
+                  type="button"
+                  onClick={() => setSelectedDate(dateKey)}
+                  className={`flex cursor-pointer flex-col border-r border-[var(--app-line)] p-2 text-left transition-colors last:border-r-0 ${
+                    inMonth
+                      ? "bg-white hover:bg-[#fafafa]"
+                      : "bg-gray-50/50 text-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-flex h-6 w-6 items-center justify-center text-xs font-bold ${
+                      isToday
+                        ? "rounded-full bg-[var(--brand)] text-white"
+                        : inMonth
+                          ? "text-gray-900"
+                          : "text-gray-300"
+                    }`}
                   >
-                    <span
-                      className={
-                        isSameDay(day, new Date())
-                          ? "absolute left-2 top-2 z-20 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[var(--brand)] text-xs font-semibold text-white"
-                          : "absolute left-2 top-2 z-20 cursor-pointer text-xs font-semibold"
-                      }
-                    >
-                      {day.getDate()}
-                    </span>
-                    {overflow > 0 && (
-                      <span className="absolute bottom-2 left-2 z-20 text-xs font-semibold text-[var(--brand)]">
-                        +{overflow}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-
-              <div className="pointer-events-none absolute inset-x-0 top-11 z-10 grid grid-cols-7 gap-y-1">
-                {(rangeSegments[weekIndex] ?? []).map((segment) => (
-                  <div
-                    key={`${segment.range.job.id}-${segment.startColumn}-${segment.endColumn}`}
-                    className={`pointer-events-auto mx-1 flex h-7 cursor-pointer items-center overflow-hidden border px-2 text-xs font-semibold shadow-sm ${rangeSegmentClassName(segment)}`}
-                    style={{
-                      gridColumn: `${segment.startColumn + 1} / ${
-                        segment.endColumn + 2
-                      }`,
-                      gridRow: segment.lane + 1,
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setSelectedDate(dateFromRangeSegmentClick(event, week, segment));
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        setSelectedDate(segment.range.endDate ?? segment.range.startDate);
-                      }
-                    }}
-                  >
-                    <span className="truncate">
-                      {rangeSegmentLabel(segment)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+                    {day.getDate()}
+                  </span>
+                  {inMonth && displayItems.length > 0 && (
+                    <div className="mt-1 flex flex-col gap-0.5">
+                      {displayItems.slice(0, 6).map((item) => (
+                        <div
+                          key={`${item.type}-${item.job.id}`}
+                          className="flex items-center gap-1 overflow-hidden"
+                        >
+                          <span
+                            className={`flex-none rounded px-1 py-0.5 text-[10px] font-bold leading-none ${
+                              item.type === "DEADLINE"
+                                ? "bg-[var(--brand-soft)] text-[var(--brand)]"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {item.type === "DEADLINE" ? "마감" : "시작"}
+                          </span>
+                          <span className="truncate text-[11px] text-gray-700">
+                            {item.job.companyName}
+                          </span>
+                        </div>
+                      ))}
+                      {displayItems.length > 6 && (
+                        <span className="text-[10px] font-semibold text-gray-400">
+                          +{displayItems.length - 6}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       {selectedDate && (
@@ -426,7 +389,9 @@ export function ScrollableDeadlineCalendar({
     monthEnd,
   )}`;
   const timelineWidth = 230 + monthDays.length * 132;
-  const timelineWidthStyle = { minWidth: timelineWidth } satisfies CSSProperties;
+  const timelineWidthStyle = {
+    minWidth: timelineWidth,
+  } satisfies CSSProperties;
   const timelineGridStyle = {
     gridTemplateColumns: `230px repeat(${monthDays.length}, minmax(132px, 132px))`,
   } satisfies CSSProperties;
@@ -489,7 +454,7 @@ export function ScrollableDeadlineCalendar({
                       ? "border-r border-[var(--app-line)] bg-[#fff8fa] px-3 py-3 text-left"
                       : isWeekend
                         ? "border-r border-[var(--app-line)] bg-gray-50 px-3 py-3 text-left hover:bg-gray-100"
-                      : "border-r border-[var(--app-line)] bg-white px-3 py-3 text-left hover:bg-gray-50"
+                        : "border-r border-[var(--app-line)] bg-white px-3 py-3 text-left hover:bg-gray-50"
                   }
                   aria-label={`${toDateKey(day)} 채용 일정`}
                 >
@@ -541,7 +506,8 @@ export function ScrollableDeadlineCalendar({
                     {monthDays.map((day, dayIndex) => {
                       const dateKey = toDateKey(day);
                       const isToday = isSameDay(day, new Date());
-                      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                      const isWeekend =
+                        day.getDay() === 0 || day.getDay() === 6;
                       return (
                         <button
                           key={`${row.companyId}-${dateKey}`}
@@ -632,14 +598,12 @@ function buildScrollableCompanyRows(dates: Date[], ranges: JobCalendarRange[]) {
   for (const range of ranges) {
     if (!rangeIntersectsDates(range, rangeStartDate, rangeEndDate)) continue;
     const { companyId, companyName, companyLogoUrl } = range.job;
-    const group =
-      grouped.get(companyId) ??
-      {
-        companyId,
-        companyName,
-        companyLogoUrl,
-        ranges: [],
-      };
+    const group = grouped.get(companyId) ?? {
+      companyId,
+      companyName,
+      companyLogoUrl,
+      ranges: [],
+    };
     group.ranges.push(range);
     grouped.set(companyId, group);
   }
@@ -699,6 +663,45 @@ function buildScrollableCompanyRows(dates: Date[], ranges: JobCalendarRange[]) {
     });
 }
 
+type DayDisplayItem = {
+  type: CalendarModalEntryType;
+  job: JobListItem;
+};
+
+function buildDayDisplayItems(
+  deadlineJobs: JobListItem[],
+  events: JobCalendarEvent[],
+): DayDisplayItem[] {
+  const items: DayDisplayItem[] = [];
+  const seenKeys = new Set<string>();
+
+  // 이벤트 기반 (시작/마감)
+  for (const event of events) {
+    if (event.type !== "START" && event.type !== "DEADLINE") continue;
+    const key = `${event.type}-${event.job.id}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    items.push({ type: event.type, job: event.job });
+  }
+
+  // 마감 공고 (이벤트에 없는 것)
+  for (const job of deadlineJobs) {
+    const key = `DEADLINE-${job.id}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    items.push({ type: "DEADLINE", job });
+  }
+
+  // 마감 우선 정렬
+  items.sort((a, b) => {
+    const order = modalEntryTypeOrder(a.type) - modalEntryTypeOrder(b.type);
+    if (order !== 0) return order;
+    return a.job.companyName.localeCompare(b.job.companyName);
+  });
+
+  return items;
+}
+
 function chunkCalendarWeeks(days: Date[]) {
   const weeks: Date[][] = [];
   for (let index = 0; index < days.length; index += 7) {
@@ -707,43 +710,7 @@ function chunkCalendarWeeks(days: Date[]) {
   return weeks;
 }
 
-function buildCalendarRangeSegments(
-  weeks: Date[][],
-  ranges: JobCalendarRange[],
-) {
-  return weeks.map((week) => {
-    const weekStart = week[0];
-    const weekEnd = week[week.length - 1];
-    const activeRanges = ranges
-      .filter((range) => rangeIntersectsDates(range, weekStart, weekEnd))
-      .sort(compareCalendarRanges)
-      .slice(0, fullCalendarRangeLimit);
-
-    return activeRanges.map<CalendarRangeSegment>((range, lane) => {
-      const rangeStart = fromDateKey(range.startDate);
-      const rangeEnd = fromDateKey(range.endDate ?? range.startDate);
-      const segmentStart =
-        rangeStart.getTime() > weekStart.getTime() ? rangeStart : weekStart;
-      const segmentEnd =
-        rangeEnd.getTime() < weekEnd.getTime() ? rangeEnd : weekEnd;
-
-      return {
-        range,
-        lane,
-        startColumn: daysBetween(weekStart, segmentStart),
-        endColumn: daysBetween(weekStart, segmentEnd),
-        startsAtRangeStart: toDateKey(segmentStart) === range.startDate,
-        endsAtRangeEnd:
-          toDateKey(segmentEnd) === (range.endDate ?? range.startDate),
-      };
-    });
-  });
-}
-
-function buildCalendarRangesByDate(
-  days: Date[],
-  ranges: JobCalendarRange[],
-) {
+function buildCalendarRangesByDate(days: Date[], ranges: JobCalendarRange[]) {
   return days.reduce<Record<string, JobCalendarRange[]>>((acc, day) => {
     const dateKey = toDateKey(day);
     acc[dateKey] = ranges
@@ -791,14 +758,12 @@ function compareCalendarRanges(
   return first.job.title.localeCompare(second.job.title);
 }
 
-function rangeIntersectsDates(
-  range: JobCalendarRange,
-  from: Date,
-  to: Date,
-) {
+function rangeIntersectsDates(range: JobCalendarRange, from: Date, to: Date) {
   const rangeStart = fromDateKey(range.startDate);
   const rangeEnd = fromDateKey(range.endDate ?? range.startDate);
-  return rangeStart.getTime() <= to.getTime() && rangeEnd.getTime() >= from.getTime();
+  return (
+    rangeStart.getTime() <= to.getTime() && rangeEnd.getTime() >= from.getTime()
+  );
 }
 
 function rangeContainsDateKey(range: JobCalendarRange, dateKey: string) {
@@ -806,20 +771,6 @@ function rangeContainsDateKey(range: JobCalendarRange, dateKey: string) {
   const rangeStart = fromDateKey(range.startDate).getTime();
   const rangeEnd = fromDateKey(range.endDate ?? range.startDate).getTime();
   return value >= rangeStart && value <= rangeEnd;
-}
-
-function dateFromRangeSegmentClick(
-  event: MouseEvent<HTMLDivElement>,
-  week: Date[],
-  segment: CalendarRangeSegment,
-) {
-  const rect = event.currentTarget.getBoundingClientRect();
-  const columns = segment.endColumn - segment.startColumn + 1;
-  const rawColumn = Math.floor(
-    ((event.clientX - rect.left) / Math.max(rect.width, 1)) * columns,
-  );
-  const column = Math.min(Math.max(rawColumn, 0), columns - 1);
-  return toDateKey(week[segment.startColumn + column]);
 }
 
 function rangeSegmentClassName(segment: CalendarRangeSegment) {
@@ -832,20 +783,13 @@ function rangeSegmentClassName(segment: CalendarRangeSegment) {
     return `rounded-md ${colorClassName}`;
   }
 
-  const leftRadius = segment.startsAtRangeStart ? "rounded-l-md" : "rounded-l-none";
-  const rightRadius = segment.endsAtRangeEnd ? "rounded-r-md" : "rounded-r-none";
+  const leftRadius = segment.startsAtRangeStart
+    ? "rounded-l-md"
+    : "rounded-l-none";
+  const rightRadius = segment.endsAtRangeEnd
+    ? "rounded-r-md"
+    : "rounded-r-none";
   return `${leftRadius} ${rightRadius} ${colorClassName}`;
-}
-
-function rangeSegmentLabel(segment: CalendarRangeSegment) {
-  const title = segment.range.job.title;
-  if (!segment.range.endDate) return `시작 · ${title}`;
-  if (segment.startsAtRangeStart && segment.endsAtRangeEnd) {
-    return `시작-마감 · ${title}`;
-  }
-  if (segment.startsAtRangeStart) return `시작 · ${title}`;
-  if (segment.endsAtRangeEnd) return `마감 · ${title}`;
-  return `진행 · ${title}`;
 }
 
 function weeklySegmentBadge(segment: CalendarRangeSegment) {
@@ -855,8 +799,8 @@ function weeklySegmentBadge(segment: CalendarRangeSegment) {
 }
 
 function modalEntryTypeOrder(type: CalendarModalEntryType) {
-  if (type === "START") return 0;
-  if (type === "ONGOING") return 1;
+  if (type === "DEADLINE") return 0;
+  if (type === "START") return 1;
   return 2;
 }
 
@@ -939,29 +883,45 @@ function CalendarDayModal({
 }
 
 function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
-  const meta = calendarEventMeta[event.type];
+  const isDeadline = event.type === "DEADLINE";
 
   return (
-    <article className={`group grid cursor-pointer gap-3 rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${meta.barClassName}`}>
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge>{meta.label}</Badge>
-        {event.type !== "DEADLINE" && <Badge>{deadlineText(event.job)}</Badge>}
-        <span className="text-xs font-medium text-[var(--app-muted)]">
-          {event.job.companyName}
+    <article
+      className={`group grid gap-2 rounded-xl border p-4 transition-shadow hover:shadow-md ${
+        isDeadline
+          ? "border-[var(--brand-mid)] bg-[#fff8fa]"
+          : "border-gray-200 bg-white"
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className={`rounded-md px-2 py-0.5 text-xs font-bold ${
+            isDeadline
+              ? "bg-[var(--brand-soft)] text-[var(--brand)]"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {isDeadline ? "마감" : "시작"}
+        </span>
+        <span className="text-xs text-[var(--app-muted)]">
+          {deadlineText(event.job)}
         </span>
       </div>
-      <div className="grid gap-1">
+      <div className="grid gap-0.5">
+        <span className="text-xs font-semibold text-[var(--app-muted)]">
+          {event.job.companyName}
+        </span>
         <Link
           href={jobDetailHref(event.job.id)}
-          className="font-semibold text-[var(--foreground)] transition-colors group-hover:text-[var(--brand)]"
+          className="text-sm font-bold text-gray-900 transition-colors group-hover:text-[var(--brand)]"
         >
           {event.job.title}
         </Link>
-        <p className="text-sm text-[var(--app-muted)]">
-          출처: {event.job.sourceName} · 최종 확인:{" "}
-          {new Date(event.job.lastCheckedAt).toLocaleString("ko-KR")}
-        </p>
       </div>
+      <p className="text-xs text-[var(--app-muted)]">
+        출처: {event.job.sourceName} · 최종 확인:{" "}
+        {new Date(event.job.lastCheckedAt).toLocaleString("ko-KR")}
+      </p>
     </article>
   );
 }
