@@ -857,7 +857,7 @@ export default function MyPage() {
           </div>
 
           <div className={styles.mainGrid}>
-            <section className={styles.panel}>
+            <section className={`${styles.panel} ${styles.mainGridFull}`}>
               <div className={styles.panelHeader}>
                 <h2>내 프로필</h2>
               </div>
@@ -927,10 +927,11 @@ export default function MyPage() {
                 </div>
                 <p className={styles.passwordHint}>{PASSWORD_HELP_TEXT}</p>
                 <label className={styles.field}>
-                  현재 비밀번호
+                  <span>현재 비밀번호 <span className={styles.required}>*</span></span>
                   <input
                     className={styles.input}
                     type="password"
+                    placeholder="현재 비밀번호를 입력하세요"
                     autoComplete="current-password"
                     value={currentPassword}
                     onChange={(event) => setCurrentPassword(event.target.value)}
@@ -941,11 +942,11 @@ export default function MyPage() {
                   />
                 </label>
                 <label className={styles.field}>
-                  새 비밀번호
+                  <span>새 비밀번호 <span className={styles.required}>*</span></span>
                   <input
                     className={styles.input}
                     type="password"
-                    placeholder={PASSWORD_LENGTH_TEXT}
+                    placeholder="새 비밀번호를 입력하세요 (8자 이상)"
                     autoComplete="new-password"
                     value={newPassword}
                     onChange={(event) => setNewPassword(event.target.value)}
@@ -956,11 +957,11 @@ export default function MyPage() {
                   />
                 </label>
                 <label className={styles.field}>
-                  새 비밀번호 확인
+                  <span>새 비밀번호 확인 <span className={styles.required}>*</span></span>
                   <input
                     className={styles.input}
                     type="password"
-                    placeholder={PASSWORD_LENGTH_TEXT}
+                    placeholder="새 비밀번호를 다시 입력하세요"
                     autoComplete="new-password"
                     value={newPasswordConfirm}
                     onChange={(event) =>
@@ -1123,7 +1124,7 @@ export default function MyPage() {
             )}
           </section>
 
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${styles.mainGridFull}`}>
             <div className={styles.panelHeader}>
               <h2>
                 <MessageCircle size={17} />내 커뮤니티 활동
