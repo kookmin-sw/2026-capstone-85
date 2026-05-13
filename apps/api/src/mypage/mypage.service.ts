@@ -21,6 +21,7 @@ import {
   BookmarkTargetType,
   CpaVerificationStatus,
   EmploymentHistoryStatus,
+  JobEngagementEventType,
   PersonalVerificationRequestStatus,
   Prisma,
 } from '@prisma/client';
@@ -451,6 +452,12 @@ export class MypageService implements OnModuleInit {
     const bookmark = await this.prisma.bookmark.create({
       data: { userId, targetType, targetId },
     });
+    await this.recordBookmarkEngagement(
+      userId,
+      targetType,
+      targetId,
+      JobEngagementEventType.BOOKMARK_ADDED,
+    );
 
     if (targetType === BookmarkTargetType.JOB) {
       await this.notificationsService?.createDeadlineSoonNotificationForUserJob(
@@ -470,6 +477,12 @@ export class MypageService implements OnModuleInit {
       throw new NotFoundException('Bookmark not found.');
     }
     await this.prisma.bookmark.delete({ where: { id } });
+    await this.recordBookmarkEngagement(
+      userId,
+      bookmark.targetType,
+      bookmark.targetId,
+      JobEngagementEventType.BOOKMARK_REMOVED,
+    );
     return { ok: true };
   }
 
@@ -529,6 +542,28 @@ export class MypageService implements OnModuleInit {
       targetSubtitle,
       createdAt: bookmark.createdAt.toISOString(),
     };
+  }
+
+  private async recordBookmarkEngagement(
+    userId: string,
+    targetType: BookmarkTargetType,
+    targetId: string,
+    type: JobEngagementEventType,
+  ) {
+    if (targetType !== BookmarkTargetType.JOB) return;
+    const job = await this.prisma.job.findUnique({
+      where: { id: targetId },
+      select: { id: true, companyId: true },
+    });
+    if (!job) return;
+    await this.prisma.jobEngagementEvent.create({
+      data: {
+        jobId: job.id,
+        companyId: job.companyId,
+        type,
+        actorUserId: userId,
+      },
+    });
   }
 
   async listResumes(userId: string): Promise<ResumeListResponse> {
