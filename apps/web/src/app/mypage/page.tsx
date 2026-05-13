@@ -10,14 +10,18 @@ import type {
   ResumeItem,
 } from "@cpa/shared";
 import {
+  Award,
   Bookmark,
-  BrainCircuit,
   Camera,
+  ChevronDown,
+  ChevronUp,
   CheckCircle2,
   Download,
+  EyeOff,
   FileText,
   KeyRound,
   MessageCircle,
+  RotateCcw,
   Sparkles,
   Trash2,
   Upload,
@@ -64,6 +68,39 @@ const PROFILE_IMAGE_TYPES = new Set([
   "image/webp",
   "image/gif",
 ]);
+const PROFILE_COMPLETION_COLLAPSED_STORAGE_KEY =
+  "accountit:mypage-profile-completion:collapsed";
+const PROFILE_COMPLETION_HIDDEN_UNTIL_STORAGE_KEY =
+  "accountit:mypage-profile-completion:hiddenUntil";
+const PROFILE_COMPLETION_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+
+type ProfileCompletionAction =
+  | "profileImage"
+  | "displayName"
+  | "resume"
+  | "cpa"
+  | "jobs"
+  | "community";
+
+type ProfileCompletionStep = {
+  id: string;
+  label: string;
+  description: string;
+  points: number;
+  earned: number;
+  completed: boolean;
+  action: ProfileCompletionAction;
+  actionLabel: string;
+  href?: string;
+};
+
+type ProfileCompletion = {
+  score: number;
+  level: string;
+  reason: string;
+  nextStep: ProfileCompletionStep | null;
+  steps: ProfileCompletionStep[];
+};
 
 const careerStageLabels: Record<PersonalCareerStage, string> = {
   CPA_UNPLACED: "CPA 취득, 수습처 미확정",
@@ -110,10 +147,13 @@ export default function MyPage() {
   const [updatingProfileImage, setUpdatingProfileImage] = useState(false);
   const [displayNameInput, setDisplayNameInput] = useState("");
   const [verificationModalOpen, setVerificationModalOpen] = useState(false);
-  const [likelihoodResult, setLikelihoodResult] = useState("");
+  const [profileCompletionCollapsed, setProfileCompletionCollapsed] =
+    useState(false);
+  const [profileCompletionHidden, setProfileCompletionHidden] = useState(false);
 
   const resumeFileInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
+  const displayNameInputRef = useRef<HTMLInputElement>(null);
   const verificationBadgeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -216,15 +256,50 @@ export default function MyPage() {
     };
   }, [profile]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        setProfileCompletionCollapsed(
+          window.localStorage.getItem(
+            PROFILE_COMPLETION_COLLAPSED_STORAGE_KEY,
+          ) === "true",
+        );
+
+        const hiddenUntil = Number(
+          window.localStorage.getItem(
+            PROFILE_COMPLETION_HIDDEN_UNTIL_STORAGE_KEY,
+          ),
+        );
+        const shouldHide =
+          Number.isFinite(hiddenUntil) && hiddenUntil > Date.now();
+        setProfileCompletionHidden(shouldHide);
+        if (!shouldHide) {
+          window.localStorage.removeItem(
+            PROFILE_COMPLETION_HIDDEN_UNTIL_STORAGE_KEY,
+          );
+        }
+      } catch {
+        // Browser storage can be unavailable in restricted/private contexts.
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const filteredBookmarks =
     bookmarkFilter === "ALL"
       ? bookmarks
       : bookmarks.filter((bm) => bm.targetType === bookmarkFilter);
 
-  const match = useMemo(() => {
+  const profileCompletion = useMemo(() => {
     if (!profile) return null;
-    return calculateMatch(profile, resumes, bookmarks);
-  }, [profile, resumes, bookmarks]);
+    return calculateProfileCompletion(
+      profile,
+      resumes.length,
+      bookmarks.length,
+      communityActivityTotal,
+    );
+  }, [profile, resumes.length, bookmarks.length, communityActivityTotal]);
 
   async function handleProfileSave(event: FormEvent) {
     event.preventDefault();
@@ -330,6 +405,77 @@ export default function MyPage() {
     }
   }
 
+  function handleProfileCompletionAction(action: ProfileCompletionAction) {
+    if (action === "profileImage") {
+      profileImageInputRef.current?.click();
+      return;
+    }
+    if (action === "displayName") {
+      displayNameInputRef.current?.focus();
+      displayNameInputRef.current?.scrollIntoView({
+        block: "center",
+        behavior: "smooth",
+      });
+      return;
+    }
+    if (action === "resume") {
+      if (uploadingResume) return;
+      if (resumes.length >= 5) {
+        setMessage("이력서는 최대 5개까지 업로드할 수 있습니다.");
+        return;
+      }
+      resumeFileInputRef.current?.click();
+      return;
+    }
+    if (action === "cpa") {
+      setVerificationModalOpen(true);
+    }
+  }
+
+  function toggleProfileCompletionCollapsed() {
+    setProfileCompletionCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(
+          PROFILE_COMPLETION_COLLAPSED_STORAGE_KEY,
+          String(next),
+        );
+      } catch {
+        // Ignore storage failures; the in-memory state still updates.
+      }
+      return next;
+    });
+  }
+
+  function hideProfileCompletionForWeek() {
+    const hiddenUntil = Date.now() + PROFILE_COMPLETION_SNOOZE_MS;
+    setProfileCompletionHidden(true);
+    try {
+      window.localStorage.setItem(
+        PROFILE_COMPLETION_HIDDEN_UNTIL_STORAGE_KEY,
+        String(hiddenUntil),
+      );
+    } catch {
+      // Ignore storage failures; the in-memory state still hides the card.
+    }
+  }
+
+  function restoreProfileCompletionCard() {
+    setProfileCompletionHidden(false);
+    setProfileCompletionCollapsed(false);
+    try {
+      window.localStorage.removeItem(
+        PROFILE_COMPLETION_HIDDEN_UNTIL_STORAGE_KEY,
+      );
+      window.localStorage.setItem(
+        PROFILE_COMPLETION_COLLAPSED_STORAGE_KEY,
+        "false",
+      );
+    } catch {
+      // Ignore storage failures; the in-memory state still restores the card.
+    }
+  }
+
   if (loading) {
     return (
       <>
@@ -365,7 +511,7 @@ export default function MyPage() {
     );
   }
 
-  if (!profile || !match) {
+  if (!profile || !profileCompletion) {
     return (
       <>
         <SiteNav />
@@ -396,6 +542,7 @@ export default function MyPage() {
   const displayName = profile.displayName ?? profile.username;
   const displayNameDirty =
     displayNameInput.trim() !== (profile.displayName ?? "");
+  const profileComplete = profileCompletion.score === 100;
 
   function openVerificationModal() {
     setVerificationModalOpen(true);
@@ -406,13 +553,19 @@ export default function MyPage() {
       <SiteNav />
       <main className={styles.page}>
         <div className={styles.container}>
-          <section className={styles.hero}>
+          <section
+            className={`${styles.hero} ${
+              profileComplete ? styles.heroComplete : ""
+            }`}
+          >
             <div className={styles.coverImage} aria-hidden="true" />
             <div className={styles.heroBody}>
               <div className={styles.heroProfile}>
                 <button
                   type="button"
-                  className={styles.avatarButton}
+                  className={`${styles.avatarButton} ${
+                    profileComplete ? styles.avatarButtonComplete : ""
+                  }`}
                   onClick={() => profileImageInputRef.current?.click()}
                   disabled={updatingProfileImage}
                   aria-label="프로필 사진 업로드"
@@ -460,45 +613,130 @@ export default function MyPage() {
                 >
                   <VerificationBadge status={profile.cpaVerificationStatus} />
                 </button>
+                {profileComplete && (
+                  <span className={styles.profileCompleteBadge}>
+                    <Award size={14} />
+                    프로필 완성
+                  </span>
+                )}
               </div>
             </div>
           </section>
 
           {message && <div className={styles.message}>{message}</div>}
 
-          <div className={styles.summaryGrid}>
-            <section className={styles.panel}>
-              <div className={styles.panelHeader}>
-                <h2>
-                  <Sparkles size={17} />
-                  AI 매칭 점수
-                </h2>
-              </div>
-              <div className={styles.matchScoreRow}>
-                <div className={styles.scoreCircle}>
-                  <strong>{match.score}</strong>
-                  <span>점</span>
+          <div
+            className={`${styles.summaryGrid} ${
+              profileCompletionHidden ? styles.summaryGridCompact : ""
+            }`}
+          >
+            {!profileCompletionHidden && (
+              <section className={styles.panel}>
+                <div className={styles.panelHeader}>
+                  <h2>
+                    <Sparkles size={17} />
+                    프로필 꾸미기 점수
+                  </h2>
+                  <div className={styles.completionPanelActions}>
+                    <span className={styles.completionHeaderScore}>
+                      {profileCompletion.score}%
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      onClick={toggleProfileCompletionCollapsed}
+                      aria-label={
+                        profileCompletionCollapsed
+                          ? "프로필 꾸미기 점수 펼치기"
+                          : "프로필 꾸미기 점수 접기"
+                      }
+                    >
+                      {profileCompletionCollapsed ? (
+                        <ChevronDown size={15} />
+                      ) : (
+                        <ChevronUp size={15} />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.snoozeButton}
+                      onClick={hideProfileCompletionForWeek}
+                    >
+                      <EyeOff size={14} />
+                      일주일간 보지 않기
+                    </button>
+                  </div>
                 </div>
-                <div className={styles.matchCopy}>
-                  <p>{match.level}</p>
-                  <span>{match.reason}</span>
-                </div>
-              </div>
-              <div className={styles.scoreTrack}>
-                <span style={{ width: `${match.score}%` }} />
-              </div>
-              <ActionButton
-                type="button"
-                size="sm"
-                iconStart={<BrainCircuit size={14} />}
-                onClick={() => setLikelihoodResult(match.likelihood)}
-              >
-                합격 가능성 판단
-              </ActionButton>
-              {likelihoodResult && (
-                <p className={styles.likelihoodResult}>{likelihoodResult}</p>
-              )}
-            </section>
+
+                {!profileCompletionCollapsed && (
+                  <>
+                    <div className={styles.completionScoreRow}>
+                      <div
+                        className={`${styles.scoreCircle} ${
+                          profileComplete ? styles.scoreCircleComplete : ""
+                        }`}
+                      >
+                        <strong>{profileCompletion.score}</strong>
+                        <span>%</span>
+                      </div>
+                      <div className={styles.completionCopy}>
+                        <p>{profileCompletion.level}</p>
+                        <span>{profileCompletion.reason}</span>
+                      </div>
+                    </div>
+                    <div
+                      className={styles.scoreTrack}
+                      aria-label={`프로필 꾸미기 점수 ${profileCompletion.score}%`}
+                    >
+                      <span style={{ width: `${profileCompletion.score}%` }} />
+                    </div>
+
+                    {profileCompletion.nextStep && (
+                      <div className={styles.nextActionBox}>
+                        <span>다음 추천</span>
+                        <strong>{profileCompletion.nextStep.label}</strong>
+                        <p>{profileCompletion.nextStep.description}</p>
+                        <CompletionAction
+                          step={profileCompletion.nextStep}
+                          className={styles.nextActionButton}
+                          onAction={handleProfileCompletionAction}
+                        />
+                      </div>
+                    )}
+
+                    <div className={styles.completionChecklist}>
+                      {profileCompletion.steps.map((step) => (
+                        <div
+                          key={step.id}
+                          className={`${styles.completionStep} ${
+                            step.completed ? styles.completionStepDone : ""
+                          }`}
+                        >
+                          <span
+                            className={styles.stepCheck}
+                            aria-hidden="true"
+                          >
+                            <CheckCircle2 size={14} />
+                          </span>
+                          <div className={styles.stepCopy}>
+                            <strong>{step.label}</strong>
+                            <span>{step.description}</span>
+                          </div>
+                          <span className={styles.stepPoints}>
+                            {step.earned}/{step.points}
+                          </span>
+                          <CompletionAction
+                            step={step}
+                            className={styles.stepAction}
+                            onAction={handleProfileCompletionAction}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </section>
+            )}
 
             <section className={styles.panel}>
               <div className={styles.panelHeader}>
@@ -518,6 +756,19 @@ export default function MyPage() {
                   value={`${communityActivityTotal}개`}
                 />
               </div>
+              {profileCompletionHidden && (
+                <div className={styles.restoreProfileScoreAction}>
+                  <ActionButton
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    iconStart={<RotateCcw size={14} />}
+                    onClick={restoreProfileCompletionCard}
+                  >
+                    프로필 점수 다시 보기
+                  </ActionButton>
+                </div>
+              )}
             </section>
           </div>
 
@@ -530,6 +781,7 @@ export default function MyPage() {
                 <label className={styles.field}>
                   표시이름
                   <input
+                    ref={displayNameInputRef}
                     className={styles.input}
                     value={displayNameInput}
                     onChange={(e) => setDisplayNameInput(e.target.value)}
@@ -915,42 +1167,153 @@ function FilterButton({
   );
 }
 
-function calculateMatch(
-  profile: MyProfileResponse,
-  resumes: ResumeItem[],
-  bookmarks: BookmarkItem[],
-) {
-  let score = 46;
-  if (profile.cpaVerificationStatus === "CPA_VERIFIED") score += 22;
-  if (profile.cpaVerificationStatus === "PENDING") score += 10;
-  if (profile.cpaVerificationStatus === "REJECTED") score -= 6;
-  if (profile.careerStage) score += 8;
-  if (resumes.length > 0) score += 15;
-  if (bookmarks.length > 0) score += Math.min(bookmarks.length * 2, 8);
-  if (profile.displayName) score += 4;
+function CompletionAction({
+  step,
+  className,
+  onAction,
+}: {
+  step: ProfileCompletionStep;
+  className: string;
+  onAction: (action: ProfileCompletionAction) => void;
+}) {
+  if (step.href) {
+    return (
+      <Link href={step.href} className={className}>
+        {step.actionLabel}
+      </Link>
+    );
+  }
 
-  const normalizedScore = Math.max(20, Math.min(96, score));
-  if (normalizedScore >= 82) {
-    return {
-      score: normalizedScore,
-      level: "매칭 높음",
-      reason: "인증과 지원 자료가 잘 갖춰져 있습니다.",
-      likelihood: "높음 · 관심 공고 기준으로 바로 지원해볼 만합니다.",
-    };
-  }
-  if (normalizedScore >= 64) {
-    return {
-      score: normalizedScore,
-      level: "매칭 보통",
-      reason: "기본 정보가 충분하고 보강 여지가 있습니다.",
-      likelihood: "보통 · 이력서와 CPA 인증 상태가 결과를 더 끌어올립니다.",
-    };
-  }
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={() => onAction(step.action)}
+    >
+      {step.actionLabel}
+    </button>
+  );
+}
+
+function calculateProfileCompletion(
+  profile: MyProfileResponse,
+  resumeCount: number,
+  bookmarkCount: number,
+  communityActivityTotal: number,
+): ProfileCompletion {
+  const bookmarkEarned = Math.min(bookmarkCount * 5, 15);
+  const communityEarned = Math.min(communityActivityTotal * 5, 15);
+  const cpaEarned =
+    profile.cpaVerificationStatus === "CPA_VERIFIED"
+      ? 20
+      : profile.cpaVerificationStatus === "PENDING"
+        ? 10
+        : 0;
+  const steps: ProfileCompletionStep[] = [
+    {
+      id: "profile-image",
+      label: "프로필 사진 추가",
+      description: profile.profileImageUrl
+        ? "사진이 있어 프로필 첫인상이 또렷합니다."
+        : "사진을 넣으면 마이페이지가 더 개인화되어 보입니다.",
+      points: 20,
+      earned: profile.profileImageUrl ? 20 : 0,
+      completed: Boolean(profile.profileImageUrl),
+      action: "profileImage",
+      actionLabel: profile.profileImageUrl ? "변경" : "추가",
+    },
+    {
+      id: "display-name",
+      label: "표시이름 설정",
+      description: profile.displayName
+        ? "닉네임이 설정되어 활동 내역을 알아보기 쉽습니다."
+        : "표시이름을 정하면 커뮤니티와 프로필에서 더 자연스럽게 보입니다.",
+      points: 10,
+      earned: profile.displayName ? 10 : 0,
+      completed: Boolean(profile.displayName),
+      action: "displayName",
+      actionLabel: profile.displayName ? "수정" : "입력",
+    },
+    {
+      id: "resume",
+      label: "이력서 등록",
+      description:
+        resumeCount > 0
+          ? `이력서 ${resumeCount}개가 등록되어 있습니다.`
+          : "이력서를 등록하면 지원 준비 상태를 바로 확인할 수 있습니다.",
+      points: 20,
+      earned: resumeCount > 0 ? 20 : 0,
+      completed: resumeCount > 0,
+      action: "resume",
+      actionLabel: resumeCount > 0 ? "추가" : "등록",
+    },
+    {
+      id: "cpa-verification",
+      label: "CPA 검증 상태 확인",
+      description:
+        profile.cpaVerificationStatus === "CPA_VERIFIED"
+          ? "CPA 검증이 완료되어 신뢰 배지가 활성화되었습니다."
+          : profile.cpaVerificationStatus === "PENDING"
+            ? "검증 요청이 접수되어 절반의 진행도를 인정합니다."
+            : "검증 상태를 확인하면 수습 CPA 방 접근도 준비할 수 있습니다.",
+      points: 20,
+      earned: cpaEarned,
+      completed: profile.cpaVerificationStatus === "CPA_VERIFIED",
+      action: "cpa",
+      actionLabel:
+        profile.cpaVerificationStatus === "CPA_VERIFIED" ? "보기" : "확인",
+    },
+    {
+      id: "bookmarks",
+      label: "관심 공고/회사 저장",
+      description:
+        bookmarkCount >= 3
+          ? "관심 항목 3개 이상을 저장했습니다."
+          : `관심 항목을 ${Math.max(3 - bookmarkCount, 0)}개 더 저장하면 만점입니다.`,
+      points: 15,
+      earned: bookmarkEarned,
+      completed: bookmarkEarned === 15,
+      action: "jobs",
+      actionLabel: "찾기",
+      href: "/jobs",
+    },
+    {
+      id: "community",
+      label: "커뮤니티 활동 남기기",
+      description:
+        communityActivityTotal >= 3
+          ? "커뮤니티 활동 3건 이상으로 활동성이 보입니다."
+          : `활동을 ${Math.max(3 - communityActivityTotal, 0)}건 더 남기면 만점입니다.`,
+      points: 15,
+      earned: communityEarned,
+      completed: communityEarned === 15,
+      action: "community",
+      actionLabel: "이동",
+      href: "/community",
+    },
+  ];
+  const score = steps.reduce((total, step) => total + step.earned, 0);
+
   return {
-    score: normalizedScore,
-    level: "준비 필요",
-    reason: "프로필과 이력서 정보가 더 필요합니다.",
-    likelihood: "낮음 · 이력서 등록과 CPA 검증을 먼저 채우는 편이 좋습니다.",
+    score,
+    level:
+      score === 100
+        ? "프로필 완성"
+        : score >= 75
+          ? "거의 완성"
+          : score >= 45
+            ? "꾸미는 중"
+            : "첫 설정 중",
+    reason:
+      score === 100
+        ? "모든 활용 신호가 채워져 완성 배지를 받았습니다."
+        : score >= 75
+          ? "마지막 몇 가지 활동만 채우면 완성 배지를 받을 수 있습니다."
+          : score >= 45
+            ? "기본 정보는 갖춰졌고, 활동 신호를 더하면 점수가 빠르게 오릅니다."
+            : "사진, 표시이름, 이력서부터 채우면 마이페이지가 바로 살아납니다.",
+    nextStep: steps.find((step) => !step.completed) ?? null,
+    steps,
   };
 }
 
