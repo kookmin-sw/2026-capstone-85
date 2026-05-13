@@ -7,14 +7,22 @@ import type {
   JobCalendarRange,
   JobListItem,
 } from "@cpa/shared";
-import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
+import {
+  Bookmark,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import type { MouseEvent } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
+  addMonths,
   daysBetween,
   fromDateKey,
   getCalendarGridDays,
+  getMonthDays,
   isSameDay,
   toDateKey,
 } from "@/lib/date-utils";
@@ -57,6 +65,14 @@ type CalendarRangeSegment = {
   endColumn: number;
   startsAtRangeStart: boolean;
   endsAtRangeEnd: boolean;
+};
+
+type ScrollableCompanyRow = {
+  companyId: string;
+  companyName: string;
+  companyLogoUrl: string | null;
+  segments: CalendarRangeSegment[];
+  laneCount: number;
 };
 
 export function MiniDeadlineCalendar({
@@ -381,6 +397,308 @@ export function FullDeadlineCalendar({
   );
 }
 
+export function ScrollableDeadlineCalendar({
+  monthDate,
+  dayMap,
+  eventMap,
+  ranges,
+  onMonthChange,
+}: {
+  monthDate: Date;
+  dayMap: Record<string, JobCalendarDay>;
+  eventMap: Record<string, JobCalendarEvent[]>;
+  ranges: JobCalendarRange[];
+  onMonthChange: (date: Date) => void;
+}) {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const monthDays = useMemo(() => getMonthDays(monthDate), [monthDate]);
+  const rows = useMemo(
+    () => buildScrollableCompanyRows(monthDays, ranges),
+    [ranges, monthDays],
+  );
+  const rangesByDate = useMemo(
+    () => buildCalendarRangesByDate(monthDays, ranges),
+    [ranges, monthDays],
+  );
+  const monthStart = monthDays[0];
+  const monthEnd = monthDays[monthDays.length - 1];
+  const periodLabel = `${formatTimelineHeaderDate(monthStart)} - ${formatTimelineHeaderDate(
+    monthEnd,
+  )}`;
+  const timelineWidth = 230 + monthDays.length * 132;
+  const timelineWidthStyle = { minWidth: timelineWidth } satisfies CSSProperties;
+  const timelineGridStyle = {
+    gridTemplateColumns: `230px repeat(${monthDays.length}, minmax(132px, 132px))`,
+  } satisfies CSSProperties;
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-[var(--app-line)] bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--app-line)] px-5 py-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-950">
+            {monthDate.getFullYear()}년 {monthDate.getMonth() + 1}월
+          </h2>
+          <p className="mt-1 text-sm text-[var(--app-muted)]">{periodLabel}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onMonthChange(addMonths(monthDate, -1))}
+            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[var(--app-line)] bg-white transition-colors hover:border-gray-300 hover:bg-gray-50"
+            aria-label="이전 달"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onMonthChange(new Date())}
+            className="h-10 cursor-pointer rounded-xl border border-[var(--app-line)] bg-white px-4 text-sm font-bold text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50"
+          >
+            오늘
+          </button>
+          <button
+            type="button"
+            onClick={() => onMonthChange(addMonths(monthDate, 1))}
+            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[var(--app-line)] bg-white transition-colors hover:border-gray-300 hover:bg-gray-50"
+            aria-label="다음 달"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div style={timelineWidthStyle}>
+          <div
+            className="grid border-b border-[var(--app-line)] bg-white text-sm"
+            style={timelineGridStyle}
+          >
+            <div className="sticky left-0 z-30 border-r border-[var(--app-line)] bg-white px-5 py-4 text-sm font-bold text-gray-500">
+              기업
+            </div>
+            {monthDays.map((day) => {
+              const isToday = isSameDay(day, new Date());
+              const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+              return (
+                <button
+                  key={toDateKey(day)}
+                  type="button"
+                  onClick={() => setSelectedDate(toDateKey(day))}
+                  className={
+                    isToday
+                      ? "border-r border-[var(--app-line)] bg-[#fff8fa] px-3 py-3 text-left"
+                      : isWeekend
+                        ? "border-r border-[var(--app-line)] bg-gray-50 px-3 py-3 text-left hover:bg-gray-100"
+                      : "border-r border-[var(--app-line)] bg-white px-3 py-3 text-left hover:bg-gray-50"
+                  }
+                  aria-label={`${toDateKey(day)} 채용 일정`}
+                >
+                  <span className="block text-xs font-semibold text-gray-400">
+                    {weekLabels[day.getDay() === 0 ? 6 : day.getDay() - 1]}
+                  </span>
+                  <span
+                    className={
+                      isToday
+                        ? "mt-1 inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-[var(--brand)] px-2 text-sm font-bold text-white"
+                        : "mt-1 block text-lg font-bold text-gray-900"
+                    }
+                  >
+                    {day.getDate()}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="max-h-[640px] overflow-y-auto">
+            {rows.length ? (
+              rows.map((row) => {
+                const laneCount = Math.max(row.laneCount, 2);
+                const rowGridStyle = {
+                  ...timelineGridStyle,
+                  gridTemplateRows: `repeat(${laneCount}, 34px)`,
+                } satisfies CSSProperties;
+
+                return (
+                  <div
+                    key={row.companyId}
+                    className="grid border-b border-[var(--app-line)] bg-white"
+                    style={rowGridStyle}
+                  >
+                    <div
+                      className="sticky left-0 z-20 flex min-w-0 items-center gap-3 border-r border-[var(--app-line)] bg-white px-5"
+                      style={{ gridColumn: 1, gridRow: `1 / ${laneCount + 1}` }}
+                    >
+                      <CompanyLogo
+                        name={row.companyName}
+                        logoUrl={row.companyLogoUrl}
+                      />
+                      <span className="truncate text-sm font-bold text-gray-900">
+                        {row.companyName}
+                      </span>
+                    </div>
+
+                    {monthDays.map((day, dayIndex) => {
+                      const dateKey = toDateKey(day);
+                      const isToday = isSameDay(day, new Date());
+                      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                      return (
+                        <button
+                          key={`${row.companyId}-${dateKey}`}
+                          type="button"
+                          onClick={() => setSelectedDate(dateKey)}
+                          className={
+                            isToday
+                              ? "border-r border-[var(--app-line)] bg-[#fff8fa]/70"
+                              : isWeekend
+                                ? "border-r border-[var(--app-line)] bg-gray-50/60 hover:bg-gray-50"
+                                : "border-r border-[var(--app-line)] bg-white hover:bg-gray-50"
+                          }
+                          style={{
+                            gridColumn: dayIndex + 2,
+                            gridRow: `1 / ${laneCount + 1}`,
+                          }}
+                          aria-label={`${row.companyName} ${dateKey} 채용 일정`}
+                        />
+                      );
+                    })}
+
+                    {row.segments.map((segment) => (
+                      <Link
+                        key={`${row.companyId}-${segment.range.job.id}-${segment.startColumn}-${segment.endColumn}`}
+                        href={jobDetailHref(segment.range.job.id)}
+                        className={`z-10 mx-1 flex h-8 min-w-0 items-center gap-2 self-center overflow-hidden border px-2 text-xs font-bold shadow-sm transition-shadow hover:shadow-md ${rangeSegmentClassName(segment)}`}
+                        style={{
+                          gridColumn: `${segment.startColumn + 2} / ${
+                            segment.endColumn + 3
+                          }`,
+                          gridRow: segment.lane + 1,
+                        }}
+                      >
+                        <span className="rounded-md bg-white/75 px-1.5 py-0.5 text-[11px] text-[var(--brand)]">
+                          {weeklySegmentBadge(segment)}
+                        </span>
+                        <span className="truncate">
+                          {segment.range.job.title}
+                        </span>
+                        <Bookmark
+                          size={14}
+                          className="ml-auto shrink-0 text-gray-400"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    ))}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="grid min-h-52 place-items-center border-b border-[var(--app-line)] bg-gray-50 px-6 text-center text-sm text-gray-500">
+                이 기간에 표시할 채용 일정이 없습니다.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {selectedDate && (
+        <CalendarDayModal
+          date={selectedDate}
+          jobs={dayMap[selectedDate]?.jobs ?? []}
+          events={buildModalEntries(
+            selectedDate,
+            eventMap[selectedDate] ?? [],
+            rangesByDate[selectedDate] ?? [],
+          )}
+          onClose={() => setSelectedDate(null)}
+        />
+      )}
+    </section>
+  );
+}
+
+function buildScrollableCompanyRows(dates: Date[], ranges: JobCalendarRange[]) {
+  const rangeStartDate = dates[0];
+  const rangeEndDate = dates[dates.length - 1];
+  const grouped = new Map<
+    string,
+    {
+      companyId: string;
+      companyName: string;
+      companyLogoUrl: string | null;
+      ranges: JobCalendarRange[];
+    }
+  >();
+
+  for (const range of ranges) {
+    if (!rangeIntersectsDates(range, rangeStartDate, rangeEndDate)) continue;
+    const { companyId, companyName, companyLogoUrl } = range.job;
+    const group =
+      grouped.get(companyId) ??
+      {
+        companyId,
+        companyName,
+        companyLogoUrl,
+        ranges: [],
+      };
+    group.ranges.push(range);
+    grouped.set(companyId, group);
+  }
+
+  return [...grouped.values()]
+    .map<ScrollableCompanyRow>((group) => {
+      const laneEndColumns: number[] = [];
+      const segments = group.ranges
+        .sort(compareCalendarRanges)
+        .map<CalendarRangeSegment>((range) => {
+          const rangeStart = fromDateKey(range.startDate);
+          const rangeEnd = fromDateKey(range.endDate ?? range.startDate);
+          const segmentStart =
+            rangeStart.getTime() > rangeStartDate.getTime()
+              ? rangeStart
+              : rangeStartDate;
+          const segmentEnd =
+            rangeEnd.getTime() < rangeEndDate.getTime()
+              ? rangeEnd
+              : rangeEndDate;
+          const startColumn = daysBetween(rangeStartDate, segmentStart);
+          const endColumn = daysBetween(rangeStartDate, segmentEnd);
+          const openLane = laneEndColumns.findIndex(
+            (laneEnd) => laneEnd < startColumn,
+          );
+          const lane = openLane === -1 ? laneEndColumns.length : openLane;
+          laneEndColumns[lane] = endColumn;
+
+          return {
+            range,
+            lane,
+            startColumn,
+            endColumn,
+            startsAtRangeStart: toDateKey(segmentStart) === range.startDate,
+            endsAtRangeEnd:
+              toDateKey(segmentEnd) === (range.endDate ?? range.startDate),
+          };
+        });
+
+      return {
+        companyId: group.companyId,
+        companyName: group.companyName,
+        companyLogoUrl: group.companyLogoUrl,
+        segments,
+        laneCount: Math.max(laneEndColumns.length, 1),
+      };
+    })
+    .sort((first, second) => {
+      const firstStart = Math.min(
+        ...first.segments.map((segment) => segment.startColumn),
+      );
+      const secondStart = Math.min(
+        ...second.segments.map((segment) => segment.startColumn),
+      );
+      if (firstStart !== secondStart) return firstStart - secondStart;
+      return first.companyName.localeCompare(second.companyName);
+    });
+}
+
 function chunkCalendarWeeks(days: Date[]) {
   const weeks: Date[][] = [];
   for (let index = 0; index < days.length; index += 7) {
@@ -530,6 +848,12 @@ function rangeSegmentLabel(segment: CalendarRangeSegment) {
   return `진행 · ${title}`;
 }
 
+function weeklySegmentBadge(segment: CalendarRangeSegment) {
+  if (segment.endsAtRangeEnd && segment.range.endDate) return "마감";
+  if (segment.startsAtRangeStart) return "시작";
+  return "진행";
+}
+
 function modalEntryTypeOrder(type: CalendarModalEntryType) {
   if (type === "START") return 0;
   if (type === "ONGOING") return 1;
@@ -640,6 +964,37 @@ function CalendarEventDetail({ event }: { event: CalendarModalEntry }) {
       </div>
     </article>
   );
+}
+
+function CompanyLogo({
+  name,
+  logoUrl,
+}: {
+  name: string;
+  logoUrl: string | null;
+}) {
+  if (logoUrl) {
+    return (
+      <span
+        className="h-9 w-9 shrink-0 rounded-xl border border-gray-100 bg-white bg-contain bg-center bg-no-repeat shadow-sm"
+        style={{ backgroundImage: `url("${logoUrl}")` }}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  return (
+    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 text-sm font-black text-gray-400">
+      {name.trim().charAt(0) || "기"}
+    </span>
+  );
+}
+
+function formatTimelineHeaderDate(date: Date) {
+  return date.toLocaleDateString("ko-KR", {
+    month: "long",
+    day: "numeric",
+  });
 }
 
 function formatModalDate(date: string) {
