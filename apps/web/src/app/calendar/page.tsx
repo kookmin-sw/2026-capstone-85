@@ -7,7 +7,10 @@ import type {
 } from "@cpa/shared";
 import { RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { FullDeadlineCalendar } from "@/components/deadline-calendar";
+import {
+  FullDeadlineCalendar,
+  ScrollableDeadlineCalendar,
+} from "@/components/deadline-calendar";
 import { JobPresetBar } from "@/components/job-preset-bar";
 import { RegionFilterDialog } from "@/components/region-filter-dialog";
 import { SiteNav } from "@/components/site-nav";
@@ -15,13 +18,19 @@ import { ActionButton } from "@/components/ui/action-button";
 import { useJobFilterState } from "@/hooks/use-job-filter-state";
 import { fetchJobCalendar } from "@/lib/api";
 import { calendarDaysToMap, calendarEventsToMap } from "@/lib/calendar-data";
-import { getCalendarGridRange, toDateKey } from "@/lib/date-utils";
+import {
+  getCalendarGridRange,
+  getMonthRange,
+  toDateKey,
+} from "@/lib/date-utils";
 import {
   buildJobFilterParams,
   defaultJobFilters,
   type JobFilterState,
 } from "@/lib/job-filters";
 import styles from "./calendar-page.module.css";
+
+type CalendarViewMode = "month" | "timeline";
 
 const JOB_FAMILY_OPTS = [
   { value: "AUDIT", label: "감사" },
@@ -151,7 +160,8 @@ function RegionFilterColumn({
 }
 
 export default function CalendarPage() {
-  const [monthDate, setMonthDate] = useState(() => new Date());
+  const [viewMode, setViewMode] = useState<CalendarViewMode>("month");
+  const [visibleDate, setVisibleDate] = useState(() => new Date());
   const [calendarDays, setCalendarDays] = useState<JobCalendarDay[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<JobCalendarEvent[]>([]);
   const [calendarRanges, setCalendarRanges] = useState<JobCalendarRange[]>([]);
@@ -161,8 +171,11 @@ export default function CalendarPage() {
   const { filters, setFilters, ready } = useJobFilterState();
 
   const calendarRange = useMemo(
-    () => getCalendarGridRange(monthDate),
-    [monthDate],
+    () =>
+      viewMode === "month"
+        ? getCalendarGridRange(visibleDate)
+        : getMonthRange(visibleDate),
+    [viewMode, visibleDate],
   );
 
   const calendarParams = useMemo(() => {
@@ -338,13 +351,60 @@ export default function CalendarPage() {
         {loading ? (
           <div className="h-[600px] animate-pulse rounded-2xl bg-gray-100" />
         ) : (
-          <FullDeadlineCalendar
-            monthDate={monthDate}
-            dayMap={dayMap}
-            eventMap={eventMap}
-            ranges={calendarRanges}
-            onMonthChange={setMonthDate}
-          />
+          <div className={styles.calendarShell}>
+            <div className={styles.viewToolbar}>
+              <div
+                className={styles.viewSwitch}
+                role="tablist"
+                aria-label="캘린더 보기"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={viewMode === "month"}
+                  className={
+                    viewMode === "month"
+                      ? styles.viewSwitchButtonActive
+                      : styles.viewSwitchButton
+                  }
+                  onClick={() => setViewMode("month")}
+                >
+                  월간
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={viewMode === "timeline"}
+                  className={
+                    viewMode === "timeline"
+                      ? styles.viewSwitchButtonActive
+                      : styles.viewSwitchButton
+                  }
+                  onClick={() => setViewMode("timeline")}
+                >
+                  주간
+                </button>
+              </div>
+            </div>
+
+            {viewMode === "month" ? (
+              <FullDeadlineCalendar
+                monthDate={visibleDate}
+                dayMap={dayMap}
+                eventMap={eventMap}
+                ranges={calendarRanges}
+                onMonthChange={setVisibleDate}
+              />
+            ) : (
+              <ScrollableDeadlineCalendar
+                monthDate={visibleDate}
+                dayMap={dayMap}
+                eventMap={eventMap}
+                ranges={calendarRanges}
+                onMonthChange={setVisibleDate}
+              />
+            )}
+          </div>
         )}
       </div>
     </main>
