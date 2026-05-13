@@ -21,6 +21,7 @@ import {
   BookmarkTargetType,
   CpaVerificationStatus,
   EmploymentHistoryStatus,
+  JobEngagementEventType,
   JobStatus,
   PersonalVerificationRequestStatus,
   Prisma,
@@ -40,7 +41,7 @@ import type {
 import argon2 from 'argon2';
 import { randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import {
   basename,
   dirname,
@@ -59,10 +60,13 @@ import { AssetsService } from '../assets/assets.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePersonalVerificationRequestDto } from './dto/create-personal-verification-request.dto';
+import { JobFitAnalysisAiService } from './job-fit-analysis-ai.service';
 
 const RESUME_LIMIT = 5;
 export const RESUME_MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_S3_RESUME_KEY_PREFIX = 'resumes';
+const RESUME_TEXT_SAMPLE_MAX_BYTES = 512 * 1024;
+const RESUME_TEXT_SAMPLE_MAX_CHARS = 5000;
 
 type ResumeStorageConfig =
   | {
@@ -150,12 +154,32 @@ const jobFitAnalysisInclude = {
   resume: { select: { id: true, fileName: true } },
 } satisfies Prisma.JobFitAnalysisInclude;
 
+const jobFitAnalysisJobInclude = {
+  company: {
+    select: {
+      name: true,
+      type: true,
+      tags: true,
+      description: true,
+    },
+  },
+  labels: {
+    include: {
+      label: { select: { name: true } },
+    },
+  },
+} satisfies Prisma.JobInclude;
+
 type ProfileUserRecord = Prisma.UserGetPayload<{
   include: typeof profileInclude;
 }>;
 
 type JobFitAnalysisRecord = Prisma.JobFitAnalysisGetPayload<{
   include: typeof jobFitAnalysisInclude;
+}>;
+
+type JobFitAnalysisJobRecord = Prisma.JobGetPayload<{
+  include: typeof jobFitAnalysisJobInclude;
 }>;
 
 type VerificationRequestRecord = Prisma.PersonalVerificationRequestGetPayload<{
@@ -178,6 +202,8 @@ export class MypageService implements OnModuleInit {
     private readonly assetsService: AssetsService,
     @Optional()
     private readonly notificationsService?: NotificationsService,
+    @Optional()
+    private readonly jobFitAnalysisAiService?: JobFitAnalysisAiService,
   ) {}
 
   onModuleInit() {
@@ -391,7 +417,9 @@ export class MypageService implements OnModuleInit {
       orderBy: [{ createdAt: 'desc' }],
     });
 
-    return { items: analyses.map((analysis) => this.toJobFitAnalysisItem(analysis)) };
+    return {
+      items: analyses.map((analysis) => this.toJobFitAnalysisItem(analysis)),
+    };
   }
 
   async listHighFitJobAnalyses(
@@ -408,7 +436,9 @@ export class MypageService implements OnModuleInit {
       take: this.clampPositiveInt(take, 5, 10),
     });
 
-    return { items: analyses.map((analysis) => this.toJobFitAnalysisItem(analysis)) };
+    return {
+      items: analyses.map((analysis) => this.toJobFitAnalysisItem(analysis)),
+    };
   }
 
   async createJobFitAnalysis(
@@ -437,40 +467,67 @@ export class MypageService implements OnModuleInit {
     const [resume, job] = await Promise.all([
       this.prisma.resume.findFirst({
         where: { id: resumeId, userId },
-        select: { id: true },
+        select: {
+          id: true,
+          userId: true,
+          fileName: true,
+          contentType: true,
+          byteSize: true,
+        },
       }),
       this.prisma.job.findFirst({
         where: { id: jobId, status: JobStatus.OPEN },
-        select: { id: true },
+        include: jobFitAnalysisJobInclude,
       }),
     ]);
 
     if (!resume) {
-      throw new BadRequestException('본인이 업로드한 이력서만 분석에 사용할 수 있습니다.');
+      throw new BadRequestException(
+        '본인이 업로드한 이력서만 분석에 사용할 수 있습니다.',
+      );
     }
     if (!job) {
-      throw new NotFoundException('분석 가능한 공개 채용공고를 찾을 수 없습니다.');
+      throw new NotFoundException(
+        '분석 가능한 공개 채용공고를 찾을 수 없습니다.',
+      );
     }
 
-    const seededAnalyses = await this.prisma.jobFitAnalysis.findMany({
-      where: {
+    if (!this.jobFitAnalysisAiService) {
+      throw new InternalServerErrorException(
+        'AI 적합도 분석 서비스가 설정되지 않았습니다.',
+      );
+    }
+
+    const generated = await this.jobFitAnalysisAiService.generate({
+      job: this.toJobFitAnalysisAiJob(job),
+      resume: {
+        fileName: resume.fileName,
+        contentType: resume.contentType,
+        byteSize: resume.byteSize,
+        textSample: await this.readResumeTextSample(resume),
+      },
+    });
+
+    const created = await this.prisma.jobFitAnalysis.create({
+      data: {
         userId,
-        fitScore: { gte: 75 },
+        jobId,
+        resumeId,
+        fitScore: generated.fitScore,
+        summary: generated.summary,
+        strengths: generated.strengths,
+        companyPriorities: generated.companyPriorities,
+        gaps: generated.gaps,
+        recommendation: generated.recommendation,
+        rawJson: generated.rawJson as Prisma.InputJsonValue,
       },
       include: jobFitAnalysisInclude,
-      orderBy: [{ fitScore: 'desc' }, { createdAt: 'desc' }],
-      take: 5,
     });
-    const fallback =
-      seededAnalyses[Math.floor(Math.random() * seededAnalyses.length)];
-    if (fallback) {
-      return {
-        item: this.toJobFitAnalysisItem(fallback),
-        reused: true,
-      };
-    }
 
-    throw new NotFoundException('분석 결과를 찾을 수 없습니다.');
+    return {
+      item: this.toJobFitAnalysisItem(created),
+      reused: false,
+    };
   }
 
   async createPersonalVerificationRequest(
@@ -567,6 +624,12 @@ export class MypageService implements OnModuleInit {
     const bookmark = await this.prisma.bookmark.create({
       data: { userId, targetType, targetId },
     });
+    await this.recordBookmarkEngagement(
+      userId,
+      targetType,
+      targetId,
+      JobEngagementEventType.BOOKMARK_ADDED,
+    );
 
     if (targetType === BookmarkTargetType.JOB) {
       await this.notificationsService?.createDeadlineSoonNotificationForUserJob(
@@ -586,6 +649,12 @@ export class MypageService implements OnModuleInit {
       throw new NotFoundException('Bookmark not found.');
     }
     await this.prisma.bookmark.delete({ where: { id } });
+    await this.recordBookmarkEngagement(
+      userId,
+      bookmark.targetType,
+      bookmark.targetId,
+      JobEngagementEventType.BOOKMARK_REMOVED,
+    );
     return { ok: true };
   }
 
@@ -645,6 +714,28 @@ export class MypageService implements OnModuleInit {
       targetSubtitle,
       createdAt: bookmark.createdAt.toISOString(),
     };
+  }
+
+  private async recordBookmarkEngagement(
+    userId: string,
+    targetType: BookmarkTargetType,
+    targetId: string,
+    type: JobEngagementEventType,
+  ) {
+    if (targetType !== BookmarkTargetType.JOB) return;
+    const job = await this.prisma.job.findUnique({
+      where: { id: targetId },
+      select: { id: true, companyId: true },
+    });
+    if (!job) return;
+    await this.prisma.jobEngagementEvent.create({
+      data: {
+        jobId: job.id,
+        companyId: job.companyId,
+        type,
+        actorUserId: userId,
+      },
+    });
   }
 
   async listResumes(userId: string): Promise<ResumeListResponse> {
@@ -791,6 +882,102 @@ export class MypageService implements OnModuleInit {
     );
     await this.deleteResumeObject(storageConfig, target).catch(() => undefined);
     return { ok: true };
+  }
+
+  private toJobFitAnalysisAiJob(job: JobFitAnalysisJobRecord) {
+    return {
+      title: job.title,
+      description: job.description,
+      jobFamily: job.jobFamily,
+      employmentType: job.employmentType,
+      companyType: job.companyType,
+      kicpaCondition: job.kicpaCondition,
+      traineeStatus: job.traineeStatus,
+      practicalTrainingInstitution: job.practicalTrainingInstitution,
+      minExperienceYears: job.minExperienceYears,
+      maxExperienceYears: job.maxExperienceYears,
+      location: job.location,
+      deadlineType: job.deadlineType,
+      deadline: job.deadline?.toISOString() ?? null,
+      labels: job.labels.map((item) => item.label.name),
+      company: {
+        name: job.company.name,
+        type: job.company.type,
+        tags: job.company.tags,
+        description: job.company.description,
+      },
+    };
+  }
+
+  private async readResumeTextSample(resume: {
+    id: string;
+    userId: string;
+    fileName: string;
+  }) {
+    try {
+      const storageConfig = this.getResumeStorageConfig();
+      const target = this.resolveResumeObjectTarget(
+        storageConfig,
+        resume.userId,
+        resume.id,
+        resume.fileName,
+      );
+
+      if (storageConfig.driver === 'local' && target.driver === 'local') {
+        return this.extractResumeTextSample(await readFile(target.filePath));
+      }
+
+      if (storageConfig.driver === 's3' && target.driver === 's3') {
+        const output = await this.getS3Client(storageConfig.region).send(
+          new GetObjectCommand({
+            Bucket: storageConfig.bucket,
+            Key: target.key,
+          }),
+        );
+        const stream = await this.toReadableStream(output.Body);
+        return this.extractResumeTextSample(
+          await this.readStreamPrefix(stream, RESUME_TEXT_SAMPLE_MAX_BYTES),
+        );
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  }
+
+  private async readStreamPrefix(stream: Readable, maxBytes: number) {
+    const chunks: Buffer[] = [];
+    let total = 0;
+
+    for await (const chunk of stream as AsyncIterable<
+      Buffer | Uint8Array | string
+    >) {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      const remaining = maxBytes - total;
+      chunks.push(
+        buffer.length > remaining ? buffer.subarray(0, remaining) : buffer,
+      );
+      total += Math.min(buffer.length, remaining);
+      if (total >= maxBytes) {
+        stream.destroy();
+        break;
+      }
+    }
+
+    return Buffer.concat(chunks);
+  }
+
+  private extractResumeTextSample(buffer: Buffer) {
+    const cleaned = buffer
+      .subarray(0, RESUME_TEXT_SAMPLE_MAX_BYTES)
+      .toString('utf8')
+      .replace(/[^\t\n\r -~가-힣ㄱ-ㅎㅏ-ㅣ]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (cleaned.length < 30) return null;
+    return cleaned.slice(0, RESUME_TEXT_SAMPLE_MAX_CHARS);
   }
 
   private normalizeResumeUpload(data: {

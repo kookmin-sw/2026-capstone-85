@@ -1,4 +1,7 @@
 import type {
+  CompanyAnalyticsDashboardResponse,
+  CompanyAnalyticsDailyPoint,
+  CompanyAnalyticsJobItem,
   CompanyDashboardResponse,
   CompanyProfileProposal,
   EmployeeTrendPoint,
@@ -10,10 +13,13 @@ import {
   Injectable,
   NotFoundException,
   Optional,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import {
+  BookmarkTargetType,
   DeadlineType,
   Job,
+  JobEngagementEventType,
   JobStatus,
   Prisma,
   AssetPurpose,
@@ -23,6 +29,8 @@ import {
 } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { CompanyJobAutofillService } from './company-job-autofill.service';
+import { CreateCompanyJobAutofillDto } from './dto/create-company-job-autofill.dto';
 import { CreateCompanyJobSubmissionDto } from './dto/create-company-job-submission.dto';
 import { CreateCompanyProfileSubmissionDto } from './dto/create-company-profile-submission.dto';
 import { ListCompaniesDto } from './dto/list-companies.dto';
@@ -103,6 +111,8 @@ const managedJobInclude = {
   },
 } satisfies Prisma.JobInclude;
 
+const ANALYTICS_PERIOD_DAYS = 30;
+
 type CompanyListRecord = Prisma.CompanyGetPayload<{
   include: typeof companyListInclude;
 }>;
@@ -136,6 +146,8 @@ export class CompaniesService {
     private readonly prisma: PrismaService,
     @Optional()
     private readonly notificationsService?: NotificationsService,
+    @Optional()
+    private readonly jobAutofillService?: CompanyJobAutofillService,
   ) {}
 
   async list(query: ListCompaniesDto) {
@@ -199,6 +211,146 @@ export class CompaniesService {
       pendingProfileSubmission: company.profileSubmissions[0]
         ? this.toProfileSubmissionItem(company.profileSubmissions[0])
         : null,
+    };
+  }
+
+  async analytics(userId: string): Promise<CompanyAnalyticsDashboardResponse> {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    const { start, end, dateKeys } = buildAnalyticsWindow(
+      ANALYTICS_PERIOD_DAYS,
+    );
+    const jobs = await this.prisma.job.findMany({
+      where: {
+        companyId: company.id,
+        status: { in: [JobStatus.OPEN, JobStatus.CLOSED] },
+      },
+      select: { id: true, title: true, status: true },
+      orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }],
+    });
+    const jobIds = jobs.map((job) => job.id);
+    const counters = new Map<string, CompanyAnalyticsJobItem>(
+      jobs.map((job) => [
+        job.id,
+        {
+          jobId: job.id,
+          title: job.title,
+          status: job.status,
+          detailViews: 0,
+          originalClicks: 0,
+          bookmarkAdds: 0,
+          bookmarkRemoves: 0,
+          currentBookmarks: 0,
+          originalClickRate: 0,
+          bookmarkConversionRate: 0,
+        },
+      ]),
+    );
+    const dailyByDate = new Map<string, CompanyAnalyticsDailyPoint>(
+      dateKeys.map((date) => [
+        date,
+        { date, detailViews: 0, originalClicks: 0, bookmarkAdds: 0 },
+      ]),
+    );
+
+    if (jobIds.length) {
+      const [events, bookmarkGroups] = await Promise.all([
+        this.prisma.jobEngagementEvent.findMany({
+          where: {
+            companyId: company.id,
+            jobId: { in: jobIds },
+            createdAt: { gte: start, lte: end },
+          },
+          select: { jobId: true, type: true, createdAt: true },
+        }),
+        this.prisma.bookmark.groupBy({
+          by: ['targetId'],
+          where: {
+            targetType: BookmarkTargetType.JOB,
+            targetId: { in: jobIds },
+          },
+          _count: { _all: true },
+        }),
+      ]);
+
+      for (const group of bookmarkGroups) {
+        const item = counters.get(group.targetId);
+        if (item) item.currentBookmarks = group._count._all;
+      }
+
+      for (const event of events) {
+        if (event.createdAt < start || event.createdAt > end) continue;
+        const item = counters.get(event.jobId);
+        if (!item) continue;
+        const daily = dailyByDate.get(formatKstDateKey(event.createdAt));
+        if (event.type === JobEngagementEventType.DETAIL_VIEW) {
+          item.detailViews += 1;
+          if (daily) daily.detailViews += 1;
+        } else if (event.type === JobEngagementEventType.ORIGINAL_CLICK) {
+          item.originalClicks += 1;
+          if (daily) daily.originalClicks += 1;
+        } else if (event.type === JobEngagementEventType.BOOKMARK_ADDED) {
+          item.bookmarkAdds += 1;
+          if (daily) daily.bookmarkAdds += 1;
+        } else if (event.type === JobEngagementEventType.BOOKMARK_REMOVED) {
+          item.bookmarkRemoves += 1;
+        }
+      }
+    }
+
+    const jobItems = [...counters.values()].map((item) => ({
+      ...item,
+      originalClickRate: percentage(item.originalClicks, item.detailViews),
+      bookmarkConversionRate: percentage(item.bookmarkAdds, item.detailViews),
+    }));
+    jobItems.sort((first, second) => {
+      const viewOrder = second.detailViews - first.detailViews;
+      if (viewOrder !== 0) return viewOrder;
+      const clickOrder = second.originalClicks - first.originalClicks;
+      if (clickOrder !== 0) return clickOrder;
+      const bookmarkOrder = second.currentBookmarks - first.currentBookmarks;
+      if (bookmarkOrder !== 0) return bookmarkOrder;
+      return first.title.localeCompare(second.title);
+    });
+
+    const summary = jobItems.reduce(
+      (total, item) => ({
+        detailViews: total.detailViews + item.detailViews,
+        originalClicks: total.originalClicks + item.originalClicks,
+        bookmarkAdds: total.bookmarkAdds + item.bookmarkAdds,
+        bookmarkRemoves: total.bookmarkRemoves + item.bookmarkRemoves,
+        currentBookmarks: total.currentBookmarks + item.currentBookmarks,
+        originalClickRate: 0,
+        bookmarkConversionRate: 0,
+      }),
+      {
+        detailViews: 0,
+        originalClicks: 0,
+        bookmarkAdds: 0,
+        bookmarkRemoves: 0,
+        currentBookmarks: 0,
+        originalClickRate: 0,
+        bookmarkConversionRate: 0,
+      },
+    );
+    summary.originalClickRate = percentage(
+      summary.originalClicks,
+      summary.detailViews,
+    );
+    summary.bookmarkConversionRate = percentage(
+      summary.bookmarkAdds,
+      summary.detailViews,
+    );
+
+    return {
+      period: {
+        from: dateKeys[0],
+        to: dateKeys[dateKeys.length - 1],
+        days: ANALYTICS_PERIOD_DAYS,
+      },
+      summary,
+      daily: [...dailyByDate.values()],
+      jobs: jobItems,
+      generatedAt: new Date().toISOString(),
     };
   }
 
@@ -331,6 +483,24 @@ export class CompaniesService {
     });
 
     return this.toJobSubmissionItem(submission);
+  }
+
+  async createJobAutofillDraft(
+    userId: string,
+    dto: CreateCompanyJobAutofillDto,
+  ) {
+    const company = await this.getOwnedCompanyOrThrow(userId);
+    if (!this.jobAutofillService) {
+      throw new ServiceUnavailableException(
+        'AI 자동입력 서비스를 사용할 수 없습니다.',
+      );
+    }
+
+    return this.jobAutofillService.generateDraft({
+      companyName: company.name,
+      sourceText: dto.sourceText,
+      originalUrl: dto.originalUrl,
+    });
   }
 
   async listMyJobs(userId: string) {
@@ -779,7 +949,7 @@ export class CompaniesService {
   private async getOwnedCompanyOrThrow(userId: string) {
     const company = await this.prisma.company.findUnique({
       where: { ownerUserId: userId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
     if (!company) {
       throw new ForbiddenException('기업회원 회사 정보를 찾을 수 없습니다.');
@@ -903,4 +1073,40 @@ export class CompaniesService {
       );
     }
   }
+}
+
+const analyticsDateFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Seoul',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+function buildAnalyticsWindow(days: number) {
+  const end = new Date();
+  const start = new Date(end);
+  start.setDate(end.getDate() - (days - 1));
+  start.setHours(0, 0, 0, 0);
+
+  const dateKeys: string[] = [];
+  const cursor = new Date(start);
+  for (let index = 0; index < days; index += 1) {
+    dateKeys.push(formatKstDateKey(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return { start, end, dateKeys };
+}
+
+function formatKstDateKey(date: Date) {
+  const parts = analyticsDateFormatter.formatToParts(date);
+  const year = parts.find((part) => part.type === 'year')?.value ?? '0000';
+  const month = parts.find((part) => part.type === 'month')?.value ?? '01';
+  const day = parts.find((part) => part.type === 'day')?.value ?? '01';
+  return `${year}-${month}-${day}`;
+}
+
+function percentage(part: number, total: number) {
+  if (total <= 0) return 0;
+  return Math.round((part / total) * 1000) / 10;
 }

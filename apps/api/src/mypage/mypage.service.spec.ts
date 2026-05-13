@@ -9,9 +9,11 @@ import { ConfigService } from '@nestjs/config';
 import {
   AssetPurpose,
   AssetStatus,
+  BookmarkTargetType,
   CpaVerificationStatus,
   CommunityBoardType,
   EmploymentHistoryStatus,
+  JobEngagementEventType,
   JobFamily,
   JobStatus,
   KicpaCondition,
@@ -35,6 +37,11 @@ import { Readable } from 'node:stream';
 import { text } from 'node:stream/consumers';
 import { AssetsService } from '../assets/assets.service';
 import { PrismaService } from '../prisma/prisma.service';
+import type {
+  GeneratedJobFitAnalysis,
+  GenerateJobFitAnalysisInput,
+  JobFitAnalysisAiService,
+} from './job-fit-analysis-ai.service';
 import { MypageService, RESUME_MAX_BYTES } from './mypage.service';
 
 const mockS3Send = jest.fn((command: unknown): Promise<unknown> => {
@@ -669,7 +676,13 @@ describe('MypageService job fit analyses', () => {
 
     expect(prisma.resume.findFirst).toHaveBeenCalledWith({
       where: { id: 'resume-other', userId: 'user-1' },
-      select: { id: true },
+      select: {
+        id: true,
+        userId: true,
+        fileName: true,
+        contentType: true,
+        byteSize: true,
+      },
     });
     expect(prisma.jobFitAnalysis.create).not.toHaveBeenCalled();
   });
@@ -685,37 +698,72 @@ describe('MypageService job fit analyses', () => {
       }),
     ).rejects.toBeInstanceOf(NotFoundException);
 
-    expect(prisma.job.findFirst).toHaveBeenCalledWith({
-      where: { id: 'closed-job', status: JobStatus.OPEN },
-      select: expect.any(Object),
+    const jobFindArg = firstMockArg<{
+      where: { id: string; status: JobStatus };
+      include: unknown;
+    }>(prisma.job.findFirst);
+    expect(jobFindArg.where).toEqual({
+      id: 'closed-job',
+      status: JobStatus.OPEN,
     });
+    expect(jobFindArg.include).toBeDefined();
     expect(prisma.jobFitAnalysis.create).not.toHaveBeenCalled();
   });
 
-  it('returns a seeded mock analysis when the exact combination does not exist', async () => {
-    prisma.resume.findFirst.mockResolvedValue({ id: 'resume-1' });
-    prisma.job.findFirst.mockResolvedValue({ id: 'job-1' });
-    prisma.jobFitAnalysis.findMany.mockResolvedValue([
-      jobFitAnalysisRecord({ id: 'analysis-seed', fitScore: 92 }),
-    ]);
+  it('creates a new OpenAI-backed analysis when no exact analysis exists', async () => {
+    const generatedAnalysis: GeneratedJobFitAnalysis = {
+      fitScore: 92,
+      summary: 'Strong match',
+      strengths: ['Audit fit'],
+      companyPriorities: ['KICPA readiness'],
+      gaps: ['Add quantified outcomes'],
+      recommendation: 'Tailor the first page.',
+      rawJson: { provider: 'openai' },
+    };
+    const generateMock = jest.fn() as jest.Mock<
+      Promise<GeneratedJobFitAnalysis>,
+      [GenerateJobFitAnalysisInput]
+    >;
+    generateMock.mockResolvedValue(generatedAnalysis);
+    const aiService = { generate: generateMock };
+    service = new MypageService(
+      prisma as unknown as PrismaService,
+      createConfig({ LOCAL_RESUME_DIR: '/tmp/missing-resumes' }),
+      { deleteAsset: jest.fn() } as unknown as AssetsService,
+      undefined,
+      aiService as unknown as JobFitAnalysisAiService,
+    );
+    prisma.resume.findFirst.mockResolvedValue(resumeRecord());
+    prisma.job.findFirst.mockResolvedValue(jobRecord());
+    prisma.jobFitAnalysis.create.mockResolvedValue(
+      jobFitAnalysisRecord({ id: 'analysis-created', fitScore: 92 }),
+    );
 
     const result = await service.createJobFitAnalysis('user-1', {
       jobId: 'job-1',
       resumeId: 'resume-1',
     });
 
-    expect(result.reused).toBe(true);
-    expect(result.item.id).toBe('analysis-seed');
-    expect(prisma.jobFitAnalysis.findMany).toHaveBeenCalledWith({
-      where: {
-        userId: 'user-1',
-        fitScore: { gte: 75 },
-      },
-      include: expect.any(Object),
-      orderBy: [{ fitScore: 'desc' }, { createdAt: 'desc' }],
-      take: 5,
+    expect(result.reused).toBe(false);
+    expect(result.item.id).toBe('analysis-created');
+    const aiInput = aiService.generate.mock.calls[0]?.[0];
+    expect(aiInput?.job.title).toBe('Audit associate');
+    expect(aiInput?.job.company.name).toBe('Hanbit');
+    expect(aiInput?.resume.fileName).toBe('이력서.pdf');
+    expect(aiInput?.resume.textSample).toBeNull();
+
+    const createArg = firstMockArg<{
+      data: Record<string, unknown>;
+      include: unknown;
+    }>(prisma.jobFitAnalysis.create);
+    expect(createArg.data).toMatchObject({
+      userId: 'user-1',
+      jobId: 'job-1',
+      resumeId: 'resume-1',
+      fitScore: 92,
+      rawJson: { provider: 'openai' },
     });
-    expect(prisma.jobFitAnalysis.create).not.toHaveBeenCalled();
+    expect(createArg.include).toBeDefined();
   });
 
   it('reuses an existing analysis for the same user, job, and resume', async () => {
@@ -730,16 +778,24 @@ describe('MypageService job fit analyses', () => {
 
     expect(result.reused).toBe(true);
     expect(result.item.fitScore).toBe(88);
-    expect(prisma.jobFitAnalysis.findUnique).toHaveBeenCalledWith({
+    const findUniqueArg = firstMockArg<{
       where: {
         userId_jobId_resumeId: {
-          userId: 'user-1',
-          jobId: 'job-1',
-          resumeId: 'resume-1',
-        },
+          userId: string;
+          jobId: string;
+          resumeId: string;
+        };
+      };
+      include: unknown;
+    }>(prisma.jobFitAnalysis.findUnique);
+    expect(findUniqueArg.where).toEqual({
+      userId_jobId_resumeId: {
+        userId: 'user-1',
+        jobId: 'job-1',
+        resumeId: 'resume-1',
       },
-      include: expect.any(Object),
     });
+    expect(findUniqueArg.include).toBeDefined();
     expect(prisma.jobFitAnalysis.create).not.toHaveBeenCalled();
   });
 
@@ -751,16 +807,159 @@ describe('MypageService job fit analyses', () => {
 
     const result = await service.listHighFitJobAnalyses('user-1', 5);
 
-    expect(prisma.jobFitAnalysis.findMany).toHaveBeenCalledWith({
+    const findManyArg = firstMockArg<{
+      where: { userId: string; fitScore: { gte: number } };
+      include: unknown;
+      orderBy: Array<Record<string, string>>;
+      take: number;
+    }>(prisma.jobFitAnalysis.findMany);
+    expect(findManyArg).toMatchObject({
       where: {
         userId: 'user-1',
         fitScore: { gte: 75 },
       },
-      include: expect.any(Object),
       orderBy: [{ fitScore: 'desc' }, { createdAt: 'desc' }],
       take: 5,
     });
+    expect(findManyArg.include).toBeDefined();
     expect(result.items.map((item) => item.fitScore)).toEqual([91, 78]);
+  });
+});
+
+describe('MypageService bookmark engagement analytics', () => {
+  let prisma: {
+    bookmark: {
+      findUnique: jest.Mock;
+      create: jest.Mock;
+      findFirst: jest.Mock;
+      delete: jest.Mock;
+    };
+    job: {
+      findUnique: jest.Mock;
+    };
+    company: {
+      findUnique: jest.Mock;
+    };
+    jobEngagementEvent: {
+      create: jest.Mock;
+    };
+  };
+  let service: MypageService;
+
+  beforeEach(() => {
+    prisma = {
+      bookmark: {
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        findFirst: jest.fn(),
+        delete: jest.fn(),
+      },
+      job: {
+        findUnique: jest.fn(),
+      },
+      company: {
+        findUnique: jest.fn(),
+      },
+      jobEngagementEvent: {
+        create: jest.fn(),
+      },
+    };
+    service = new MypageService(
+      prisma as unknown as PrismaService,
+      createConfig({}),
+      { deleteAsset: jest.fn() } as unknown as AssetsService,
+    );
+  });
+
+  it('records a bookmark-added event for job bookmarks without exposing it in the response', async () => {
+    prisma.bookmark.findUnique.mockResolvedValue(null);
+    prisma.bookmark.create.mockResolvedValue({
+      id: 'bookmark-1',
+      targetType: BookmarkTargetType.JOB,
+      targetId: 'job-1',
+      createdAt,
+    });
+    prisma.job.findUnique
+      .mockResolvedValueOnce({ id: 'job-1' })
+      .mockResolvedValueOnce({ id: 'job-1', companyId: 'company-1' })
+      .mockResolvedValueOnce({
+        title: '감사 공고',
+        company: { name: '테스트회계법인' },
+      });
+
+    const result = await service.createBookmark(
+      'user-1',
+      BookmarkTargetType.JOB,
+      'job-1',
+    );
+
+    expect(prisma.jobEngagementEvent.create).toHaveBeenCalledWith({
+      data: {
+        jobId: 'job-1',
+        companyId: 'company-1',
+        type: JobEngagementEventType.BOOKMARK_ADDED,
+        actorUserId: 'user-1',
+      },
+    });
+    expect(result).toEqual({
+      id: 'bookmark-1',
+      targetType: BookmarkTargetType.JOB,
+      targetId: 'job-1',
+      targetTitle: '감사 공고',
+      targetSubtitle: '테스트회계법인',
+      createdAt: createdAt.toISOString(),
+    });
+  });
+
+  it('records a bookmark-removed event for job bookmarks only', async () => {
+    prisma.bookmark.findFirst.mockResolvedValue({
+      id: 'bookmark-1',
+      targetType: BookmarkTargetType.JOB,
+      targetId: 'job-1',
+      createdAt,
+    });
+    prisma.bookmark.delete.mockResolvedValue({ id: 'bookmark-1' });
+    prisma.job.findUnique.mockResolvedValue({
+      id: 'job-1',
+      companyId: 'company-1',
+    });
+
+    await expect(
+      service.deleteBookmark('user-1', 'bookmark-1'),
+    ).resolves.toEqual({ ok: true });
+
+    expect(prisma.jobEngagementEvent.create).toHaveBeenCalledWith({
+      data: {
+        jobId: 'job-1',
+        companyId: 'company-1',
+        type: JobEngagementEventType.BOOKMARK_REMOVED,
+        actorUserId: 'user-1',
+      },
+    });
+  });
+
+  it('does not record engagement events for company bookmarks', async () => {
+    prisma.bookmark.findUnique.mockResolvedValue(null);
+    prisma.bookmark.create.mockResolvedValue({
+      id: 'bookmark-company-1',
+      targetType: BookmarkTargetType.COMPANY,
+      targetId: 'company-1',
+      createdAt,
+    });
+    prisma.company.findUnique
+      .mockResolvedValueOnce({ id: 'company-1' })
+      .mockResolvedValueOnce({
+        name: '테스트회계법인',
+        type: 'LOCAL_ACCOUNTING_FIRM',
+      });
+
+    await service.createBookmark(
+      'user-1',
+      BookmarkTargetType.COMPANY,
+      'company-1',
+    );
+
+    expect(prisma.jobEngagementEvent.create).not.toHaveBeenCalled();
   });
 });
 
@@ -815,6 +1014,7 @@ function jobRecord(overrides: Record<string, unknown> = {}) {
       tags: ['audit'],
       description: 'Local accounting firm',
     },
+    labels: [],
     ...overrides,
   };
 }

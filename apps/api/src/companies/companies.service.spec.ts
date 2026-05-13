@@ -6,10 +6,12 @@ import {
 import {
   AssetPurpose,
   AssetStatus,
+  BookmarkTargetType,
   CompanyType,
   DeadlineType,
   EmploymentType,
   JobFamily,
+  JobEngagementEventType,
   JobStatus,
   KicpaCondition,
   SubmissionStatus,
@@ -137,6 +139,12 @@ describe('CompaniesService submission ownership', () => {
       findFirst: jest.Mock;
       update: jest.Mock;
     };
+    jobEngagementEvent: {
+      findMany: jest.Mock;
+    };
+    bookmark: {
+      groupBy: jest.Mock;
+    };
   };
   let service: CompaniesService;
 
@@ -165,6 +173,12 @@ describe('CompaniesService submission ownership', () => {
         findFirst: jest.fn(),
         update: jest.fn(),
       },
+      jobEngagementEvent: {
+        findMany: jest.fn(),
+      },
+      bookmark: {
+        groupBy: jest.fn(),
+      },
     };
     service = new CompaniesService(prisma as unknown as PrismaService);
   });
@@ -187,6 +201,112 @@ describe('CompaniesService submission ownership', () => {
     expect(prisma.jobSubmission.create).not.toHaveBeenCalled();
   });
 
+  it('returns anonymized engagement analytics only for the owned company jobs and recent window', async () => {
+    const now = new Date();
+    const old = new Date(now);
+    old.setDate(now.getDate() - 45);
+    prisma.company.findUnique.mockResolvedValue({ id: 'company-1' });
+    prisma.job.findMany.mockResolvedValue([
+      {
+        id: 'job-1',
+        title: '감사 공고',
+        status: JobStatus.OPEN,
+      },
+    ]);
+    prisma.jobEngagementEvent.findMany.mockResolvedValue([
+      {
+        jobId: 'job-1',
+        type: JobEngagementEventType.DETAIL_VIEW,
+        createdAt: now,
+      },
+      {
+        jobId: 'job-1',
+        type: JobEngagementEventType.ORIGINAL_CLICK,
+        createdAt: now,
+      },
+      {
+        jobId: 'job-1',
+        type: JobEngagementEventType.BOOKMARK_ADDED,
+        createdAt: now,
+      },
+      {
+        jobId: 'job-1',
+        type: JobEngagementEventType.BOOKMARK_REMOVED,
+        createdAt: old,
+      },
+      {
+        jobId: 'other-job',
+        type: JobEngagementEventType.DETAIL_VIEW,
+        createdAt: now,
+      },
+    ]);
+    prisma.bookmark.groupBy.mockResolvedValue([
+      { targetId: 'job-1', _count: { _all: 3 } },
+      { targetId: 'other-job', _count: { _all: 7 } },
+    ]);
+
+    const result = await service.analytics('company-user-1');
+
+    expect(prisma.company.findUnique).toHaveBeenCalledWith({
+      where: { ownerUserId: 'company-user-1' },
+      select: { id: true },
+    });
+    expect(prisma.job.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          companyId: 'company-1',
+          status: { in: [JobStatus.OPEN, JobStatus.CLOSED] },
+        },
+      }),
+    );
+    const engagementFindManyCalls = prisma.jobEngagementEvent.findMany.mock
+      .calls as unknown[][];
+    const engagementFindManyArg = engagementFindManyCalls[0]?.[0] as {
+      where: {
+        companyId: string;
+        jobId: { in: string[] };
+        createdAt: { gte: Date; lte: Date };
+      };
+      select: { jobId: true; type: true; createdAt: true };
+    };
+    expect(engagementFindManyArg.where.companyId).toBe('company-1');
+    expect(engagementFindManyArg.where.jobId).toEqual({ in: ['job-1'] });
+    expect(engagementFindManyArg.where.createdAt.gte).toBeInstanceOf(Date);
+    expect(engagementFindManyArg.where.createdAt.lte).toBeInstanceOf(Date);
+    expect(engagementFindManyArg.select).toEqual({
+      jobId: true,
+      type: true,
+      createdAt: true,
+    });
+    expect(prisma.bookmark.groupBy).toHaveBeenCalledWith({
+      by: ['targetId'],
+      where: {
+        targetType: BookmarkTargetType.JOB,
+        targetId: { in: ['job-1'] },
+      },
+      _count: { _all: true },
+    });
+    expect(result.summary).toEqual({
+      detailViews: 1,
+      originalClicks: 1,
+      bookmarkAdds: 1,
+      bookmarkRemoves: 0,
+      currentBookmarks: 3,
+      originalClickRate: 100,
+      bookmarkConversionRate: 100,
+    });
+    expect(result.jobs).toEqual([
+      expect.objectContaining({
+        jobId: 'job-1',
+        detailViews: 1,
+        originalClicks: 1,
+        bookmarkAdds: 1,
+        bookmarkRemoves: 0,
+        currentBookmarks: 3,
+      }),
+    ]);
+  });
+
   it('requires a deadline for fixed-date job submissions', async () => {
     prisma.company.findUnique.mockResolvedValue({ id: 'company-1' });
 
@@ -203,6 +323,70 @@ describe('CompaniesService submission ownership', () => {
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.jobSubmission.create).not.toHaveBeenCalled();
+  });
+
+  it('creates an AI draft using only the owned company context', async () => {
+    const autofillService = {
+      generateDraft: jest.fn().mockResolvedValue({
+        draft: {
+          title: '감사본부 수습 CPA 채용',
+          description: '회계감사 보조 업무를 수행합니다.',
+          originalUrl: 'https://example.com/job',
+          jobFamily: JobFamily.AUDIT,
+          employmentType: EmploymentType.FULL_TIME,
+          kicpaCondition: KicpaCondition.PREFERRED,
+          traineeStatus: TraineeStatus.AVAILABLE,
+          practicalTrainingInstitution: true,
+          minExperienceYears: 0,
+          maxExperienceYears: 1,
+          location: '서울',
+          deadlineType: DeadlineType.FIXED_DATE,
+          deadline: '2026-05-31',
+        },
+        warnings: [],
+      }),
+    };
+    service = new CompaniesService(
+      prisma as unknown as PrismaService,
+      undefined,
+      autofillService as never,
+    );
+    prisma.company.findUnique.mockResolvedValue({
+      id: 'company-1',
+      name: '테스트회계법인',
+    });
+
+    const result = await service.createJobAutofillDraft('user-1', {
+      sourceText:
+        '감사본부 수습 CPA 채용 공고입니다. 서울 근무, 회계감사 보조 업무를 수행합니다. 마감일은 2026-05-31입니다.',
+      originalUrl: 'https://example.com/job',
+    });
+
+    expect(autofillService.generateDraft).toHaveBeenCalledWith({
+      companyName: '테스트회계법인',
+      sourceText:
+        '감사본부 수습 CPA 채용 공고입니다. 서울 근무, 회계감사 보조 업무를 수행합니다. 마감일은 2026-05-31입니다.',
+      originalUrl: 'https://example.com/job',
+    });
+    expect(result.draft.title).toBe('감사본부 수습 CPA 채용');
+  });
+
+  it('rejects AI draft generation when the user does not own a company', async () => {
+    const autofillService = { generateDraft: jest.fn() };
+    service = new CompaniesService(
+      prisma as unknown as PrismaService,
+      undefined,
+      autofillService as never,
+    );
+    prisma.company.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.createJobAutofillDraft('user-1', {
+        sourceText:
+          '감사본부 수습 CPA 채용 공고입니다. 서울 근무, 회계감사 보조 업무를 수행합니다. 마감일은 2026-05-31입니다.',
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(autofillService.generateDraft).not.toHaveBeenCalled();
   });
 
   it('rejects empty profile submissions', async () => {

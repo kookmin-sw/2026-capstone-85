@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { ChipGroup } from "./_components/chip-group";
 import {
   formatDeadlineDisplay,
@@ -29,10 +29,12 @@ import {
   actionButtonClassName,
 } from "@/components/ui/action-button";
 import {
+  createMyJobFitAnalysis,
   fetchCurrentUser,
   fetchJobDetail,
-  fetchMyHighFitJobAnalyses,
+  fetchMyJobFitAnalyses,
   fetchMyResumes,
+  recordJobEngagement,
   type AuthUser,
 } from "@/lib/api";
 import {
@@ -53,13 +55,14 @@ export function JobDetailClient() {
   const [job, setJob] = useState<JobDetailItem | null>(null);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
-  const [analyses, setAnalyses] = useState<JobFitAnalysisItem[]>([]);
   const [displayedAnalysis, setDisplayedAnalysis] =
     useState<JobFitAnalysisItem | null>(null);
   const [selectedResumeId, setSelectedResumeId] = useState("");
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const recordedDetailJobId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -78,11 +81,15 @@ export function JobDetailClient() {
         setJob(jobData);
         setCurrentUser(user ?? null);
         setError("");
+        if (recordedDetailJobId.current !== jobData.id) {
+          recordedDetailJobId.current = jobData.id;
+          void recordJobEngagement(jobData.id, "DETAIL_VIEW").catch(() => {});
+        }
 
         if (user?.role === "JOB_SEEKER") {
           const [resumeResult, analysisResult] = await Promise.allSettled([
             fetchMyResumes(),
-            fetchMyHighFitJobAnalyses(5),
+            fetchMyJobFitAnalyses(jobId),
           ]);
 
           if (ignore) return;
@@ -94,14 +101,15 @@ export function JobDetailClient() {
               ? analysisResult.value.items
               : [];
           setResumes(resumeItems);
+          setDisplayedAnalysis(analysisItems[0] ?? null);
           setSelectedResumeId(
             (prev) =>
               prev ||
+              analysisItems[0]?.resumeId ||
               resumeItems.find((resume) => resume.isPrimary)?.id ||
               resumeItems[0]?.id ||
               "",
           );
-          setAnalyses(analysisItems);
         }
       } catch (caught) {
         if (!ignore) {
@@ -174,18 +182,26 @@ export function JobDetailClient() {
     );
   }
 
-  function handleAnalyze() {
-    if (!selectedResumeId || analysisLoading) return;
+  async function handleAnalyze() {
+    if (!job || !selectedResumeId || analysisLoading) return;
     setAnalysisLoading(true);
-    setDisplayedAnalysis(null);
+    setAnalysisError("");
 
-    window.setTimeout(() => {
-      if (analyses.length > 0) {
-        const index = Math.floor(Math.random() * analyses.length);
-        setDisplayedAnalysis(analyses[index]);
-      }
+    try {
+      const result = await createMyJobFitAnalysis({
+        jobId: job.id,
+        resumeId: selectedResumeId,
+      });
+      setDisplayedAnalysis(result.item);
+    } catch (caught) {
+      setAnalysisError(
+        caught instanceof Error
+          ? caught.message
+          : "AI 적합도 분석을 생성하지 못했습니다.",
+      );
+    } finally {
       setAnalysisLoading(false);
-    }, 750);
+    }
   }
 
   return (
@@ -197,6 +213,7 @@ export function JobDetailClient() {
       onResumeChange={setSelectedResumeId}
       onAnalyze={handleAnalyze}
       analysisLoading={analysisLoading}
+      analysisError={analysisError}
       displayedAnalysis={displayedAnalysis}
     />
   );
@@ -210,6 +227,7 @@ function JobFitAnalysisPanel({
   onResumeChange,
   onAnalyze,
   analysisLoading,
+  analysisError,
   displayedAnalysis,
 }: {
   job: JobDetailItem;
@@ -219,6 +237,7 @@ function JobFitAnalysisPanel({
   onResumeChange: (resumeId: string) => void;
   onAnalyze: () => void;
   analysisLoading: boolean;
+  analysisError: string;
   displayedAnalysis: JobFitAnalysisItem | null;
 }) {
   const selectedAnalysis = displayedAnalysis;
@@ -303,6 +322,8 @@ function JobFitAnalysisPanel({
         </div>
       </div>
 
+      {analysisError && <div className={styles.fitError}>{analysisError}</div>}
+
       {analysisLoading ? (
         <div className={styles.fitEmptyState}>
           이력서와 공고 조건을 비교하는 중입니다.
@@ -367,6 +388,7 @@ function JobDetail({
   onResumeChange,
   onAnalyze,
   analysisLoading,
+  analysisError,
   displayedAnalysis,
 }: {
   job: JobDetailItem;
@@ -376,6 +398,7 @@ function JobDetail({
   onResumeChange: (resumeId: string) => void;
   onAnalyze: () => void;
   analysisLoading: boolean;
+  analysisError: string;
   displayedAnalysis: JobFitAnalysisItem | null;
 }) {
   const initial = job.companyName.charAt(0);
@@ -399,6 +422,9 @@ function JobDetail({
     job.minExperienceYears,
     job.maxExperienceYears,
   );
+  const trackOriginalClick = () => {
+    void recordJobEngagement(job.id, "ORIGINAL_CLICK").catch(() => {});
+  };
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -463,6 +489,7 @@ function JobDetail({
               target="_blank"
               rel="noreferrer"
               className={actionButtonClassName({ size: "md" })}
+              onClick={trackOriginalClick}
             >
               원문에서 지원
               <ExternalLink size={15} />
@@ -481,6 +508,7 @@ function JobDetail({
             onResumeChange={onResumeChange}
             onAnalyze={onAnalyze}
             analysisLoading={analysisLoading}
+            analysisError={analysisError}
             displayedAnalysis={displayedAnalysis}
           />
 
@@ -544,6 +572,7 @@ function JobDetail({
             target="_blank"
             rel="noreferrer"
             className={styles.externalLink}
+            onClick={trackOriginalClick}
           >
             원문 링크 열기
             <ExternalLink size={14} />

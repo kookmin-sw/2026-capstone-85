@@ -1,11 +1,20 @@
 "use client";
 
 import type {
+  CompanyAnalyticsDashboardResponse,
   CompanyDashboardResponse,
   CompanyManagedJobItem,
   JobSubmissionItem,
 } from "@cpa/shared";
-import { BriefcaseBusiness, Clock, Trash2 as TrashIcon } from "lucide-react";
+import {
+  BarChart3,
+  BriefcaseBusiness,
+  Clock,
+  Eye,
+  MousePointerClick,
+  Star,
+  Trash2 as TrashIcon,
+} from "lucide-react";
 import { type CSSProperties, type FormEvent, useEffect, useState } from "react";
 import { JobSubmissionForm } from "./_components/job-submission-form";
 import { ManagedJobCard } from "./_components/managed-job-card";
@@ -16,6 +25,7 @@ import { SectionTitle } from "./_components/section-title";
 import { SubmissionPanel } from "./_components/submission-panel";
 import { fetchCompanyPageData } from "./_lib/company-page-data";
 import {
+  applyJobAutofillDraft,
   emptyJobForm,
   type JobForm,
   toJobForm,
@@ -33,6 +43,7 @@ import { ActionLink } from "@/components/ui/action-button";
 import {
   cancelCompanyJobSubmission,
   deleteCompanyJob,
+  generateCompanyJobDraft,
   submitCompanyJob,
   submitCompanyJobEdit,
   updateCompanyBackground,
@@ -49,6 +60,8 @@ export default function CompanyPage() {
   const [dashboard, setDashboard] = useState<CompanyDashboardResponse | null>(
     null,
   );
+  const [analytics, setAnalytics] =
+    useState<CompanyAnalyticsDashboardResponse | null>(null);
   const [managedJobs, setManagedJobs] = useState<CompanyManagedJobItem[]>([]);
   const [jobSubmissions, setJobSubmissions] = useState<JobSubmissionItem[]>([]);
   const [jobForm, setJobForm] = useState<JobForm>(emptyJobForm);
@@ -69,11 +82,14 @@ export default function CompanyPage() {
     useState<JobSubmissionItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [jobAutofillLoading, setJobAutofillLoading] = useState(false);
+  const [jobAutofillError, setJobAutofillError] = useState("");
 
   function applyPageData(
     data: Awaited<ReturnType<typeof fetchCompanyPageData>>,
   ) {
     setDashboard(data.dashboard);
+    setAnalytics(data.analytics);
     setLogoImageForm(toLogoProfileImageForm(data.dashboard));
     setBackgroundImageForm(toBackgroundProfileImageForm(data.dashboard));
     setManagedJobs(data.managedJobs);
@@ -120,6 +136,37 @@ export default function CompanyPage() {
       ignore = true;
     };
   }, []);
+
+  async function autoFillJob(sourceText: string) {
+    const trimmedSource = sourceText.trim();
+    if (trimmedSource.length < 40) {
+      setJobAutofillError("원문 공고를 40자 이상 입력해 주세요.");
+      return;
+    }
+
+    setJobAutofillLoading(true);
+    setJobAutofillError("");
+    setMessage("");
+    try {
+      const originalUrl = jobForm.originalUrl.trim();
+      const response = await generateCompanyJobDraft({
+        sourceText: trimmedSource,
+        ...(originalUrl ? { originalUrl } : {}),
+      });
+      setJobForm((current) => applyJobAutofillDraft(current, response.draft));
+      setMessage(
+        response.warnings.length
+          ? `AI 초안을 적용했습니다. ${response.warnings.join(" ")}`
+          : "AI 초안을 적용했습니다. 제출 전 내용을 확인해 주세요.",
+      );
+    } catch (error) {
+      setJobAutofillError(
+        error instanceof Error ? error.message : "AI 자동입력에 실패했습니다.",
+      );
+    } finally {
+      setJobAutofillLoading(false);
+    }
+  }
 
   async function submitJob(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -397,6 +444,8 @@ export default function CompanyPage() {
             />
           </section>
 
+          <AnalyticsSection analytics={analytics} />
+
           <ProfileImageSettings
             imageKind="logo"
             companyName={company.name}
@@ -424,6 +473,9 @@ export default function CompanyPage() {
               editingJob={editingJob}
               editingSubmission={editingSubmission}
               form={jobForm}
+              autoFillError={jobAutofillError}
+              autoFillLoading={jobAutofillLoading}
+              onAutoFill={autoFillJob}
               onCancelEdit={cancelEdit}
               onChange={setJobForm}
               onSubmit={submitJob}
@@ -470,4 +522,145 @@ export default function CompanyPage() {
       </main>
     </>
   );
+}
+
+function AnalyticsSection({
+  analytics,
+}: {
+  analytics: CompanyAnalyticsDashboardResponse | null;
+}) {
+  if (!analytics) return null;
+
+  const summary = analytics.summary;
+  const hasData =
+    summary.detailViews +
+      summary.originalClicks +
+      summary.bookmarkAdds +
+      summary.bookmarkRemoves +
+      summary.currentBookmarks >
+    0;
+  const maxDailyValue = Math.max(
+    1,
+    ...analytics.daily.map(
+      (point) =>
+        point.detailViews + point.originalClicks + point.bookmarkAdds,
+    ),
+  );
+
+  return (
+    <section className={styles.analyticsPanel}>
+      <SectionTitle
+        icon={<BarChart3 size={19} />}
+        title="지원자 관심도 분석"
+        aside={`${formatShortDate(analytics.period.from)}-${formatShortDate(
+          analytics.period.to,
+        )}`}
+      />
+
+      {!hasData ? (
+        <div className={styles.emptyPanel}>아직 분석 데이터가 없습니다.</div>
+      ) : (
+        <>
+          <div className={styles.analyticsMetricGrid}>
+            <Metric
+              label="상세 조회"
+              value={`${formatNumber(summary.detailViews)}회`}
+              icon={<Eye size={18} />}
+            />
+            <Metric
+              label="원문 클릭"
+              value={`${formatNumber(summary.originalClicks)}회`}
+              icon={<MousePointerClick size={18} />}
+            />
+            <Metric
+              label="현재 북마크"
+              value={`${formatNumber(summary.currentBookmarks)}개`}
+              icon={<Star size={18} />}
+            />
+            <Metric
+              label="클릭률"
+              value={`${formatPercent(summary.originalClickRate)}`}
+              icon={<BarChart3 size={18} />}
+            />
+          </div>
+
+          <div className={styles.analyticsGrid}>
+            <div className={styles.analyticsCard}>
+              <div className={styles.analyticsCardHeader}>
+                <h3>일자별 추이</h3>
+                <span>최근 {analytics.period.days}일</span>
+              </div>
+              <div className={styles.trendList}>
+                {analytics.daily.map((point) => {
+                  const total =
+                    point.detailViews +
+                    point.originalClicks +
+                    point.bookmarkAdds;
+                  const width = Math.max(4, (total / maxDailyValue) * 100);
+                  return (
+                    <div key={point.date} className={styles.trendRow}>
+                      <time dateTime={point.date}>
+                        {formatShortDate(point.date)}
+                      </time>
+                      <div className={styles.trendBarTrack}>
+                        <span
+                          className={styles.trendBar}
+                          style={{ width: `${width}%` }}
+                        />
+                      </div>
+                      <strong>{formatNumber(total)}</strong>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={styles.analyticsCard}>
+              <div className={styles.analyticsCardHeader}>
+                <h3>공고별 성과</h3>
+                <span>{analytics.jobs.length}건</span>
+              </div>
+              <div className={styles.analyticsTable}>
+                <div className={styles.analyticsTableHead}>
+                  <span>공고</span>
+                  <span>조회</span>
+                  <span>원문</span>
+                  <span>북마크</span>
+                  <span>클릭률</span>
+                </div>
+                {analytics.jobs.map((job) => (
+                  <div key={job.jobId} className={styles.analyticsTableRow}>
+                    <div className={styles.analyticsJobCell}>
+                      <strong>{job.title}</strong>
+                      <span>{job.status === "OPEN" ? "게시 중" : "삭제 처리"}</span>
+                    </div>
+                    <span>{formatNumber(job.detailViews)}</span>
+                    <span>{formatNumber(job.originalClicks)}</span>
+                    <span>{formatNumber(job.currentBookmarks)}</span>
+                    <span>{formatPercent(job.originalClickRate)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function formatNumber(value: number) {
+  return value.toLocaleString("ko-KR");
+}
+
+function formatPercent(value: number) {
+  return `${value.toLocaleString("ko-KR", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
+  })}%`;
+}
+
+function formatShortDate(value: string) {
+  const [, month, day] = value.split("-");
+  return `${Number(month)}/${Number(day)}`;
 }

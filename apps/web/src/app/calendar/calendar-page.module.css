@@ -16,3 +16,49 @@
   flex: 1;
   margin-top: 0;
 }
+
+.calendarShell {
+  display: grid;
+  gap: 1rem;
+}
+
+.viewToolbar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.viewSwitch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(5.5rem, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  border-radius: 0.875rem;
+  background: #f4f4f5;
+  padding: 0.1875rem;
+}
+
+.viewSwitchButton,
+.viewSwitchButtonActive {
+  min-height: 2.5rem;
+  cursor: pointer;
+  border: 0;
+  border-radius: 0.6875rem;
+  background: transparent;
+  color: #71717a;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.viewSwitchButton:hover {
+  color: #18181b;
+}
+
+.viewSwitchButtonActive {
+  background: #ffffff;
+  color: #18181b;
+  box-shadow: 0 1px 8px rgb(15 23 42 / 0.08);
+}

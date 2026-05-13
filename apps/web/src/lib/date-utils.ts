@@ -45,6 +45,26 @@ export function endOfWeek(date: Date) {
   return next;
 }
 
+export function getMonthRange(date: Date) {
+  return {
+    from: startOfMonth(date),
+    to: endOfMonth(date),
+  };
+}
+
+export function getMonthDays(date: Date) {
+  const { from, to } = getMonthRange(date);
+  const days: Date[] = [];
+  for (
+    let cursor = new Date(from);
+    cursor.getTime() <= to.getTime();
+    cursor = addDays(cursor, 1)
+  ) {
+    days.push(new Date(cursor));
+  }
+  return days;
+}
+
 export function getCalendarGridRange(monthDate: Date) {
   const monthStart = startOfMonth(monthDate);
   const monthEnd = endOfMonth(monthDate);
