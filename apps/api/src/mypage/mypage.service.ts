@@ -22,12 +22,16 @@ import {
   CpaVerificationStatus,
   EmploymentHistoryStatus,
   JobEngagementEventType,
+  JobStatus,
   PersonalVerificationRequestStatus,
   Prisma,
 } from '@prisma/client';
 import type {
   BookmarkItem,
   BookmarkListResponse,
+  CreateJobFitAnalysisResponse,
+  JobFitAnalysisItem,
+  JobFitAnalysisListResponse,
   MyCommunityActivityListResponse,
   MyProfileResponse,
   PersonalVerificationRequestItem,
@@ -37,7 +41,7 @@ import type {
 import argon2 from 'argon2';
 import { randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import {
   basename,
   dirname,
@@ -56,10 +60,13 @@ import { AssetsService } from '../assets/assets.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePersonalVerificationRequestDto } from './dto/create-personal-verification-request.dto';
+import { JobFitAnalysisAiService } from './job-fit-analysis-ai.service';
 
 const RESUME_LIMIT = 5;
 export const RESUME_MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_S3_RESUME_KEY_PREFIX = 'resumes';
+const RESUME_TEXT_SAMPLE_MAX_BYTES = 512 * 1024;
+const RESUME_TEXT_SAMPLE_MAX_CHARS = 5000;
 
 type ResumeStorageConfig =
   | {
@@ -90,6 +97,7 @@ type ResumeRecord = {
   fileUrl: string;
   contentType: string;
   byteSize: number;
+  isPrimary: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -134,8 +142,44 @@ const profileInclude = {
   },
 } satisfies Prisma.UserInclude;
 
+const jobFitAnalysisInclude = {
+  job: {
+    select: {
+      id: true,
+      title: true,
+      companyId: true,
+      company: { select: { name: true } },
+    },
+  },
+  resume: { select: { id: true, fileName: true } },
+} satisfies Prisma.JobFitAnalysisInclude;
+
+const jobFitAnalysisJobInclude = {
+  company: {
+    select: {
+      name: true,
+      type: true,
+      tags: true,
+      description: true,
+    },
+  },
+  labels: {
+    include: {
+      label: { select: { name: true } },
+    },
+  },
+} satisfies Prisma.JobInclude;
+
 type ProfileUserRecord = Prisma.UserGetPayload<{
   include: typeof profileInclude;
+}>;
+
+type JobFitAnalysisRecord = Prisma.JobFitAnalysisGetPayload<{
+  include: typeof jobFitAnalysisInclude;
+}>;
+
+type JobFitAnalysisJobRecord = Prisma.JobGetPayload<{
+  include: typeof jobFitAnalysisJobInclude;
 }>;
 
 type VerificationRequestRecord = Prisma.PersonalVerificationRequestGetPayload<{
@@ -158,6 +202,8 @@ export class MypageService implements OnModuleInit {
     private readonly assetsService: AssetsService,
     @Optional()
     private readonly notificationsService?: NotificationsService,
+    @Optional()
+    private readonly jobFitAnalysisAiService?: JobFitAnalysisAiService,
   ) {}
 
   onModuleInit() {
@@ -355,6 +401,132 @@ export class MypageService implements OnModuleInit {
       page,
       pageSize,
       total,
+    };
+  }
+
+  async listJobFitAnalyses(
+    userId: string,
+    jobId?: string,
+  ): Promise<JobFitAnalysisListResponse> {
+    const analyses = await this.prisma.jobFitAnalysis.findMany({
+      where: {
+        userId,
+        ...(jobId?.trim() ? { jobId: jobId.trim() } : {}),
+      },
+      include: jobFitAnalysisInclude,
+      orderBy: [{ createdAt: 'desc' }],
+    });
+
+    return {
+      items: analyses.map((analysis) => this.toJobFitAnalysisItem(analysis)),
+    };
+  }
+
+  async listHighFitJobAnalyses(
+    userId: string,
+    take?: number,
+  ): Promise<JobFitAnalysisListResponse> {
+    const analyses = await this.prisma.jobFitAnalysis.findMany({
+      where: {
+        userId,
+        fitScore: { gte: 75 },
+      },
+      include: jobFitAnalysisInclude,
+      orderBy: [{ fitScore: 'desc' }, { createdAt: 'desc' }],
+      take: this.clampPositiveInt(take, 5, 10),
+    });
+
+    return {
+      items: analyses.map((analysis) => this.toJobFitAnalysisItem(analysis)),
+    };
+  }
+
+  async createJobFitAnalysis(
+    userId: string,
+    data: { jobId: string; resumeId: string },
+  ): Promise<CreateJobFitAnalysisResponse> {
+    const jobId = data.jobId.trim();
+    const resumeId = data.resumeId.trim();
+    if (!jobId || !resumeId) {
+      throw new BadRequestException('분석할 공고와 이력서를 선택해 주세요.');
+    }
+
+    const existing = await this.prisma.jobFitAnalysis.findUnique({
+      where: {
+        userId_jobId_resumeId: { userId, jobId, resumeId },
+      },
+      include: jobFitAnalysisInclude,
+    });
+    if (existing) {
+      return {
+        item: this.toJobFitAnalysisItem(existing),
+        reused: true,
+      };
+    }
+
+    const [resume, job] = await Promise.all([
+      this.prisma.resume.findFirst({
+        where: { id: resumeId, userId },
+        select: {
+          id: true,
+          userId: true,
+          fileName: true,
+          contentType: true,
+          byteSize: true,
+        },
+      }),
+      this.prisma.job.findFirst({
+        where: { id: jobId, status: JobStatus.OPEN },
+        include: jobFitAnalysisJobInclude,
+      }),
+    ]);
+
+    if (!resume) {
+      throw new BadRequestException(
+        '본인이 업로드한 이력서만 분석에 사용할 수 있습니다.',
+      );
+    }
+    if (!job) {
+      throw new NotFoundException(
+        '분석 가능한 공개 채용공고를 찾을 수 없습니다.',
+      );
+    }
+
+    if (!this.jobFitAnalysisAiService) {
+      throw new InternalServerErrorException(
+        'AI 적합도 분석 서비스가 설정되지 않았습니다.',
+      );
+    }
+
+    const generated = await this.jobFitAnalysisAiService.generate({
+      job: this.toJobFitAnalysisAiJob(job),
+      resume: {
+        fileName: resume.fileName,
+        contentType: resume.contentType,
+        byteSize: resume.byteSize,
+        textSample: await this.readResumeTextSample(resume),
+      },
+    });
+
+    const created = await this.prisma.jobFitAnalysis.create({
+      data: {
+        userId,
+        jobId,
+        resumeId,
+        fitScore: generated.fitScore,
+        summary: generated.summary,
+        strengths: generated.strengths,
+        companyPriorities: generated.companyPriorities,
+        gaps: generated.gaps,
+        recommendation: generated.recommendation,
+        rawJson: generated.rawJson as Prisma.InputJsonValue,
+      },
+      include: jobFitAnalysisInclude,
+    });
+
+    return {
+      item: this.toJobFitAnalysisItem(created),
+      reused: false,
     };
   }
 
@@ -569,7 +741,7 @@ export class MypageService implements OnModuleInit {
   async listResumes(userId: string): Promise<ResumeListResponse> {
     const resumes = await this.prisma.resume.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
     });
 
     return {
@@ -617,6 +789,7 @@ export class MypageService implements OnModuleInit {
           fileUrl: this.buildResumeDownloadPath(id),
           contentType: upload.contentType,
           byteSize: data.body.length,
+          isPrimary: count === 0,
         },
       });
 
@@ -627,6 +800,28 @@ export class MypageService implements OnModuleInit {
       );
       throw error;
     }
+  }
+
+  async setPrimaryResume(userId: string, id: string): Promise<ResumeItem> {
+    const resume = await this.prisma.resume.findFirst({
+      where: { id, userId },
+    });
+    if (!resume) {
+      throw new NotFoundException('Resume not found.');
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.resume.updateMany({
+        where: { userId, isPrimary: true },
+        data: { isPrimary: false },
+      });
+      return tx.resume.update({
+        where: { id },
+        data: { isPrimary: true },
+      });
+    });
+
+    return this.toResumeItem(updated);
   }
 
   async getResumeDownload(userId: string, id: string) {
@@ -666,6 +861,18 @@ export class MypageService implements OnModuleInit {
       throw new NotFoundException('Resume not found.');
     }
     await this.prisma.resume.delete({ where: { id } });
+    if (resume.isPrimary) {
+      const nextResume = await this.prisma.resume.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (nextResume) {
+        await this.prisma.resume.update({
+          where: { id: nextResume.id },
+          data: { isPrimary: true },
+        });
+      }
+    }
     const storageConfig = this.getResumeStorageConfig();
     const target = this.resolveResumeObjectTarget(
       storageConfig,
@@ -675,6 +882,102 @@ export class MypageService implements OnModuleInit {
     );
     await this.deleteResumeObject(storageConfig, target).catch(() => undefined);
     return { ok: true };
+  }
+
+  private toJobFitAnalysisAiJob(job: JobFitAnalysisJobRecord) {
+    return {
+      title: job.title,
+      description: job.description,
+      jobFamily: job.jobFamily,
+      employmentType: job.employmentType,
+      companyType: job.companyType,
+      kicpaCondition: job.kicpaCondition,
+      traineeStatus: job.traineeStatus,
+      practicalTrainingInstitution: job.practicalTrainingInstitution,
+      minExperienceYears: job.minExperienceYears,
+      maxExperienceYears: job.maxExperienceYears,
+      location: job.location,
+      deadlineType: job.deadlineType,
+      deadline: job.deadline?.toISOString() ?? null,
+      labels: job.labels.map((item) => item.label.name),
+      company: {
+        name: job.company.name,
+        type: job.company.type,
+        tags: job.company.tags,
+        description: job.company.description,
+      },
+    };
+  }
+
+  private async readResumeTextSample(resume: {
+    id: string;
+    userId: string;
+    fileName: string;
+  }) {
+    try {
+      const storageConfig = this.getResumeStorageConfig();
+      const target = this.resolveResumeObjectTarget(
+        storageConfig,
+        resume.userId,
+        resume.id,
+        resume.fileName,
+      );
+
+      if (storageConfig.driver === 'local' && target.driver === 'local') {
+        return this.extractResumeTextSample(await readFile(target.filePath));
+      }
+
+      if (storageConfig.driver === 's3' && target.driver === 's3') {
+        const output = await this.getS3Client(storageConfig.region).send(
+          new GetObjectCommand({
+            Bucket: storageConfig.bucket,
+            Key: target.key,
+          }),
+        );
+        const stream = await this.toReadableStream(output.Body);
+        return this.extractResumeTextSample(
+          await this.readStreamPrefix(stream, RESUME_TEXT_SAMPLE_MAX_BYTES),
+        );
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  }
+
+  private async readStreamPrefix(stream: Readable, maxBytes: number) {
+    const chunks: Buffer[] = [];
+    let total = 0;
+
+    for await (const chunk of stream as AsyncIterable<
+      Buffer | Uint8Array | string
+    >) {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      const remaining = maxBytes - total;
+      chunks.push(
+        buffer.length > remaining ? buffer.subarray(0, remaining) : buffer,
+      );
+      total += Math.min(buffer.length, remaining);
+      if (total >= maxBytes) {
+        stream.destroy();
+        break;
+      }
+    }
+
+    return Buffer.concat(chunks);
+  }
+
+  private extractResumeTextSample(buffer: Buffer) {
+    const cleaned = buffer
+      .subarray(0, RESUME_TEXT_SAMPLE_MAX_BYTES)
+      .toString('utf8')
+      .replace(/[^\t\n\r -~가-힣ㄱ-ㅎㅏ-ㅣ]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (cleaned.length < 30) return null;
+    return cleaned.slice(0, RESUME_TEXT_SAMPLE_MAX_CHARS);
   }
 
   private normalizeResumeUpload(data: {
@@ -1033,6 +1336,7 @@ export class MypageService implements OnModuleInit {
     fileUrl: string;
     contentType: string;
     byteSize: number;
+    isPrimary: boolean;
     createdAt: Date;
     updatedAt: Date;
   }): ResumeItem {
@@ -1042,8 +1346,31 @@ export class MypageService implements OnModuleInit {
       fileUrl: resume.fileUrl,
       contentType: resume.contentType,
       byteSize: resume.byteSize,
+      isPrimary: resume.isPrimary,
       createdAt: resume.createdAt.toISOString(),
       updatedAt: resume.updatedAt.toISOString(),
+    };
+  }
+
+  private toJobFitAnalysisItem(
+    analysis: JobFitAnalysisRecord,
+  ): JobFitAnalysisItem {
+    return {
+      id: analysis.id,
+      jobId: analysis.jobId,
+      jobTitle: analysis.job.title,
+      companyId: analysis.job.companyId,
+      companyName: analysis.job.company.name,
+      resumeId: analysis.resumeId,
+      resumeFileName: analysis.resume.fileName,
+      fitScore: analysis.fitScore,
+      summary: analysis.summary,
+      strengths: analysis.strengths,
+      companyPriorities: analysis.companyPriorities,
+      gaps: analysis.gaps,
+      recommendation: analysis.recommendation,
+      createdAt: analysis.createdAt.toISOString(),
+      updatedAt: analysis.updatedAt.toISOString(),
     };
   }
 

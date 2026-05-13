@@ -4,6 +4,7 @@ import type {
   BookmarkItem,
   BookmarkTargetType,
   CommunityBoardType,
+  JobFitAnalysisItem,
   MyCommunityActivityItem,
   MyProfileResponse,
   NotificationItem,
@@ -22,6 +23,8 @@ import {
   KeyRound,
   MessageCircle,
   Sparkles,
+  Star,
+  TrendingUp,
   Trash2,
   Upload,
   X,
@@ -46,10 +49,12 @@ import {
   fetchCurrentUser,
   fetchMyBookmarks,
   fetchMyCommunityActivity,
+  fetchMyHighFitJobAnalyses,
   fetchMyProfile,
   fetchMyResumes,
   fetchNotifications,
   getMyResumeDownloadUrl,
+  setMyPrimaryResume,
   NOTIFICATIONS_CHANGED_EVENT,
   updateMyProfile,
   updateMyPassword,
@@ -140,6 +145,9 @@ export default function MyPage() {
   const [profile, setProfile] = useState<MyProfileResponse | null>(null);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
+  const [highFitAnalyses, setHighFitAnalyses] = useState<
+    JobFitAnalysisItem[]
+  >([]);
   const [communityActivity, setCommunityActivity] = useState<
     MyCommunityActivityItem[]
   >([]);
@@ -156,6 +164,7 @@ export default function MyPage() {
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
   const [uploadingResume, setUploadingResume] = useState(false);
+  const [updatingPrimaryResumeId, setUpdatingPrimaryResumeId] = useState("");
   const [updatingProfileImage, setUpdatingProfileImage] = useState(false);
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [displayNameInput, setDisplayNameInput] = useState("");
@@ -192,19 +201,25 @@ export default function MyPage() {
         if (!ignore) setAuthorized(true);
 
         const [
+          
           profileResult,
+         
           bookmarkResult,
+         
           resumeResult,
+          highFitResult,
+         
           activityResult,
           notificationResult,
-        ] =
-          await Promise.allSettled([
-            fetchMyProfile(),
-            fetchMyBookmarks(),
-            fetchMyResumes(),
-            fetchMyCommunityActivity(5),
+        ,
+        ] = await Promise.allSettled([
+          fetchMyProfile(),
+          fetchMyBookmarks(),
+          fetchMyResumes(),
+          fetchMyHighFitJobAnalyses(5),
+          fetchMyCommunityActivity(5),
             fetchNotifications({ page: 1, pageSize: 3 }),
-          ]);
+        ]);
 
         if (ignore) return;
 
@@ -228,6 +243,9 @@ export default function MyPage() {
         setResumes(
           resumeResult.status === "fulfilled" ? resumeResult.value.items : [],
         );
+        setHighFitAnalyses(
+          highFitResult.status === "fulfilled" ? highFitResult.value.items : [],
+        );
         setCommunityActivity(
           activityResult.status === "fulfilled"
             ? activityResult.value.items
@@ -250,6 +268,7 @@ export default function MyPage() {
         const sideLoadErrors = [
           bookmarkResult.status === "rejected" ? "북마크" : "",
           resumeResult.status === "rejected" ? "이력서" : "",
+          highFitResult.status === "rejected" ? "공고 분석" : "",
           activityResult.status === "rejected" ? "커뮤니티 활동" : "",
           notificationResult.status === "rejected" ? "알림" : "",
         ].filter(Boolean);
@@ -510,6 +529,12 @@ export default function MyPage() {
     if (!file) return;
     setMessage("");
 
+    if (resumes.length >= 5) {
+      setMessage("이력서는 최대 5개까지 등록할 수 있습니다.");
+      if (resumeFileInputRef.current) resumeFileInputRef.current.value = "";
+      return;
+    }
+
     const validationMessage = validateResumeFile(file);
     if (validationMessage) {
       setMessage(validationMessage);
@@ -544,6 +569,35 @@ export default function MyPage() {
       setMessage(
         error instanceof Error ? error.message : "이력서 삭제에 실패했습니다.",
       );
+    }
+  }
+
+  async function handleSetPrimaryResume(id: string) {
+    if (updatingPrimaryResumeId) return;
+    setMessage("");
+    setUpdatingPrimaryResumeId(id);
+    try {
+      const updated = await setMyPrimaryResume(id);
+      setResumes((prev) =>
+        prev
+          .map((resume) => ({
+            ...resume,
+            isPrimary: resume.id === updated.id,
+          }))
+          .sort(
+            (first, second) =>
+              Number(second.isPrimary) - Number(first.isPrimary),
+          ),
+      );
+      setMessage("대표 이력서를 변경했습니다.");
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "대표 이력서 변경에 실패했습니다.",
+      );
+    } finally {
+      setUpdatingPrimaryResumeId("");
     }
   }
 
@@ -677,6 +731,12 @@ export default function MyPage() {
   const displayNameDirty =
     displayNameInput.trim() !== (profile.displayName ?? "");
   const profileComplete = profileCompletion.score === 100;
+  const resumeLimitReached = resumes.length >= 5;
+  const resumeUploadButtonLabel = uploadingResume
+    ? "업로드 중"
+    : resumeLimitReached
+      ? "5개 등록 완료"
+      : "파일 선택";
 
   function openVerificationModal() {
     setVerificationModalOpen(true);
@@ -774,6 +834,7 @@ export default function MyPage() {
               </div>
               <div className={styles.statGrid}>
                 <StatItem label="이력서" value={`${resumes.length}/5`} />
+                <StatItem label="AI 분석" value={`${highFitAnalyses.length}개`} />
                 <StatItem label="북마크" value={`${bookmarks.length}개`} />
                 <StatItem
                   label="CPA"
@@ -855,6 +916,48 @@ export default function MyPage() {
               )}
             </section>
           </div>
+
+          <section className={`${styles.panel} ${styles.highFitPanel}`}>
+            <div className={styles.panelHeader}>
+              <h2>
+                <TrendingUp size={17} />
+                합격확률 높은 공고
+              </h2>
+              <Link href="/jobs" className={styles.textButton}>
+                공고 더 보기
+              </Link>
+            </div>
+            {highFitAnalyses.length ? (
+              <div className={styles.highFitList}>
+                {highFitAnalyses.map((analysis) => (
+                  <Link
+                    key={analysis.id}
+                    href={jobDetailHref(analysis.jobId)}
+                    className={styles.highFitItem}
+                  >
+                    <div className={styles.highFitScore}>
+                      <span>{analysis.fitScore}%</span>
+                      <small>적합도</small>
+                    </div>
+                    <div className={styles.highFitBody}>
+                      <div className={styles.highFitTitle}>
+                        {analysis.jobTitle}
+                      </div>
+                      <div className={styles.highFitMeta}>
+                        {analysis.companyName} · {analysis.resumeFileName} ·{" "}
+                        {formatDate(analysis.createdAt)}
+                      </div>
+                      <p>{analysis.summary}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}>
+                아직 합격확률 75% 이상으로 분석된 공고가 없습니다.
+              </div>
+            )}
+          </section>
 
           <div className={styles.mainGrid}>
             <section className={`${styles.panel} ${styles.mainGridFull}`}>
@@ -989,10 +1092,15 @@ export default function MyPage() {
 
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
-              <h2>
-                <FileText size={17} />
-                이력서
-              </h2>
+              <div className={styles.panelTitleGroup}>
+                <h2>
+                  <FileText size={17} />
+                  이력서
+                </h2>
+                <p className={styles.resumeLimitText}>
+                  {resumes.length}/5개 등록 · 대표 이력서를 선택해 공고 분석에 사용합니다.
+                </p>
+              </div>
               <ActionButton
                 type="button"
                 size="sm"
@@ -1000,15 +1108,15 @@ export default function MyPage() {
                 iconStart={<Upload size={14} />}
                 onClick={() => {
                   if (uploadingResume) return;
-                  if (resumes.length >= 5) {
+                  if (resumeLimitReached) {
                     setMessage("이력서는 최대 5개까지 업로드할 수 있습니다.");
                     return;
                   }
                   resumeFileInputRef.current?.click();
                 }}
-                disabled={uploadingResume}
+                disabled={uploadingResume || resumeLimitReached}
               >
-                {uploadingResume ? "업로드 중" : "파일 선택"}
+                {resumeUploadButtonLabel}
               </ActionButton>
             </div>
             <input
@@ -1027,6 +1135,11 @@ export default function MyPage() {
                       <div>
                         <div className={styles.resumeName}>
                           {resume.fileName}
+                          {resume.isPrimary && (
+                            <span className={styles.primaryResumeBadge}>
+                              대표
+                            </span>
+                          )}
                         </div>
                         <div className={styles.resumeMeta}>
                           {formatFileSize(resume.byteSize)} ·{" "}
@@ -1035,6 +1148,21 @@ export default function MyPage() {
                       </div>
                     </div>
                     <div className={styles.itemActions}>
+                      <button
+                        type="button"
+                        className={`${styles.primaryResumeButton} ${
+                          resume.isPrimary ? styles.primaryResumeButtonActive : ""
+                        }`}
+                        onClick={() => void handleSetPrimaryResume(resume.id)}
+                        disabled={
+                          resume.isPrimary ||
+                          updatingPrimaryResumeId === resume.id
+                        }
+                        aria-label="대표 이력서 선택"
+                      >
+                        <Star size={15} />
+                        <span>{resume.isPrimary ? "대표" : "대표 선택"}</span>
+                      </button>
                       <a
                         href={getMyResumeDownloadUrl(resume.id)}
                         className={styles.iconButton}
