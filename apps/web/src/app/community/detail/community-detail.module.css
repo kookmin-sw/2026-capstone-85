@@ -1,3 +1,9 @@
+/* ─── Section icon ────────────────────────────────────────── */
+
+.sectionIcon {
+  color: var(--brand);
+}
+
 /* ─── Page container ──────────────────────────────────────── */
 
 .pageWrap {
@@ -34,12 +40,12 @@
 .postCard {
   background: white;
   border: 1px solid var(--app-line);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   overflow: hidden;
 }
 
 .postHeader {
-  padding: 1.5rem 1.5rem 1rem;
+  padding: 1rem 1rem 0.875rem;
   border-bottom: 1px solid var(--app-line);
 }
 
@@ -127,7 +133,7 @@
 }
 
 .postContent {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem;
   font-size: 0.9375rem;
   line-height: 1.7;
   color: var(--gray-800);
@@ -139,7 +145,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.875rem 1.5rem;
+  padding: 0.75rem 1rem;
   border-top: 1px solid var(--app-line);
   background: var(--gray-50);
 }
@@ -198,12 +204,12 @@
 .answersSection {
   background: white;
   border: 1px solid var(--app-line);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   overflow: hidden;
 }
 
 .answersHeader {
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--app-line);
   font-size: 0.9375rem;
   font-weight: 700;
@@ -218,7 +224,7 @@
 }
 
 .answerCard {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--app-line);
 }
 
@@ -227,8 +233,8 @@
 }
 
 .answerAccepted {
-  background: #fff8fa;
-  border-left: 3px solid var(--brand);
+  background: #fef6f9;
+  border-left: 2px solid var(--brand);
 }
 
 .acceptedBadge {
@@ -320,12 +326,12 @@
 .replySection {
   background: white;
   border: 1px solid var(--app-line);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   overflow: hidden;
 }
 
 .replyHeader {
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--app-line);
   font-size: 0.9375rem;
   font-weight: 700;
@@ -333,7 +339,7 @@
 }
 
 .replyInner {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
@@ -387,16 +393,15 @@
 .sidebarCard {
   background: white;
   border: 1px solid var(--app-line);
-  border-radius: 1rem;
-  padding: 1.25rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  border-radius: 0.75rem;
+  padding: 1rem;
 }
 
 .sidebarCardTitle {
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: 0.875rem;
+  margin-bottom: 0.75rem;
 }
 
 .sidebarInfoRow {
@@ -422,10 +427,10 @@
 }
 
 .resolveGuideCard {
-  background: var(--brand-soft);
-  border: 1px solid var(--brand-mid, rgba(232, 69, 122, 0.2));
-  border-radius: 1rem;
-  padding: 1.25rem;
+  background: white;
+  border: 1px solid var(--app-line);
+  border-radius: 0.75rem;
+  padding: 1rem;
 }
 
 .resolveGuideTitle {
