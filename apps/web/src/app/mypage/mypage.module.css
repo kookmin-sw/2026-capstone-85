@@ -10,7 +10,7 @@
   margin: 0 auto;
   padding: 1.5rem 1.25rem 3rem;
   display: grid;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .loadingText {
@@ -48,7 +48,7 @@
   background-position: center;
   background-size: cover;
   filter: blur(0.25px);
-  opacity: 0.56;
+  opacity: 0.32;
   transform: scale(1.005);
 }
 
@@ -88,8 +88,8 @@
   background: linear-gradient(135deg, #fff7ed, #fff0f5 58%, #eef7ff);
   color: var(--brand);
   box-shadow:
-    0 14px 30px rgba(15, 23, 42, 0.14),
-    inset 0 0 0 3px white;
+    0 4px 12px rgba(15, 23, 42, 0.1),
+    inset 0 0 0 2px white;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -99,8 +99,8 @@
 .avatarButton:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 18px 36px rgba(15, 23, 42, 0.18),
-    inset 0 0 0 3px white;
+    0 8px 18px rgba(15, 23, 42, 0.13),
+    inset 0 0 0 2px white;
 }
 
 .avatarButton:disabled {
@@ -112,9 +112,9 @@
 .avatarButtonComplete {
   border-color: #f2c94c;
   box-shadow:
-    0 14px 30px rgba(15, 23, 42, 0.14),
-    0 0 0 5px rgba(242, 201, 76, 0.22),
-    inset 0 0 0 3px white;
+    0 4px 12px rgba(15, 23, 42, 0.1),
+    0 0 0 3px rgba(242, 201, 76, 0.15),
+    inset 0 0 0 2px white;
 }
 
 .avatarImage {
@@ -208,12 +208,11 @@
   gap: 0.35rem;
   border: 1px solid #f2c94c;
   border-radius: 999px;
-  background: linear-gradient(135deg, #fff7d6, #ecfeff);
+  background: #fffbeb;
   padding: 0 0.8rem;
   color: #854d0e;
   font-size: 0.75rem;
   font-weight: 900;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
   white-space: nowrap;
 }
 
@@ -240,7 +239,7 @@
 .summaryGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.72fr);
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .summaryGridCompact {
@@ -250,7 +249,7 @@
 .mainGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .mainGridFull {
@@ -260,10 +259,9 @@
 .panel {
   min-width: 0;
   border: 1px solid var(--app-line);
-  border-radius: 8px;
-  background: var(--surface);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-xs);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 1rem;
 }
 
 .panelHeader {
@@ -318,7 +316,7 @@
 
 .message {
   border: 1px solid var(--brand-mid);
-  border-radius: 8px;
+  border-radius: 0.75rem;
   background: var(--brand-soft);
   padding: 0.75rem 1rem;
   color: var(--gray-700);
@@ -370,15 +368,15 @@
 .nextActionBox {
   display: grid;
   gap: 0.35rem;
-  border: 1px solid #c7eee7;
-  border-radius: 8px;
-  background: #f0fdfa;
+  border: 1px solid var(--app-line);
+  border-radius: 0.75rem;
+  background: var(--gray-50);
   padding: 0.875rem 1rem;
   margin-bottom: 1rem;
 }
 
 .nextActionBox > span {
-  color: #0f766e;
+  color: var(--app-muted);
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -401,7 +399,7 @@
   min-height: 2rem;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-size: 0.75rem;
   font-weight: 900;
   text-decoration: none;
@@ -428,7 +426,7 @@
 
 .completionChecklist {
   display: grid;
-  gap: 0.75rem;
+  gap: 0;
 }
 
 .completionStep {
@@ -437,14 +435,19 @@
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 0.75rem;
-  border: 1px solid var(--app-line);
-  border-radius: 8px;
-  background: white;
-  padding: 0.75rem;
+  border: none;
+  border-bottom: 1px solid var(--app-line);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.75rem 0;
+}
+
+.completionChecklist .completionStep:last-child {
+  border-bottom: none;
 }
 
 .completionStepDone {
-  background: var(--gray-50);
+  background: transparent;
 }
 
 .stepCheck {
@@ -504,15 +507,16 @@
 .statGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  column-gap: 2rem;
 }
 
 .statItem {
-  min-width: 0;
-  border: 1px solid var(--app-line);
-  border-radius: 8px;
-  background: var(--gray-50);
-  padding: 0.75rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.statGrid .statItem:last-child {
+  border-bottom: none;
 }
 
 .statItem span {
@@ -538,9 +542,13 @@
   gap: 1rem;
   margin-top: 1rem;
   border: 1px solid var(--brand-mid);
-  border-radius: 8px;
+  border-radius: 0.75rem;
   background:
-    linear-gradient(135deg, rgba(255, 240, 245, 0.9), rgba(240, 253, 250, 0.82)),
+    linear-gradient(
+      135deg,
+      rgba(255, 240, 245, 0.72),
+      rgba(255, 255, 255, 0.92)
+    ),
     white;
   padding: 1rem;
 }
@@ -570,10 +578,20 @@
 }
 
 .highFitPanel {
-  border-color: var(--brand-mid);
+  border: 1px solid rgba(232, 69, 122, 0.18);
+  border-radius: 0.75rem;
+
   background:
-    linear-gradient(135deg, rgba(255, 240, 245, 0.9), rgba(240, 253, 250, 0.72)),
-    var(--surface);
+    linear-gradient(
+      135deg,
+      rgba(255, 238, 244, 0.92) 0%,
+      rgba(255, 247, 250, 0.82) 38%,
+      rgba(255, 255, 255, 0.96) 100%
+    );
+
+  box-shadow:
+    0 1px 2px rgba(232, 69, 122, 0.04),
+    0 10px 24px rgba(232, 69, 122, 0.06);
 }
 
 .highFitList {
@@ -588,20 +606,18 @@
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0.65rem;
   border: 1px solid var(--app-line);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  border-radius: 0.5rem;
+  background: white;
   padding: 0.75rem;
   color: inherit;
   text-decoration: none;
   transition:
     border-color 160ms ease,
-    transform 160ms ease,
-    box-shadow 160ms ease;
+    transform 160ms ease;
 }
 
 .highFitItem:hover {
   border-color: var(--brand-mid);
-  box-shadow: var(--shadow-xs);
   transform: translateY(-1px);
 }
 
@@ -718,7 +734,7 @@
   width: 100%;
   min-height: 2.5rem;
   border: 1px solid var(--app-line);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: white;
   padding: 0.6rem 0.75rem;
   color: var(--gray-900);
@@ -746,7 +762,7 @@
 .fieldValue {
   min-height: 2.5rem;
   border: 1px solid var(--app-line);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: var(--gray-50);
   padding: 0.6rem 0.75rem;
   color: var(--gray-900);
@@ -795,7 +811,7 @@
 
 .empty {
   border: 1px dashed var(--app-line);
-  border-radius: 8px;
+  border-radius: 0.75rem;
   background: var(--gray-50);
   padding: 1rem;
   color: var(--app-muted);
@@ -807,7 +823,7 @@
 .bookmarkList,
 .activityList {
   display: grid;
-  gap: 0.75rem;
+  gap: 0;
 }
 
 .resumeItem,
@@ -817,10 +833,16 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
-  border: 1px solid var(--app-line);
-  border-radius: 8px;
-  background: white;
-  padding: 0.875rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--app-line);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.625rem 0;
+}
+
+.resumeList .resumeItem:last-child,
+.bookmarkList .bookmarkItem:last-child {
+  border-bottom: none;
 }
 
 .resumeInfo {
@@ -890,31 +912,37 @@
 
 .notificationList {
   display: grid;
-  gap: 0.75rem;
+  gap: 0;
 }
 
 .notificationItem {
   min-width: 0;
   display: block;
-  border: 1px solid var(--app-line);
-  border-radius: 8px;
-  background: white;
-  padding: 1rem;
+  border: none;
+  border-bottom: 1px solid var(--app-line);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.75rem 0;
   color: inherit;
   text-decoration: none;
   transition:
-    border-color 160ms ease,
+    color 160ms ease,
     background-color 160ms ease;
 }
 
+.notificationList .notificationItem:last-child {
+  border-bottom: none;
+}
+
 .notificationItem:hover {
-  border-color: var(--brand-mid);
-  background: #fff8fa;
+  color: var(--gray-900);
 }
 
 .notificationUnread {
-  border-color: var(--brand-mid);
-  background: var(--brand-soft);
+  border-left: 2px solid var(--brand);
+  background: white;
+  padding-left: 0.75rem;
+  border-radius: 0.5rem;
 }
 
 .notificationMain {
@@ -937,7 +965,7 @@
   flex: none;
   border: 1px solid var(--brand-mid);
   border-radius: 999px;
-  background: white;
+  background: var(--brand-soft);
   padding: 0.15rem 0.45rem;
   color: var(--brand);
   font-size: 0.6875rem;
@@ -1029,7 +1057,7 @@
   height: 2rem;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   color: var(--app-muted);
   cursor: pointer;
   transition:
@@ -1054,7 +1082,7 @@
   justify-content: center;
   gap: 0.3rem;
   border: 1px solid var(--app-line);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: white;
   padding: 0 0.55rem;
   color: var(--app-muted);
@@ -1132,20 +1160,22 @@
 
 .activityItem {
   min-width: 0;
-  border: 1px solid var(--app-line);
-  border-radius: 8px;
-  background: white;
-  padding: 0.875rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--app-line);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.625rem 0;
   color: inherit;
   text-decoration: none;
-  transition:
-    border-color 160ms ease,
-    background-color 160ms ease;
+  transition: color 160ms ease;
+}
+
+.activityList .activityItem:last-child {
+  border-bottom: none;
 }
 
 .activityItem:hover {
-  border-color: var(--brand-mid);
-  background: #fff8fa;
+  color: var(--gray-900);
 }
 
 .activityTitle {
@@ -1176,8 +1206,7 @@
   font-weight: 850;
   white-space: nowrap;
   cursor: pointer;
-  transition:
-    color 160ms ease;
+  transition: color 160ms ease;
 }
 
 .textButton:hover {
@@ -1307,7 +1336,7 @@
   flex-direction: column;
   gap: 0.85rem;
   min-width: 8rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 1.15rem 1rem 1rem;
   font-size: 0.95rem;
 }
@@ -1345,7 +1374,7 @@
   max-height: calc(100vh - 2rem);
   overflow: auto;
   border: 1px solid rgba(242, 201, 76, 0.42);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: white;
   padding: 1.25rem;
   box-shadow: var(--shadow-lg);
@@ -1420,7 +1449,7 @@
   min-width: 5.2rem;
   justify-items: center;
   border: 1px solid var(--brand-mid);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: var(--brand-soft);
   padding: 0.65rem 0.75rem;
 }
@@ -1469,7 +1498,7 @@
   align-items: flex-start;
   gap: 0.75rem;
   border: 1px solid var(--app-line);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: var(--gray-50);
   padding: 0.875rem 1rem;
 }
@@ -1522,7 +1551,7 @@
   position: relative;
   width: min(26rem, 100%);
   border: 1px solid var(--app-line);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: white;
   padding: 1.5rem;
   box-shadow: var(--shadow-lg);
@@ -1537,7 +1566,7 @@
   height: 2rem;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   color: var(--app-muted);
   cursor: pointer;
   transition:
@@ -1568,7 +1597,7 @@
   max-width: 28rem;
   margin: 6rem auto;
   border: 1px solid var(--app-line);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: var(--surface);
   box-shadow: var(--shadow-md);
   padding: 2rem;
@@ -1708,6 +1737,11 @@
 
   .statGrid {
     grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .statGrid .statItem:last-child {
+    border-bottom: none;
   }
 
   .highFitList {
