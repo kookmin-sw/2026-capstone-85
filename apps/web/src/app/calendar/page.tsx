@@ -83,13 +83,14 @@ export default function CalendarPage() {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
 
-      {/* 페이지 헤더 — 배경색 통일 */}
-      <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
-        <div className="mx-auto max-w-7xl px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            마감일 캘린더
-          </h1>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">
+      {/* 페이지 히어로 */}
+      <div
+        className={styles.pageHero}
+        style={{ '--hero-img': 'url(/hero/calendar-hero.png)' } as CSSProperties}
+      >
+        <div className={styles.pageHeroInner}>
+          <h1 className={styles.pageHeroTitle}>마감일 캘린더</h1>
+          <p className={styles.pageHeroDesc}>
             필터에 맞는 공고의 시작 일정과 마감 일정을 함께 확인하세요.
           </p>
 

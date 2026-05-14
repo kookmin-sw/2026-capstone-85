@@ -12,7 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { SiteNav } from "@/components/site-nav";
 import { ActionButton } from "@/components/ui/action-button";
 import { FilterInput, FilterSelect } from "@/components/ui/filter-select";
@@ -185,11 +185,14 @@ export default function CompaniesPage() {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
 
-      {/* 페이지 헤더 — 배경색 통일 */}
-      <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
-        <div className="mx-auto max-w-7xl px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">회사소개</h1>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">
+      {/* 페이지 히어로 */}
+      <div
+        className={styles.pageHero}
+        style={{ '--hero-img': 'url(/hero/companies-hero.png)' } as CSSProperties}
+      >
+        <div className={styles.pageHeroInner}>
+          <h1 className={styles.pageHeroTitle}>회사소개</h1>
+          <p className={styles.pageHeroDesc}>
             현재 공고가 없는 회사까지 포함해 회사 프로필을 확인하세요.
           </p>
 
@@ -212,8 +215,10 @@ export default function CompaniesPage() {
             </ActionButton>
           </div>
         </div>
+      </div>
 
-        {/* 필터 카드 */}
+      {/* 필터 카드 */}
+      <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
         <div className="mx-auto max-w-7xl px-6 pb-4">
           <div className="rounded-2xl border border-[var(--app-line)] bg-white">
             {/* 필터 헤더 */}

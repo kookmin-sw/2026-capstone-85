@@ -1,3 +1,73 @@
+/* ── Page Hero ── */
+.pageHero {
+  position: relative;
+  overflow: hidden;
+  background-color: #fff5f8;
+}
+
+.pageHero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--hero-img);
+  background-size: auto 100%;
+  background-position: right center;
+  background-repeat: no-repeat;
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.pageHero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(255, 245, 250, 0.68) 0%, rgba(255, 245, 250, 0.12) 50%, transparent 72%),
+    linear-gradient(180deg, transparent 0%, rgba(255, 245, 250, 0.38) 68%, #f7f7f7 100%);
+  pointer-events: none;
+}
+
+.pageHeroInner {
+  position: relative;
+  z-index: 1;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 3rem;
+}
+
+.pageHeroTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.pageHeroDesc {
+  font-size: 0.9375rem;
+  color: var(--gray-500);
+  line-height: 1.65;
+}
+
+.filterHeaderButton {
+  justify-content: flex-start;
+  padding-left: 0;
+}
+
+.filterHeaderLeft {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.inlinePresetBar {
+  min-width: 0;
+  flex: 1;
+  margin-top: 0;
+}
+
 .calendarShell {
   display: grid;
   gap: 1rem;

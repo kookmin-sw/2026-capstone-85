@@ -405,11 +405,14 @@ export default function JobsPage() {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
 
-      {/* 페이지 헤더 */}
-      <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
-        <div className="mx-auto max-w-7xl px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">채용공고</h1>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">
+      {/* 페이지 히어로 */}
+      <div
+        className={styles.pageHero}
+        style={{ '--hero-img': 'url(/hero/jobs-hero.png)' } as CSSProperties}
+      >
+        <div className={styles.pageHeroInner}>
+          <h1 className={styles.pageHeroTitle}>채용공고</h1>
+          <p className={styles.pageHeroDesc}>
             수습 가능 여부, KICPA 조건, 마감일과 출처를 함께 확인하세요.
           </p>
 
