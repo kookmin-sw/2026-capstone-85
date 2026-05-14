@@ -130,10 +130,10 @@
 }
 
 .quickRow {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 10rem;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: start;
+  gap: 2.25rem;
 }
 
 .quickItem {
@@ -141,6 +141,7 @@
   flex-direction: column;
   align-items: center;
   gap: 1.1rem;
+  min-width: 0;
   text-decoration: none;
   color: var(--gray-500);
   transition: color 200ms ease;
@@ -168,6 +169,7 @@
   font-weight: 700;
   color: inherit;
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 /* ── Problem section ──────────────────────────────── */

@@ -14,7 +14,11 @@ import Link from 'next/link';
 import { SiteNav } from '@/components/site-nav';
 import { ActionLink } from '@/components/ui/action-button';
 import { IconTile } from '@/components/ui/icon-tile';
-import { buildJobUrlParams, quickJobFilters, quickFilterState, type QuickJobFilterId } from '@/lib/job-filters';
+import {
+  buildJobUrlParams,
+  defaultJobFilters,
+  type JobFilterState,
+} from '@/lib/job-filters';
 import styles from './page.module.css';
 
 const problemCards: Array<{
@@ -68,6 +72,21 @@ const stats: Array<{ value: string; label: string }> = [
   { value: '5,000+', label: '회계사 회원' },
   { value: '300+', label: '제휴 기업' },
 ];
+
+type HomeQuickFilterId =
+  | 'trainee'
+  | 'entry'
+  | 'experienced'
+  | 'deadlineSoon'
+  | 'salaryAbove'
+  | 'big4'
+  | 'seoul';
+
+type HomeQuickFilter = {
+  id: HomeQuickFilterId;
+  label: string;
+  values: Partial<JobFilterState>;
+};
 
 function IconTrainee() {
   return (
@@ -125,17 +144,125 @@ function IconDeadlineSoon() {
   );
 }
 
-const QuickNavIcons: Record<QuickJobFilterId, React.ReactNode> = {
+function IconSalaryAbove() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="28" cy="42" rx="18" ry="7" fill="#FFD6E5" />
+      <rect x="10" y="31" width="36" height="11" rx="5.5" fill="#E8457A" />
+      <ellipse cx="28" cy="31" rx="18" ry="7" fill="#FF8AB0" />
+      <circle cx="28" cy="21" r="13" fill="#E8457A" />
+      <circle cx="28" cy="21" r="8" fill="#FFF0F5" />
+      <path d="M28 15V27" stroke="#D03368" strokeWidth="2.8" strokeLinecap="round" />
+      <path d="M24.5 18.5C25.2 17.4 26.3 16.8 28 16.8C30.1 16.8 31.5 17.8 31.5 19.3C31.5 22.9 24.5 20.6 24.5 24.1C24.5 25.8 26 26.8 28.3 26.8C30.1 26.8 31.3 26.1 32 24.8" stroke="#D03368" strokeWidth="2.1" strokeLinecap="round" />
+      <path d="M39 18L45 12L50 17" stroke="#60A5FA" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M45 12V29" stroke="#60A5FA" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconBig4() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="18" width="17" height="33" rx="4" fill="#FFD6E5" />
+      <rect x="31" y="10" width="17" height="41" rx="4" fill="#E8457A" />
+      <rect x="13" y="24" width="4" height="4" rx="1" fill="#D03368" />
+      <rect x="20" y="24" width="4" height="4" rx="1" fill="#D03368" />
+      <rect x="13" y="33" width="4" height="4" rx="1" fill="#D03368" />
+      <rect x="20" y="33" width="4" height="4" rx="1" fill="#D03368" />
+      <rect x="36" y="17" width="4" height="4" rx="1" fill="#FFF0F5" />
+      <rect x="43" y="17" width="4" height="4" rx="1" fill="#FFF0F5" />
+      <rect x="36" y="26" width="4" height="4" rx="1" fill="#FFF0F5" />
+      <rect x="43" y="26" width="4" height="4" rx="1" fill="#FFF0F5" />
+      <rect x="36" y="35" width="4" height="4" rx="1" fill="#FFF0F5" />
+      <rect x="43" y="35" width="4" height="4" rx="1" fill="#FFF0F5" />
+      <rect x="5" y="48" width="46" height="4" rx="2" fill="#D03368" />
+      <circle cx="14" cy="11" r="5" fill="#818CF8" />
+      <path d="M14 8.6V13.4" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M11.6 11H16.4" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconSeoul() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 16L20 11L36 16L48 11V41L36 46L20 41L8 46V16Z" fill="#FFD6E5" />
+      <path d="M20 11V41" stroke="#FFF0F5" strokeWidth="3" strokeLinecap="round" />
+      <path d="M36 16V46" stroke="#FFF0F5" strokeWidth="3" strokeLinecap="round" />
+      <path d="M28 7C20.8 7 15 12.8 15 20C15 30 28 44 28 44C28 44 41 30 41 20C41 12.8 35.2 7 28 7Z" fill="#E8457A" />
+      <circle cx="28" cy="20" r="6" fill="#FFF0F5" />
+      <path d="M19 48H43" stroke="#D03368" strokeWidth="4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const homeQuickFilters: HomeQuickFilter[] = [
+  {
+    id: 'trainee',
+    label: '실무수습 가능',
+    values: { traineeStatus: 'AVAILABLE' },
+  },
+  {
+    id: 'entry',
+    label: '신입 가능',
+    values: { careerLevel: 'entry' },
+  },
+  {
+    id: 'experienced',
+    label: '경력 이직',
+    values: { careerLevel: 'junior,experienced' },
+  },
+  {
+    id: 'deadlineSoon',
+    label: '마감 7일 이내',
+    values: {
+      deadline: 'soon',
+      deadlineType: 'FIXED_DATE',
+      deadlineWithinDays: '7',
+      sort: 'deadlineAsc',
+    },
+  },
+  {
+    id: 'salaryAbove',
+    label: '연봉 평균 이상',
+    values: { salaryLevel: 'ABOVE_AVERAGE' },
+  },
+  {
+    id: 'big4',
+    label: 'Big4',
+    values: { companyType: 'BIG4' },
+  },
+  {
+    id: 'seoul',
+    label: '서울',
+    values: { selectedLocations: ['서울'] },
+  },
+];
+
+const QuickNavIcons: Record<HomeQuickFilterId, React.ReactNode> = {
   trainee: <IconTrainee />,
   entry: <IconEntry />,
   experienced: <IconExperienced />,
   deadlineSoon: <IconDeadlineSoon />,
+  salaryAbove: <IconSalaryAbove />,
+  big4: <IconBig4 />,
+  seoul: <IconSeoul />,
 };
 
 const assetBasePath =
   process.env.NEXT_PUBLIC_ASSET_PREFIX?.replace(/\/$/, '') ??
   process.env.NEXT_PUBLIC_BASE_PATH?.replace(/\/$/, '') ??
   '';
+
+function buildHomeQuickHref(values: Partial<JobFilterState>) {
+  const params = buildJobUrlParams({
+    ...defaultJobFilters,
+    ...values,
+    selectedLocations: values.selectedLocations ?? [],
+  });
+
+  return `/jobs?${params.toString()}`;
+}
 
 export default function Home() {
   return (
@@ -178,10 +305,9 @@ export default function Home() {
 
       <section className={styles.quickSection} aria-label="빠른 탐색">
         <div className={styles.quickRow}>
-          {quickJobFilters.map((item) => {
-            const params = buildJobUrlParams(quickFilterState(item));
+          {homeQuickFilters.map((item) => {
             return (
-              <Link className={styles.quickItem} href={`/jobs?${params.toString()}`} key={item.label}>
+              <Link className={styles.quickItem} href={buildHomeQuickHref(item.values)} key={item.id}>
                 <span className={styles.quickIcon}>
                   {QuickNavIcons[item.id]}
                 </span>
