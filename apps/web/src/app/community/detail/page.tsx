@@ -7,6 +7,7 @@ import { DetailSidebar } from "./_components/detail-sidebar";
 import { PostCard } from "./_components/post-card";
 import { ReplyForm } from "./_components/reply-form";
 import { isQABoard } from "./_lib/community-detail-utils";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { SiteNav } from "@/components/site-nav";
 import {
   createAnswer,
@@ -179,24 +180,13 @@ function CommunityDetailContent() {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
 
-      <div className="border-b border-[var(--app-line)] bg-white">
-        <div className="mx-auto flex max-w-7xl items-center gap-2 px-6 py-3 text-sm text-gray-500">
-          <a href="/community" className="hover:text-gray-800">
-            커뮤니티
-          </a>
-          <span>/</span>
-          <a
-            href={`/community?board=${post.boardType}`}
-            className="hover:text-gray-800"
-          >
-            {boardTypeLabels[post.boardType]}
-          </a>
-          <span>/</span>
-          <span className="truncate font-semibold text-gray-800">
-            {post.title}
-          </span>
-        </div>
-      </div>
+      <Breadcrumb
+        items={[
+          { label: "커뮤니티", href: "/community" },
+          { label: boardTypeLabels[post.boardType], href: `/community?board=${post.boardType}` },
+        ]}
+        current={post.title}
+      />
 
       <div className={styles.pageWrap}>
         <div className={styles.layout}>
