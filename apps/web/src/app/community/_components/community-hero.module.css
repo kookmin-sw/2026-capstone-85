@@ -1,13 +1,45 @@
 .hero {
-  background: linear-gradient(135deg, #fff5f8 0%, #fffbfc 60%, #fff0f5 100%);
   position: relative;
   overflow: hidden;
+  background-color: #faf6ff;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/hero/community-hero.png');
+  background-size: auto 100%;
+  background-position: right center;
+  background-repeat: no-repeat;
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to right,
+      rgba(250, 246, 255, 0.72) 0%,
+      rgba(250, 246, 255, 0.18) 52%,
+      transparent 76%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(250, 246, 255, 0.34) 70%,
+      #ffffff 100%
+    );
+  pointer-events: none;
 }
 
 .inner {
   max-width: 80rem;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 2.25rem;
+  padding: 4rem 1.5rem 3rem;
   position: relative;
   z-index: 1;
 }
@@ -31,20 +63,10 @@
 }
 
 .bgDecoration {
-  position: absolute;
-  inset: -0.5rem;
-  background-image: url('/accountit-bg.svg');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.22;
-  pointer-events: none;
+  display: none;
 }
 
 @media (max-width: 768px) {
-  .bgDecoration {
-    opacity: 0.16;
-  }
-
   .title {
     font-size: 1.375rem;
   }
