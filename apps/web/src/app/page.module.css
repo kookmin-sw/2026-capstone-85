@@ -113,10 +113,8 @@
 
 /* ── Section base ─────────────────────────────────── */
 .problemSection,
-.solutionSection,
 .outroSection,
 .quickSection,
-.differentiatorSection,
 .intelligenceSection,
 .ctaSection {
   max-width: 80rem;
@@ -136,6 +134,7 @@
   grid-template-columns: repeat(7, minmax(0, 1fr));
   align-items: start;
   gap: 2.25rem;
+  margin-bottom: 8rem;
 }
 
 .quickItem {
@@ -174,127 +173,11 @@
   white-space: nowrap;
 }
 
-/* ── Differentiator section ───────────────────────── */
-.differentiatorSection {
-  padding-top: 1rem;
-  padding-bottom: 6.5rem;
-}
-
-.differentiatorHeader {
-  max-width: 43rem;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.differentiatorEyebrow {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.75rem;
-  border: 1px solid rgba(232, 69, 122, 0.16);
-  border-radius: 999px;
-  background: #fff7fa;
-  color: var(--brand);
-  padding: 0 0.85rem;
-  font-size: 0.75rem;
-  font-weight: 900;
-}
-
-.differentiatorHeader h2 {
-  margin-top: 0.9rem;
-  color: #202738;
-  font-size: 2rem;
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: 1.35;
-}
-
-.differentiatorHeader p {
-  margin-top: 0.85rem;
-  color: #6b7280;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1.75;
-  overflow-wrap: break-word;
-  word-break: keep-all;
-}
-
-.differentiatorGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 2.4rem;
-}
-
-.differentiatorCard {
-  border: 1px solid #e8eaed;
-  border-radius: 0.75rem;
-  background: #ffffff;
-  padding: 1.55rem;
-  box-shadow: 0 10px 28px rgba(32, 39, 56, 0.05);
-}
-
-.differentiatorIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.45rem;
-  height: 2.45rem;
-  border-radius: 0.625rem;
-  background: #fff0f5;
-  color: var(--brand);
-}
-
-.differentiatorCard h3 {
-  margin-top: 1rem;
-  color: #202738;
-  font-size: 1rem;
-  font-weight: 900;
-  letter-spacing: 0;
-}
-
-.differentiatorCard p {
-  margin-top: 0.55rem;
-  color: #667080;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.65;
-  overflow-wrap: break-word;
-  word-break: keep-all;
-}
-
-.trustBar {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 1rem;
-  border: 1px solid rgba(232, 69, 122, 0.14);
-  border-radius: 0.75rem;
-  background: linear-gradient(90deg, rgba(255, 240, 245, 0.82), rgba(255, 255, 255, 0.96));
-  padding: 0.85rem;
-}
-
-.trustItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  min-height: 2.25rem;
-  border-radius: 0.5rem;
-  background: rgba(255, 255, 255, 0.72);
-  color: #4f5968;
-  font-size: 0.8125rem;
-  font-weight: 800;
-}
-
-.trustItem svg {
-  color: var(--brand);
-}
-
 /* ── Intelligence sections ───────────────────────── */
 .intelligenceSection {
   display: grid;
   gap: 1.25rem;
-  padding-top: 1rem;
+  padding-top: 5.5rem;
   padding-bottom: 6rem;
 }
 
@@ -698,7 +581,6 @@
 }
 
 .sectionHeader h2,
-.solutionCopy h2,
 .outroSection h2 {
   color: #202738;
   font-weight: 900;
@@ -773,98 +655,9 @@
   word-break: keep-all;
 }
 
-/* ── Solution section ─────────────────────────────── */
-.solutionSection {
-  padding-top: 5rem;
-  padding-bottom: 9rem;
-}
-
-.solutionPanel {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 4rem;
-  overflow: hidden;
-  border: 1px solid #eeeff2;
-  border-radius: 1.25rem;
-  background: #fafafa;
-  padding: 4.5rem;
-}
-
-.solutionCopy,
-.solutionList {
-  position: relative;
-  z-index: 1;
-}
-
-.solutionEyebrow {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.75rem;
-  margin-bottom: 1.25rem;
-  border-radius: 999px;
-  background: #fff0f5;
-  color: var(--brand);
-  padding: 0 0.875rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.solutionCopy h2 {
-  font-size: 2.15rem;
-  line-height: 1.42;
-}
-
-.solutionCopy h2 span,
 .outroSection h2 span,
 .ctaInner h2 span {
   color: var(--brand);
-}
-
-.solutionCopy p {
-  max-width: 26rem;
-  margin-top: 1.25rem;
-  color: #6b7280;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1.8;
-  overflow-wrap: break-word;
-  word-break: keep-all;
-}
-
-.solutionList {
-  display: grid;
-  gap: 1.5rem;
-  align-content: center;
-}
-
-.solutionItem {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.875rem;
-}
-
-.solutionItem svg {
-  margin-top: 0.15rem;
-  color: var(--brand);
-  fill: color-mix(in srgb, var(--brand) 10%, transparent);
-}
-
-.solutionItem h3 {
-  color: #202738;
-  font-size: 0.9375rem;
-  font-weight: 900;
-  letter-spacing: 0;
-}
-
-.solutionItem p {
-  margin-top: 0.25rem;
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.6;
-  overflow-wrap: break-word;
-  word-break: keep-all;
 }
 
 /* ── Outro / stats ────────────────────────────────── */
