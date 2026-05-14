@@ -6,7 +6,7 @@ import type {
   JobCalendarRange,
 } from "@cpa/shared";
 import { RefreshCw, Search, SlidersHorizontal } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   FullDeadlineCalendar,
   ScrollableDeadlineCalendar,
@@ -218,13 +218,14 @@ export default function CalendarPage() {
     <main className="min-h-screen bg-[var(--background)]">
       <SiteNav />
 
-      {/* 페이지 헤더 — 배경색 통일 */}
-      <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
-        <div className="mx-auto max-w-7xl px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            마감일 캘린더
-          </h1>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">
+      {/* 페이지 히어로 */}
+      <div
+        className={styles.pageHero}
+        style={{ '--hero-img': 'url(/hero/calendar-hero.png)' } as CSSProperties}
+      >
+        <div className={styles.pageHeroInner}>
+          <h1 className={styles.pageHeroTitle}>마감일 캘린더</h1>
+          <p className={styles.pageHeroDesc}>
             필터에 맞는 공고의 시작 일정과 마감 일정을 함께 확인하세요.
           </p>
 
@@ -249,8 +250,10 @@ export default function CalendarPage() {
             </ActionButton>
           </div>
         </div>
+      </div>
 
-        {/* 필터 카드 */}
+      {/* 필터 카드 */}
+      <div className="border-b border-[var(--app-line)] bg-[var(--background)]">
         <div className="mx-auto max-w-7xl px-6 pb-4">
           <div className="rounded-2xl border border-[var(--app-line)] bg-white">
             <div className="flex items-center justify-between px-5 py-3">
