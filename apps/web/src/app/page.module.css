@@ -557,10 +557,10 @@
 .communityPanel {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   align-items: center;
-  gap: 3.5rem;
-  min-height: 34rem;
+  gap: 2.25rem;
+  min-height: 33rem;
   overflow: visible;
   padding: 1rem 0 3rem;
 }
@@ -593,8 +593,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  min-height: 31rem;
+  justify-content: center;
   min-width: 0;
   overflow: visible;
   padding: 1rem 0;
@@ -604,10 +603,10 @@
   position: relative;
   z-index: 1;
   display: block;
-  width: min(54rem, 112%);
+  width: min(52rem, 108%);
   max-width: none;
   height: auto;
-  margin-left: 0;
+  margin-left: -2.5rem;
   -webkit-mask-image:
     linear-gradient(to right, transparent 0%, black 10%, black 88%, transparent 100%),
     linear-gradient(to bottom, transparent 0%, black 8%, black 88%, transparent 100%);
@@ -626,30 +625,29 @@
   position: relative;
   z-index: 1;
   min-width: 0;
-  padding-left: 1.25rem;
 }
 
 .communityEyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  min-height: 1.85rem;
+  min-height: 2rem;
   border-radius: 999px;
   background: #fff0f6;
   color: var(--brand);
-  padding: 0 0.85rem;
-  font-size: 0.75rem;
+  padding: 0 1rem;
+  font-size: 0.8125rem;
   font-weight: 900;
 }
 
 .communityCopy h2 {
-  max-width: 30rem;
-  margin-top: 1.05rem;
+  max-width: 34rem;
+  margin-top: 1.2rem;
   color: #202738;
-  font-size: 2.32rem;
+  font-size: 2.65rem;
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 1.32;
+  line-height: 1.28;
   word-break: keep-all;
 }
 
@@ -658,12 +656,12 @@
 }
 
 .communityCopy p {
-  max-width: 29rem;
-  margin-top: 1rem;
+  max-width: 32rem;
+  margin-top: 1.15rem;
   color: #5a6170;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   font-weight: 500;
-  line-height: 1.75;
+  line-height: 1.85;
   overflow-wrap: break-word;
   word-break: keep-all;
 }
@@ -671,21 +669,21 @@
 .communityHighlights {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-top: 1.25rem;
+  gap: 0.65rem;
+  margin-top: 1.45rem;
 }
 
 .communityHighlights span {
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
-  min-height: 2.1rem;
+  min-height: 2.3rem;
   border: 1px solid rgba(232, 69, 122, 0.12);
   border-radius: 999px;
   background: rgba(255, 240, 245, 0.7);
   color: #4f5968;
-  padding: 0 0.72rem;
-  font-size: 0.75rem;
+  padding: 0 0.82rem;
+  font-size: 0.8rem;
   font-weight: 850;
 }
 
@@ -697,7 +695,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-top: 1.75rem;
+  margin-top: 2rem;
 }
 
 /* ── Problem section ──────────────────────────────── */

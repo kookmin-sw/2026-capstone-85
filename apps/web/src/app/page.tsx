@@ -504,7 +504,7 @@ export default function Home() {
               alt=""
               width={1680}
               height={936}
-              sizes="52vw"
+              sizes="48vw"
             />
           </div>
 
@@ -533,10 +533,10 @@ export default function Home() {
             </div>
 
             <div className={styles.communityActions}>
-              <ActionLink href="/community" size="md" iconEnd={<ArrowRight size={15} />}>
+              <ActionLink href="/community" size="lg" iconEnd={<ArrowRight size={17} />}>
                 커뮤니티 둘러보기
               </ActionLink>
-              <ActionLink href="/login?mode=register" size="md" variant="subtle">
+              <ActionLink href="/login?mode=register" size="lg" variant="subtle">
                 회원가입하고 참여하기
               </ActionLink>
             </div>
