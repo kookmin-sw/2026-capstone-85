@@ -1,13 +1,27 @@
 "use client";
 
-import type { JobCalendarDay, JobListItem } from "@cpa/shared";
+import {
+  jobPresetConfigs,
+  type JobCalendarDay,
+  type JobListItem,
+} from "@cpa/shared";
 import {
   ArrowRight,
+  BadgeCheck,
+  BriefcaseBusiness,
+  Building2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Clock3,
+  Coins,
+  GraduationCap,
+  MapPin,
   RefreshCw,
   Search,
   SlidersHorizontal,
+  UserRoundCheck,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,7 +33,10 @@ import { SiteNav } from "@/components/site-nav";
 import { ActionButton } from "@/components/ui/action-button";
 import { FilterInput, FilterSelect } from "@/components/ui/filter-select";
 import { Pagination } from "@/components/ui/pagination";
-import { useJobFilterState } from "@/hooks/use-job-filter-state";
+import {
+  useJobFilterState,
+  type SetJobFiltersOptions,
+} from "@/hooks/use-job-filter-state";
 import {
   fetchJobCalendar,
   fetchJobs,
@@ -40,6 +57,10 @@ import {
 import {
   buildJobFilterParams,
   defaultJobFilters,
+  quickFilterState,
+  quickJobFilters,
+  type QuickJobFilter,
+  type QuickJobFilterId,
   type JobFilterState,
 } from "@/lib/job-filters";
 import { employmentLabels, jobFamilyLabels, kicpaLabels } from "@/lib/labels";
@@ -332,11 +353,6 @@ const DEADLINE_TYPE_OPTS = [
   { value: "UNTIL_FILLED", label: "채용시 마감" },
   { value: "ALWAYS_OPEN", label: "상시채용" },
 ];
-const TRAINEE_OPTS = [
-  { value: "AVAILABLE", label: "가능" },
-  { value: "UNAVAILABLE", label: "불가능" },
-  { value: "UNCLEAR", label: "불명확" },
-];
 const SALARY_LEVEL_OPTS = [
   { value: "ABOVE_AVERAGE", label: "업계평균이상" },
   { value: "TOP_1", label: "상위1%" },
@@ -433,6 +449,121 @@ function splitMultiValue(value: string) {
     .filter(Boolean);
 }
 
+type JobFiltersChange = (
+  filters: JobFilterState,
+  options?: SetJobFiltersOptions,
+) => void;
+
+const QUICK_FILTER_ICONS: Record<QuickJobFilterId, LucideIcon> = {
+  trainee: GraduationCap,
+  entry: UserRoundCheck,
+  experienced: BriefcaseBusiness,
+  deadlineSoon: Clock3,
+  salaryAbove: Coins,
+  big4: Building2,
+  seoul: MapPin,
+};
+
+const BASE_PRESET_ICONS: Record<string, LucideIcon> = {
+  "active-hiring": Clock3,
+  "career-verified": BadgeCheck,
+};
+
+const ADVANCED_FILTER_KEYS: Array<keyof JobFilterState> = [
+  "jobFamily",
+  "companyType",
+  "salaryLevel",
+  "employmentType",
+  "kicpaCondition",
+  "deadlineType",
+  "deadlineWithinDays",
+];
+
+function getAdvancedFilterCount(filters: JobFilterState) {
+  return (
+    ADVANCED_FILTER_KEYS.reduce(
+      (count, key) => count + (filters[key] ? 1 : 0),
+      0,
+    ) + (filters.selectedLocations.length ? 1 : 0)
+  );
+}
+
+function JobQuickFilterBar({
+  filters,
+  onChange,
+}: {
+  filters: JobFilterState;
+  onChange: JobFiltersChange;
+}) {
+  const applyQuickFilter = (filter: QuickJobFilter) => {
+    if (filters.quick === filter.id) {
+      onChange({ ...defaultJobFilters, search: filters.search });
+      return;
+    }
+
+    onChange(
+      {
+        ...quickFilterState(filter),
+        search: filters.search,
+      },
+      { preserveQuick: true },
+    );
+  };
+
+  const applyBasePreset = (id: Exclude<JobFilterState["preset"], "">) => {
+    onChange({
+      ...filters,
+      quick: "",
+      preset: filters.preset === id ? "" : id,
+      userPresetId: "",
+    });
+  };
+
+  return (
+    <div className={styles.quickFilterBar} aria-label="빠른 필터">
+      {quickJobFilters.map((filter) => {
+        const Icon = QUICK_FILTER_ICONS[filter.id];
+        const selected = filters.quick === filter.id;
+        return (
+          <button
+            key={filter.id}
+            type="button"
+            aria-pressed={selected}
+            onClick={() => applyQuickFilter(filter)}
+            className={cn(
+              styles.quickFilterButton,
+              selected && styles.quickFilterButtonActive,
+            )}
+          >
+            <Icon size={14} />
+            {filter.label}
+          </button>
+        );
+      })}
+      {jobPresetConfigs.map((preset) => {
+        const Icon = BASE_PRESET_ICONS[preset.id] ?? BadgeCheck;
+        const selected = filters.preset === preset.id;
+        return (
+          <button
+            key={preset.id}
+            type="button"
+            aria-pressed={selected}
+            onClick={() => applyBasePreset(preset.id)}
+            className={cn(
+              styles.quickFilterButton,
+              styles.presetQuickButton,
+              selected && styles.quickFilterButtonActive,
+            )}
+          >
+            <Icon size={14} />
+            {preset.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 const PAGE_SIZE = 12;
 
 /* ── 메인 페이지 ── */
@@ -441,7 +572,7 @@ export default function JobsPage() {
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [miniMonth, setMiniMonth] = useState(() => new Date());
   const [calendarDays, setCalendarDays] = useState<JobCalendarDay[]>([]);
   const [calendarLoading, setCalendarLoading] = useState(true);
@@ -594,6 +725,7 @@ export default function JobsPage() {
     [jobs],
   );
   const calendarHref = `/calendar${queryString ? `?${queryString}` : ""}`;
+  const advancedFilterCount = getAdvancedFilterCount(filters);
 
   // weekJobs를 urgentJobs fallback으로 활용
   const sidebarUrgentJobs =
@@ -611,128 +743,157 @@ export default function JobsPage() {
           </p>
 
           {/* 검색바 */}
-          <div className="mt-4 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                value={filters.search}
-                onChange={(e) =>
-                  setFilters({ ...filters, search: e.target.value })
-                }
-                placeholder="회사명, 직무, 키워드로 검색"
-                className="h-10 w-full rounded-xl border border-[var(--app-line)] bg-white pl-9 pr-4 text-sm outline-none focus:border-[var(--brand)]"
-              />
-            </div>
-            <ActionButton type="button" iconStart={<Search size={15} />}>
-              검색
-            </ActionButton>
-          </div>
-
-          <JobPresetBar filters={filters} onChange={setFilters} />
-        </div>
-
-        {/* 필터 카드 */}
-        <div className="mx-auto max-w-7xl px-6 pb-4">
-          <div className="rounded-2xl border border-[var(--app-line)] bg-white">
-            <div className="flex items-center justify-between px-5 py-3">
-              <div className={styles.filterHeaderLeft}>
-                <ActionButton
-                  type="button"
-                  onClick={() => setFilterOpen((prev) => !prev)}
-                  variant="ghost"
-                  size="sm"
-                  className={styles.filterHeaderButton}
-                  iconStart={<SlidersHorizontal size={15} />}
-                >
-                  필터
-                  <span className="text-xs font-medium text-gray-400">
-                    {filterOpen ? "닫기 ∧" : "열기 ∨"}
-                  </span>
-                </ActionButton>
-              </div>
-              {filterOpen && (
-                <ActionButton
-                  type="button"
-                  onClick={() => setFilters(defaultJobFilters)}
-                  variant="ghost"
-                  size="sm"
-                  iconStart={<RefreshCw size={12} />}
-                >
-                  필터 초기화
-                </ActionButton>
-              )}
-            </div>
-
-            {filterOpen && (
-              <div className="overflow-x-auto border-t border-[var(--app-line)] px-5 py-4">
-                <div className="flex gap-5">
-                  <CheckboxColumn
-                    title="직무군"
-                    field="jobFamily"
-                    options={JOB_FAMILY_OPTS}
-                    filters={filters}
-                    onChange={setFilters}
+          <div className={styles.searchPresetGrid}>
+            <section className={styles.searchFilterSection}>
+              <div className={styles.searchRow}>
+                <div className={styles.searchInputWrap}>
+                  <Search
+                    size={16}
+                    className={styles.searchInputIcon}
+                    aria-hidden="true"
                   />
-                  <CheckboxColumn
-                    title="회사 유형"
-                    field="companyType"
-                    options={COMPANY_TYPE_OPTS}
-                    filters={filters}
-                    onChange={setFilters}
-                  />
-                  <CheckboxColumn
-                    title="업계 연봉 수준"
-                    field="salaryLevel"
-                    options={SALARY_LEVEL_OPTS}
-                    filters={filters}
-                    onChange={setFilters}
-                  />
-                  <RegionFilterColumn filters={filters} onChange={setFilters} />
-                  <CheckboxColumn
-                    title="고용 형태"
-                    field="employmentType"
-                    options={EMPLOYMENT_OPTS}
-                    filters={filters}
-                    onChange={setFilters}
-                  />
-                  <CheckboxColumn
-                    title="KICPA 조건"
-                    field="kicpaCondition"
-                    options={KICPA_OPTS}
-                    filters={filters}
-                    onChange={setFilters}
-                  />
-                  <CheckboxColumn
-                    title="마감 유형"
-                    field="deadlineType"
-                    options={DEADLINE_TYPE_OPTS}
-                    filters={filters}
-                    onChange={setFilters}
-                  />
-                  <FilterInput
-                    label="마감 기간"
-                    type="number"
-                    min={1}
-                    value={filters.deadlineWithinDays}
-                    placeholder="N일 이내"
-                    onChange={(deadlineWithinDays) =>
-                      setFilters({ ...filters, deadlineWithinDays })
+                  <input
+                    value={filters.search}
+                    onChange={(e) =>
+                      setFilters({ ...filters, search: e.target.value })
                     }
-                  />
-                  <CheckboxColumn
-                    title="수습 CPA 가능 여부"
-                    field="traineeStatus"
-                    options={TRAINEE_OPTS}
-                    filters={filters}
-                    onChange={setFilters}
+                    placeholder="회사명, 직무, 키워드로 검색"
+                    className={styles.searchInput}
                   />
                 </div>
+                <ActionButton type="button" iconStart={<Search size={15} />}>
+                  검색
+                </ActionButton>
               </div>
-            )}
+
+              <div className={styles.advancedFilterCard}>
+                <div className={styles.advancedFilterHeader}>
+                  <div className={styles.filterHeaderLeft}>
+                    <ActionButton
+                      type="button"
+                      onClick={() => setFilterOpen((prev) => !prev)}
+                      variant="ghost"
+                      size="sm"
+                      className={styles.filterHeaderButton}
+                      iconStart={<SlidersHorizontal size={15} />}
+                      iconEnd={
+                        <ChevronDown
+                          size={15}
+                          className={cn(
+                            styles.filterChevron,
+                            filterOpen && styles.filterChevronOpen,
+                          )}
+                        />
+                      }
+                    >
+                      고급 필터
+                      <span className={styles.filterHeaderMeta}>
+                        {advancedFilterCount
+                          ? `${advancedFilterCount}개 적용`
+                          : "상세 조건"}
+                      </span>
+                    </ActionButton>
+                    {filterOpen && (
+                      <ActionButton
+                        type="button"
+                        onClick={() => setFilters(defaultJobFilters)}
+                        variant="ghost"
+                        size="sm"
+                        iconStart={<RefreshCw size={12} />}
+                      >
+                        초기화
+                      </ActionButton>
+                    )}
+                  </div>
+                  <div className={styles.advancedHeaderQuickFilters}>
+                    <JobQuickFilterBar filters={filters} onChange={setFilters} />
+                  </div>
+                </div>
+
+                {filterOpen && (
+                  <div className={styles.advancedFilterBody}>
+                    <div className={styles.personalPresetColumn}>
+                      <h3 className={styles.personalPresetTitle}>
+                        맞춤 프리셋
+                      </h3>
+                      <div className={styles.personalPresetScroll}>
+                        <JobPresetBar
+                          filters={filters}
+                          onChange={setFilters}
+                          showBasePresets={false}
+                          wrap
+                          compact
+                          className={styles.personalPresetBar}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.advancedFilterScroller}>
+                      <div className={styles.advancedFilterGrid}>
+                        <CheckboxColumn
+                          title="직무군"
+                          field="jobFamily"
+                          options={JOB_FAMILY_OPTS}
+                          filters={filters}
+                          onChange={setFilters}
+                        />
+                        <CheckboxColumn
+                          title="회사 유형"
+                          field="companyType"
+                          options={COMPANY_TYPE_OPTS}
+                          filters={filters}
+                          onChange={setFilters}
+                        />
+                        <CheckboxColumn
+                          title="연봉 수준"
+                          field="salaryLevel"
+                          options={SALARY_LEVEL_OPTS}
+                          filters={filters}
+                          onChange={setFilters}
+                        />
+                        <RegionFilterColumn
+                          filters={filters}
+                          onChange={setFilters}
+                        />
+                        <CheckboxColumn
+                          title="고용 형태"
+                          field="employmentType"
+                          options={EMPLOYMENT_OPTS}
+                          filters={filters}
+                          onChange={setFilters}
+                        />
+                        <CheckboxColumn
+                          title="KICPA 조건"
+                          field="kicpaCondition"
+                          options={KICPA_OPTS}
+                          filters={filters}
+                          onChange={setFilters}
+                        />
+                        <CheckboxColumn
+                          title="마감 유형"
+                          field="deadlineType"
+                          options={DEADLINE_TYPE_OPTS}
+                          filters={filters}
+                          onChange={setFilters}
+                        />
+                        <FilterInput
+                          label="마감 기간"
+                          type="number"
+                          min={1}
+                          value={filters.deadlineWithinDays}
+                          placeholder="N일 이내"
+                          onChange={(deadlineWithinDays) =>
+                            setFilters({ ...filters, deadlineWithinDays })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
           </div>
+
         </div>
       </div>
 
