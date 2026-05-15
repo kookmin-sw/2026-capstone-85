@@ -373,7 +373,6 @@ export default function Home() {
               <br className={styles.copyBreak} />필요한 공고만 모아드립니다.
             </p>
             <ActionLink
-              className={styles.homeActionPurple}
               href="/jobs"
               size="lg"
               iconEnd={<ArrowRight size={17} />}
@@ -452,7 +451,7 @@ export default function Home() {
 
               <div className={styles.intelligenceActions}>
                 <ActionLink
-                  className={styles.homeActionPurple}
+                  className={index === 1 ? styles.homeActionPurple : undefined}
                   href={section.primaryAction.href}
                   size="md"
                   iconEnd={<ArrowRight size={15} />}
@@ -460,7 +459,9 @@ export default function Home() {
                   {section.primaryAction.label}
                 </ActionLink>
                 <ActionLink
-                  className={styles.homeSubtlePurple}
+                  className={
+                    index === 1 ? styles.intelligenceSubtlePurple : undefined
+                  }
                   href={section.secondaryAction.href}
                   size="md"
                   variant="subtle"
@@ -539,7 +540,6 @@ export default function Home() {
 
             <div className={styles.communityActions}>
               <ActionLink
-                className={styles.homeActionPurple}
                 href="/community"
                 size="lg"
                 iconEnd={<ArrowRight size={17} />}
@@ -547,7 +547,6 @@ export default function Home() {
                 커뮤니티 둘러보기
               </ActionLink>
               <ActionLink
-                className={styles.homeSubtlePurple}
                 href="/login?mode=register"
                 size="lg"
                 variant="subtle"
@@ -584,7 +583,6 @@ export default function Home() {
             </h2>
             <div className={styles.ctaActions}>
               <ActionLink
-                className={styles.homeActionPurple}
                 href="/jobs"
                 size="lg"
                 iconEnd={<ArrowRight size={17} />}
