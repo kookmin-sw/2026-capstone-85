@@ -102,6 +102,16 @@
   color: var(--brand);
 }
 
+.companyNavLink:hover,
+.companyNavLink.active {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.companyNavLink:hover {
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.12);
+}
+
 .spacer {
   margin-left: auto;
 }

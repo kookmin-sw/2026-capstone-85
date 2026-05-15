@@ -372,7 +372,12 @@ export default function Home() {
               수습·KICPA·직무·연차·마감일 기준으로
               <br className={styles.copyBreak} />필요한 공고만 모아드립니다.
             </p>
-            <ActionLink href="/jobs" size="lg" iconEnd={<ArrowRight size={17} />}>
+            <ActionLink
+              className={styles.homeActionPurple}
+              href="/jobs"
+              size="lg"
+              iconEnd={<ArrowRight size={17} />}
+            >
               채용공고 보기
             </ActionLink>
           </div>
@@ -447,7 +452,7 @@ export default function Home() {
 
               <div className={styles.intelligenceActions}>
                 <ActionLink
-                  className={index % 2 === 1 ? styles.intelligenceActionPurple : undefined}
+                  className={styles.homeActionPurple}
                   href={section.primaryAction.href}
                   size="md"
                   iconEnd={<ArrowRight size={15} />}
@@ -455,7 +460,7 @@ export default function Home() {
                   {section.primaryAction.label}
                 </ActionLink>
                 <ActionLink
-                  className={index % 2 === 1 ? styles.intelligenceSubtlePurple : undefined}
+                  className={styles.homeSubtlePurple}
                   href={section.secondaryAction.href}
                   size="md"
                   variant="subtle"
@@ -533,10 +538,20 @@ export default function Home() {
             </div>
 
             <div className={styles.communityActions}>
-              <ActionLink href="/community" size="lg" iconEnd={<ArrowRight size={17} />}>
+              <ActionLink
+                className={styles.homeActionPurple}
+                href="/community"
+                size="lg"
+                iconEnd={<ArrowRight size={17} />}
+              >
                 커뮤니티 둘러보기
               </ActionLink>
-              <ActionLink href="/login?mode=register" size="lg" variant="subtle">
+              <ActionLink
+                className={styles.homeSubtlePurple}
+                href="/login?mode=register"
+                size="lg"
+                variant="subtle"
+              >
                 회원가입하고 참여하기
               </ActionLink>
             </div>
@@ -568,7 +583,12 @@ export default function Home() {
               <span>Accountit에서 이어가세요</span>
             </h2>
             <div className={styles.ctaActions}>
-              <ActionLink href="/jobs" size="lg" iconEnd={<ArrowRight size={17} />}>
+              <ActionLink
+                className={styles.homeActionPurple}
+                href="/jobs"
+                size="lg"
+                iconEnd={<ArrowRight size={17} />}
+              >
                 서비스 이용해보기
               </ActionLink>
             </div>
