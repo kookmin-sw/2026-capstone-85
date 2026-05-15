@@ -153,7 +153,11 @@ export function SiteNav({ variant = "app" }: SiteNavProps) {
               <Link
                 key={item.key}
                 href={item.href}
-                className={cn(styles.navLink, active && styles.active)}
+                className={cn(
+                  styles.navLink,
+                  item.key === "company" && styles.companyNavLink,
+                  active && styles.active,
+                )}
               >
                 {item.label}
               </Link>

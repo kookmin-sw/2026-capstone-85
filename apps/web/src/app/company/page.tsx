@@ -398,7 +398,7 @@ export default function CompanyPage() {
   const managedItemCount = managedJobs.length + pendingCreateSubmissions.length;
   const heroStyle: CSSProperties | undefined = company.backgroundUrl
     ? {
-        backgroundImage: `linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.68)), url("${company.backgroundUrl}")`,
+        backgroundImage: `linear-gradient(90deg, rgba(251,251,255,0.94), rgba(238,242,255,0.76)), url("${company.backgroundUrl}")`,
       }
     : undefined;
 
