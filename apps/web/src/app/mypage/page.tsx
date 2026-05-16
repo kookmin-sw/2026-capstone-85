@@ -36,6 +36,7 @@ import {
   type ChangeEvent,
   type FormEvent,
   type ReactNode,
+  Suspense,
   useEffect,
   useRef,
   useState,
@@ -144,6 +145,27 @@ const boardLabels: Record<CommunityBoardType, string> = {
 };
 
 export default function MyPage() {
+  return (
+    <Suspense fallback={<MyPageFallback />}>
+      <MyPageContent />
+    </Suspense>
+  );
+}
+
+function MyPageFallback() {
+  return (
+    <>
+      <SiteNav />
+      <main className={styles.page}>
+        <div className={styles.container}>
+          <p className={styles.loadingText}>마이페이지를 불러오는 중입니다.</p>
+        </div>
+      </main>
+    </>
+  );
+}
+
+function MyPageContent() {
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<MyProfileResponse | null>(null);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);

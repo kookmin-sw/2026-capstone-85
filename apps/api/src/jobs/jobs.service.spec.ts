@@ -16,7 +16,7 @@ import { JobsService } from './jobs.service';
 describe('JobsService', () => {
   let prisma: {
     job: {
-      findFirst: jest.Mock;
+      findFirst: jest.Mock<Promise<unknown>, [Prisma.JobFindFirstArgs]>;
       findMany: jest.Mock;
       count: jest.Mock;
       groupBy: jest.Mock;
@@ -39,7 +39,7 @@ describe('JobsService', () => {
   beforeEach(() => {
     prisma = {
       job: {
-        findFirst: jest.fn(),
+        findFirst: jest.fn<Promise<unknown>, [Prisma.JobFindFirstArgs]>(),
         findMany: jest.fn().mockResolvedValue([]),
         count: jest.fn().mockResolvedValue(0),
         groupBy: jest.fn().mockResolvedValue([]),
@@ -125,15 +125,14 @@ describe('JobsService', () => {
 
     const result = await service.detail('job-1');
 
-    expect(prisma.job.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        include: expect.objectContaining({
-          aiSuggestions: expect.objectContaining({
-            where: { status: 'APPROVED' },
-          }),
-        }),
-      }),
-    );
+    const [findFirstArgs] = prisma.job.findFirst.mock.calls[0];
+    expect(findFirstArgs).toMatchObject({
+      include: {
+        aiSuggestions: {
+          where: { status: 'APPROVED' },
+        },
+      },
+    });
     expect(result.aiSummary).toBe(
       '수습 CPA가 감사 실무를 빠르게 경험하기 좋은 공고입니다.',
     );
