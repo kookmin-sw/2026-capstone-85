@@ -66,7 +66,7 @@ TODO: 프로젝트 소개 영상을 촬영한 뒤 YouTube, Google Drive, GitHub 
   <tr>
     <td align="center" width="160">
       <a href="https://github.com/pookjw">
-        <img src="https://github.com/pookjw.png" width="100" height="100" alt="김진우" /><br />
+        <img src="docs/images/team/jinwoo.jpeg" width="100" height="100" alt="김진우" /><br />
         <b>김진우</b>
       </a><br />
       <sub>팀 리더 · BE · PM</sub>
