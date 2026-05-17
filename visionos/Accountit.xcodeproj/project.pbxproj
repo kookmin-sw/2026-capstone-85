@@ -1,0 +1,842 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4F9B00012FB8D4510075DB9A /* BaseBoard.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF9B2FB8D3990075DB9A /* BaseBoard.xcframework */; };
+		4F9B00032FB8D4510075DB9A /* BoardServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF8A2FB8D3990075DB9A /* BoardServices.xcframework */; };
+		4F9B00052FB8D4510075DB9A /* CoreRE.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF8C2FB8D3990075DB9A /* CoreRE.xcframework */; };
+		4F9B00072FB8D4510075DB9A /* DesignLibrary.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFFA12FB8D3990075DB9A /* DesignLibrary.xcframework */; };
+		4F9B00092FB8D4510075DB9A /* FeatureFlags.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF922FB8D3990075DB9A /* FeatureFlags.xcframework */; };
+		4F9B000B2FB8D4510075DB9A /* FrontBoardServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF8B2FB8D3990075DB9A /* FrontBoardServices.xcframework */; };
+		4F9B000D2FB8D4510075DB9A /* MRUIKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF9C2FB8D3990075DB9A /* MRUIKit.xcframework */; };
+		4F9B000F2FB8D4510075DB9A /* RealitySimulationServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF8E2FB8D3990075DB9A /* RealitySimulationServices.xcframework */; };
+		4F9B00112FB8D4510075DB9A /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF9E2FB8D3990075DB9A /* RenderBox.xcframework */; };
+		4F9B00132FB8D4510075DB9A /* SoftLinking.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFFA02FB8D3990075DB9A /* SoftLinking.xcframework */; };
+		4F9B00152FB8D4510075DB9A /* StopwatchSupport.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF932FB8D3990075DB9A /* StopwatchSupport.xcframework */; };
+		4F9B00172FB8D4510075DB9A /* TCC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF942FB8D3990075DB9A /* TCC.xcframework */; };
+		4F9B00192FB8D4510075DB9A /* UIAccessibility.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF882FB8D3990075DB9A /* UIAccessibility.xcframework */; };
+		4F9B001B2FB8D4510075DB9A /* UIFoundation.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFFA22FB8D3990075DB9A /* UIFoundation.xcframework */; };
+		4F9B001D2FB8D4510075DB9A /* UIIntelligenceSupport.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF872FB8D3990075DB9A /* UIIntelligenceSupport.xcframework */; };
+		4F9B001F2FB8D4510075DB9A /* UIKitServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF972FB8D3990075DB9A /* UIKitServices.xcframework */; };
+		4F9B00212FB8D4510075DB9A /* UserActivity.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF902FB8D3990075DB9A /* UserActivity.xcframework */; };
+		4F9B00362FB8D5C30075DB9A /* AccountitAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9B00302FB8D5C30075DB9A /* AccountitAPI.framework */; };
+		4F9B00372FB8D5C30075DB9A /* AccountitAPI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9B00302FB8D5C30075DB9A /* AccountitAPI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		4F9B00452FB8D5DD0075DB9A /* AccountitAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9B00302FB8D5C30075DB9A /* AccountitAPI.framework */; };
+		4F9BFFE02FB8D42A0075DB9A /* MySwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4F9BFFDF2FB8D42A0075DB9A /* MySwiftUI */; };
+		4F9BFFE92FB8D4510075DB9A /* _AccessibilityPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF952FB8D3990075DB9A /* _AccessibilityPrivate.xcframework */; };
+		4F9BFFEB2FB8D4510075DB9A /* _CoreFoundationPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF862FB8D3990075DB9A /* _CoreFoundationPrivate.xcframework */; };
+		4F9BFFED2FB8D4510075DB9A /* _CoreServicesPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF8F2FB8D3990075DB9A /* _CoreServicesPrivate.xcframework */; };
+		4F9BFFEF2FB8D4510075DB9A /* _Elegibility.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF982FB8D3990075DB9A /* _Elegibility.xcframework */; };
+		4F9BFFF12FB8D4510075DB9A /* _FoundationPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF962FB8D3990075DB9A /* _FoundationPrivate.xcframework */; };
+		4F9BFFF32FB8D4510075DB9A /* _ObservationPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF992FB8D3990075DB9A /* _ObservationPrivate.xcframework */; };
+		4F9BFFF52FB8D4510075DB9A /* _QuartzCorePrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF912FB8D3990075DB9A /* _QuartzCorePrivate.xcframework */; };
+		4F9BFFF72FB8D4510075DB9A /* _SwiftPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF9A2FB8D3990075DB9A /* _SwiftPrivate.xcframework */; };
+		4F9BFFF92FB8D4510075DB9A /* _SwiftUICorePrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF9F2FB8D3990075DB9A /* _SwiftUICorePrivate.xcframework */; };
+		4F9BFFFB2FB8D4510075DB9A /* _SwiftUIPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF8D2FB8D3990075DB9A /* _SwiftUIPrivate.xcframework */; };
+		4F9BFFFD2FB8D4510075DB9A /* _UIKitPrivate.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF9D2FB8D3990075DB9A /* _UIKitPrivate.xcframework */; };
+		4F9BFFFF2FB8D4510075DB9A /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9BFF892FB8D3990075DB9A /* AttributeGraph.xcframework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4F9B00342FB8D5C30075DB9A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4F9BFF5E2FB8D2E20075DB9A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F9B002F2FB8D5C30075DB9A;
+			remoteInfo = AccountitAPI;
+		};
+		4F9B00462FB8D5DD0075DB9A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4F9BFF5E2FB8D2E20075DB9A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F9B002F2FB8D5C30075DB9A;
+			remoteInfo = AccountitAPI;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4F9B003C2FB8D5C30075DB9A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				4F9B00372FB8D5C30075DB9A /* AccountitAPI.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		4F9B00302FB8D5C30075DB9A /* AccountitAPI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AccountitAPI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F9B00412FB8D5DD0075DB9A /* AccountitAPITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AccountitAPITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F9BFF662FB8D2E20075DB9A /* Accountit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Accountit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F9BFF862FB8D3990075DB9A /* _CoreFoundationPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _CoreFoundationPrivate.xcframework; path = ../../MySwiftUI/_CoreFoundationPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF872FB8D3990075DB9A /* UIIntelligenceSupport.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = UIIntelligenceSupport.xcframework; path = ../../MySwiftUI/UIIntelligenceSupport.xcframework; sourceTree = "<group>"; };
+		4F9BFF882FB8D3990075DB9A /* UIAccessibility.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = UIAccessibility.xcframework; path = ../../MySwiftUI/UIAccessibility.xcframework; sourceTree = "<group>"; };
+		4F9BFF892FB8D3990075DB9A /* AttributeGraph.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AttributeGraph.xcframework; path = ../../MySwiftUI/AttributeGraph.xcframework; sourceTree = "<group>"; };
+		4F9BFF8A2FB8D3990075DB9A /* BoardServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = BoardServices.xcframework; path = ../../MySwiftUI/BoardServices.xcframework; sourceTree = "<group>"; };
+		4F9BFF8B2FB8D3990075DB9A /* FrontBoardServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FrontBoardServices.xcframework; path = ../../MySwiftUI/FrontBoardServices.xcframework; sourceTree = "<group>"; };
+		4F9BFF8C2FB8D3990075DB9A /* CoreRE.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CoreRE.xcframework; path = ../../MySwiftUI/CoreRE.xcframework; sourceTree = "<group>"; };
+		4F9BFF8D2FB8D3990075DB9A /* _SwiftUIPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _SwiftUIPrivate.xcframework; path = ../../MySwiftUI/_SwiftUIPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF8E2FB8D3990075DB9A /* RealitySimulationServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RealitySimulationServices.xcframework; path = ../../MySwiftUI/RealitySimulationServices.xcframework; sourceTree = "<group>"; };
+		4F9BFF8F2FB8D3990075DB9A /* _CoreServicesPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _CoreServicesPrivate.xcframework; path = ../../MySwiftUI/_CoreServicesPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF902FB8D3990075DB9A /* UserActivity.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = UserActivity.xcframework; path = ../../MySwiftUI/UserActivity.xcframework; sourceTree = "<group>"; };
+		4F9BFF912FB8D3990075DB9A /* _QuartzCorePrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _QuartzCorePrivate.xcframework; path = ../../MySwiftUI/_QuartzCorePrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF922FB8D3990075DB9A /* FeatureFlags.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FeatureFlags.xcframework; path = ../../MySwiftUI/FeatureFlags.xcframework; sourceTree = "<group>"; };
+		4F9BFF932FB8D3990075DB9A /* StopwatchSupport.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = StopwatchSupport.xcframework; path = ../../MySwiftUI/StopwatchSupport.xcframework; sourceTree = "<group>"; };
+		4F9BFF942FB8D3990075DB9A /* TCC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = TCC.xcframework; path = ../../MySwiftUI/TCC.xcframework; sourceTree = "<group>"; };
+		4F9BFF952FB8D3990075DB9A /* _AccessibilityPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _AccessibilityPrivate.xcframework; path = ../../MySwiftUI/_AccessibilityPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF962FB8D3990075DB9A /* _FoundationPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _FoundationPrivate.xcframework; path = ../../MySwiftUI/_FoundationPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF972FB8D3990075DB9A /* UIKitServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = UIKitServices.xcframework; path = ../../MySwiftUI/UIKitServices.xcframework; sourceTree = "<group>"; };
+		4F9BFF982FB8D3990075DB9A /* _Elegibility.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _Elegibility.xcframework; path = ../../MySwiftUI/_Elegibility.xcframework; sourceTree = "<group>"; };
+		4F9BFF992FB8D3990075DB9A /* _ObservationPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _ObservationPrivate.xcframework; path = ../../MySwiftUI/_ObservationPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF9A2FB8D3990075DB9A /* _SwiftPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _SwiftPrivate.xcframework; path = ../../MySwiftUI/_SwiftPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF9B2FB8D3990075DB9A /* BaseBoard.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = BaseBoard.xcframework; path = ../../MySwiftUI/BaseBoard.xcframework; sourceTree = "<group>"; };
+		4F9BFF9C2FB8D3990075DB9A /* MRUIKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = MRUIKit.xcframework; path = ../../MySwiftUI/MRUIKit.xcframework; sourceTree = "<group>"; };
+		4F9BFF9D2FB8D3990075DB9A /* _UIKitPrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _UIKitPrivate.xcframework; path = ../../MySwiftUI/_UIKitPrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFF9E2FB8D3990075DB9A /* RenderBox.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RenderBox.xcframework; path = ../../MySwiftUI/RenderBox.xcframework; sourceTree = "<group>"; };
+		4F9BFF9F2FB8D3990075DB9A /* _SwiftUICorePrivate.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = _SwiftUICorePrivate.xcframework; path = ../../MySwiftUI/_SwiftUICorePrivate.xcframework; sourceTree = "<group>"; };
+		4F9BFFA02FB8D3990075DB9A /* SoftLinking.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SoftLinking.xcframework; path = ../../MySwiftUI/SoftLinking.xcframework; sourceTree = "<group>"; };
+		4F9BFFA12FB8D3990075DB9A /* DesignLibrary.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DesignLibrary.xcframework; path = ../../MySwiftUI/DesignLibrary.xcframework; sourceTree = "<group>"; };
+		4F9BFFA22FB8D3990075DB9A /* UIFoundation.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = UIFoundation.xcframework; path = ../../MySwiftUI/UIFoundation.xcframework; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4F9B003B2FB8D5C30075DB9A /* Exceptions for "AccountitAPI" folder in "AccountitAPI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			publicHeaders = (
+				AccountitAPI.h,
+				AccountitAPICPAAdminCompanyListResponse.h,
+				AccountitAPICPAAdminDashboardResponse.h,
+				AccountitAPICPAAdminJobListResponse.h,
+				AccountitAPICPAAdminMemberListResponse.h,
+				AccountitAPICPAAiSuggestionListResponse.h,
+				AccountitAPICPAAssetCompletionResponse.h,
+				AccountitAPICPAAuthUserResponse.h,
+				AccountitAPICPABookmarkListResponse.h,
+				AccountitAPICPACommunityPostDetailResponse.h,
+				AccountitAPICPACommunityPostListResponse.h,
+				AccountitAPICPACompanyAnalyticsDashboardResponse.h,
+				AccountitAPICPACompanyDashboardResponse.h,
+				AccountitAPICPACompanyJobAutofillResponse.h,
+				AccountitAPICPACompanyListResponse.h,
+				AccountitAPICPACompanyManagedJobListResponse.h,
+				AccountitAPICPACompanyProfileSubmissionListResponse.h,
+				AccountitAPICPACreateJobFitAnalysisResponse.h,
+				AccountitAPICPAHealthResponse.h,
+				AccountitAPICPAJobCalendarResponse.h,
+				AccountitAPICPAJobDetailResponse.h,
+				AccountitAPICPAJobFilterPreferenceResponse.h,
+				AccountitAPICPAJobFitAnalysisListResponse.h,
+				AccountitAPICPAJobListResponse.h,
+				AccountitAPICPAJobSubmissionListResponse.h,
+				AccountitAPICPAMyCommunityActivityListResponse.h,
+				AccountitAPICPAMyProfileResponse.h,
+				AccountitAPICPANotificationListResponse.h,
+				AccountitAPICPANotificationReadAllResponse.h,
+				AccountitAPICPANotificationUnreadCountResponse.h,
+				AccountitAPICPAOkResponse.h,
+				AccountitAPICPAOpsDeployResponse.h,
+				AccountitAPICPAPersonalVerificationRequestListResponse.h,
+				AccountitAPICPAResumeListResponse.h,
+				AccountitAPICPASourceListResponse.h,
+				AccountitAPICPATagSubscriptionListResponse.h,
+				AccountitAPICPAUploadURLResponse.h,
+				AccountitAPICPAUserJobPresetListResponse.h,
+				AccountitAPIDTO.h,
+				AccountitAPIEmptyResponse.h,
+				AccountitAPIErrorResponse.h,
+				AccountitAPIFileDownloadResponse.h,
+				AccountitAPIService.h,
+			);
+			target = 4F9B002F2FB8D5C30075DB9A /* AccountitAPI */;
+		};
+		4F9BFF742FB8D2E30075DB9A /* Exceptions for "Accountit" folder in "Accountit" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4F9BFF652FB8D2E20075DB9A /* Accountit */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		4F9B00312FB8D5C30075DB9A /* AccountitAPI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F9B003B2FB8D5C30075DB9A /* Exceptions for "AccountitAPI" folder in "AccountitAPI" target */,
+			);
+			path = AccountitAPI;
+			sourceTree = "<group>";
+		};
+		4F9B00422FB8D5DD0075DB9A /* AccountitAPITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AccountitAPITests;
+			sourceTree = "<group>";
+		};
+		4F9BFF682FB8D2E20075DB9A /* Accountit */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F9BFF742FB8D2E30075DB9A /* Exceptions for "Accountit" folder in "Accountit" target */,
+			);
+			path = Accountit;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4F9B002D2FB8D5C30075DB9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F9B003E2FB8D5DD0075DB9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F9B00452FB8D5DD0075DB9A /* AccountitAPI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F9BFF632FB8D2E20075DB9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F9BFFEF2FB8D4510075DB9A /* _Elegibility.xcframework in Frameworks */,
+				4F9B000F2FB8D4510075DB9A /* RealitySimulationServices.xcframework in Frameworks */,
+				4F9BFFF72FB8D4510075DB9A /* _SwiftPrivate.xcframework in Frameworks */,
+				4F9B00072FB8D4510075DB9A /* DesignLibrary.xcframework in Frameworks */,
+				4F9B000D2FB8D4510075DB9A /* MRUIKit.xcframework in Frameworks */,
+				4F9B00152FB8D4510075DB9A /* StopwatchSupport.xcframework in Frameworks */,
+				4F9BFFED2FB8D4510075DB9A /* _CoreServicesPrivate.xcframework in Frameworks */,
+				4F9BFFE92FB8D4510075DB9A /* _AccessibilityPrivate.xcframework in Frameworks */,
+				4F9BFFF32FB8D4510075DB9A /* _ObservationPrivate.xcframework in Frameworks */,
+				4F9BFFE02FB8D42A0075DB9A /* MySwiftUI in Frameworks */,
+				4F9B00132FB8D4510075DB9A /* SoftLinking.xcframework in Frameworks */,
+				4F9B00212FB8D4510075DB9A /* UserActivity.xcframework in Frameworks */,
+				4F9B00362FB8D5C30075DB9A /* AccountitAPI.framework in Frameworks */,
+				4F9BFFF12FB8D4510075DB9A /* _FoundationPrivate.xcframework in Frameworks */,
+				4F9B000B2FB8D4510075DB9A /* FrontBoardServices.xcframework in Frameworks */,
+				4F9B001B2FB8D4510075DB9A /* UIFoundation.xcframework in Frameworks */,
+				4F9BFFEB2FB8D4510075DB9A /* _CoreFoundationPrivate.xcframework in Frameworks */,
+				4F9BFFFD2FB8D4510075DB9A /* _UIKitPrivate.xcframework in Frameworks */,
+				4F9B00052FB8D4510075DB9A /* CoreRE.xcframework in Frameworks */,
+				4F9BFFF92FB8D4510075DB9A /* _SwiftUICorePrivate.xcframework in Frameworks */,
+				4F9B001D2FB8D4510075DB9A /* UIIntelligenceSupport.xcframework in Frameworks */,
+				4F9B00112FB8D4510075DB9A /* RenderBox.xcframework in Frameworks */,
+				4F9BFFFF2FB8D4510075DB9A /* AttributeGraph.xcframework in Frameworks */,
+				4F9B00012FB8D4510075DB9A /* BaseBoard.xcframework in Frameworks */,
+				4F9B00192FB8D4510075DB9A /* UIAccessibility.xcframework in Frameworks */,
+				4F9B00092FB8D4510075DB9A /* FeatureFlags.xcframework in Frameworks */,
+				4F9BFFFB2FB8D4510075DB9A /* _SwiftUIPrivate.xcframework in Frameworks */,
+				4F9B00172FB8D4510075DB9A /* TCC.xcframework in Frameworks */,
+				4F9B001F2FB8D4510075DB9A /* UIKitServices.xcframework in Frameworks */,
+				4F9BFFF52FB8D4510075DB9A /* _QuartzCorePrivate.xcframework in Frameworks */,
+				4F9B00032FB8D4510075DB9A /* BoardServices.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4F9BFF5D2FB8D2E20075DB9A = {
+			isa = PBXGroup;
+			children = (
+				4F9BFF682FB8D2E20075DB9A /* Accountit */,
+				4F9B00312FB8D5C30075DB9A /* AccountitAPI */,
+				4F9B00422FB8D5DD0075DB9A /* AccountitAPITests */,
+				4F9BFF852FB8D3990075DB9A /* Frameworks */,
+				4F9BFF672FB8D2E20075DB9A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4F9BFF672FB8D2E20075DB9A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4F9BFF662FB8D2E20075DB9A /* Accountit.app */,
+				4F9B00302FB8D5C30075DB9A /* AccountitAPI.framework */,
+				4F9B00412FB8D5DD0075DB9A /* AccountitAPITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4F9BFF852FB8D3990075DB9A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4F9BFF952FB8D3990075DB9A /* _AccessibilityPrivate.xcframework */,
+				4F9BFF862FB8D3990075DB9A /* _CoreFoundationPrivate.xcframework */,
+				4F9BFF8F2FB8D3990075DB9A /* _CoreServicesPrivate.xcframework */,
+				4F9BFF982FB8D3990075DB9A /* _Elegibility.xcframework */,
+				4F9BFF962FB8D3990075DB9A /* _FoundationPrivate.xcframework */,
+				4F9BFF992FB8D3990075DB9A /* _ObservationPrivate.xcframework */,
+				4F9BFF912FB8D3990075DB9A /* _QuartzCorePrivate.xcframework */,
+				4F9BFF9A2FB8D3990075DB9A /* _SwiftPrivate.xcframework */,
+				4F9BFF9F2FB8D3990075DB9A /* _SwiftUICorePrivate.xcframework */,
+				4F9BFF8D2FB8D3990075DB9A /* _SwiftUIPrivate.xcframework */,
+				4F9BFF9D2FB8D3990075DB9A /* _UIKitPrivate.xcframework */,
+				4F9BFF892FB8D3990075DB9A /* AttributeGraph.xcframework */,
+				4F9BFF9B2FB8D3990075DB9A /* BaseBoard.xcframework */,
+				4F9BFF8A2FB8D3990075DB9A /* BoardServices.xcframework */,
+				4F9BFF8C2FB8D3990075DB9A /* CoreRE.xcframework */,
+				4F9BFFA12FB8D3990075DB9A /* DesignLibrary.xcframework */,
+				4F9BFF922FB8D3990075DB9A /* FeatureFlags.xcframework */,
+				4F9BFF8B2FB8D3990075DB9A /* FrontBoardServices.xcframework */,
+				4F9BFF9C2FB8D3990075DB9A /* MRUIKit.xcframework */,
+				4F9BFF8E2FB8D3990075DB9A /* RealitySimulationServices.xcframework */,
+				4F9BFF9E2FB8D3990075DB9A /* RenderBox.xcframework */,
+				4F9BFFA02FB8D3990075DB9A /* SoftLinking.xcframework */,
+				4F9BFF932FB8D3990075DB9A /* StopwatchSupport.xcframework */,
+				4F9BFF942FB8D3990075DB9A /* TCC.xcframework */,
+				4F9BFF882FB8D3990075DB9A /* UIAccessibility.xcframework */,
+				4F9BFFA22FB8D3990075DB9A /* UIFoundation.xcframework */,
+				4F9BFF872FB8D3990075DB9A /* UIIntelligenceSupport.xcframework */,
+				4F9BFF972FB8D3990075DB9A /* UIKitServices.xcframework */,
+				4F9BFF902FB8D3990075DB9A /* UserActivity.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		4F9B002B2FB8D5C30075DB9A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		4F9B002F2FB8D5C30075DB9A /* AccountitAPI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F9B00382FB8D5C30075DB9A /* Build configuration list for PBXNativeTarget "AccountitAPI" */;
+			buildPhases = (
+				4F9B002B2FB8D5C30075DB9A /* Headers */,
+				4F9B002C2FB8D5C30075DB9A /* Sources */,
+				4F9B002D2FB8D5C30075DB9A /* Frameworks */,
+				4F9B002E2FB8D5C30075DB9A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4F9B00312FB8D5C30075DB9A /* AccountitAPI */,
+			);
+			name = AccountitAPI;
+			packageProductDependencies = (
+			);
+			productName = AccountitAPI;
+			productReference = 4F9B00302FB8D5C30075DB9A /* AccountitAPI.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		4F9B00402FB8D5DD0075DB9A /* AccountitAPITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F9B00482FB8D5DD0075DB9A /* Build configuration list for PBXNativeTarget "AccountitAPITests" */;
+			buildPhases = (
+				4F9B003D2FB8D5DD0075DB9A /* Sources */,
+				4F9B003E2FB8D5DD0075DB9A /* Frameworks */,
+				4F9B003F2FB8D5DD0075DB9A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F9B00472FB8D5DD0075DB9A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4F9B00422FB8D5DD0075DB9A /* AccountitAPITests */,
+			);
+			name = AccountitAPITests;
+			packageProductDependencies = (
+			);
+			productName = AccountitAPITests;
+			productReference = 4F9B00412FB8D5DD0075DB9A /* AccountitAPITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		4F9BFF652FB8D2E20075DB9A /* Accountit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F9BFF752FB8D2E30075DB9A /* Build configuration list for PBXNativeTarget "Accountit" */;
+			buildPhases = (
+				4F9BFF622FB8D2E20075DB9A /* Sources */,
+				4F9BFF632FB8D2E20075DB9A /* Frameworks */,
+				4F9BFF642FB8D2E20075DB9A /* Resources */,
+				4F9B003C2FB8D5C30075DB9A /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F9B00352FB8D5C30075DB9A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4F9BFF682FB8D2E20075DB9A /* Accountit */,
+			);
+			name = Accountit;
+			packageProductDependencies = (
+				4F9BFFDF2FB8D42A0075DB9A /* MySwiftUI */,
+			);
+			productName = Accountit;
+			productReference = 4F9BFF662FB8D2E20075DB9A /* Accountit.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4F9BFF5E2FB8D2E20075DB9A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2650;
+				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					4F9B002F2FB8D5C30075DB9A = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					4F9B00402FB8D5DD0075DB9A = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					4F9BFF652FB8D2E20075DB9A = {
+						CreatedOnToolsVersion = 26.5;
+						LastSwiftMigration = 2650;
+					};
+				};
+			};
+			buildConfigurationList = 4F9BFF612FB8D2E20075DB9A /* Build configuration list for PBXProject "Accountit" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4F9BFF5D2FB8D2E20075DB9A;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4F9BFFDE2FB8D42A0075DB9A /* XCLocalSwiftPackageReference "../../MySwiftUI" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4F9BFF672FB8D2E20075DB9A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4F9BFF652FB8D2E20075DB9A /* Accountit */,
+				4F9B002F2FB8D5C30075DB9A /* AccountitAPI */,
+				4F9B00402FB8D5DD0075DB9A /* AccountitAPITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4F9B002E2FB8D5C30075DB9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F9B003F2FB8D5DD0075DB9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F9BFF642FB8D2E20075DB9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4F9B002C2FB8D5C30075DB9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F9B003D2FB8D5DD0075DB9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F9BFF622FB8D2E20075DB9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4F9B00352FB8D5C30075DB9A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F9B002F2FB8D5C30075DB9A /* AccountitAPI */;
+			targetProxy = 4F9B00342FB8D5C30075DB9A /* PBXContainerItemProxy */;
+		};
+		4F9B00472FB8D5DD0075DB9A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F9B002F2FB8D5C30075DB9A /* AccountitAPI */;
+			targetProxy = 4F9B00462FB8D5DD0075DB9A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4F9B00392FB8D5C30075DB9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pookjw.AccountitAPI;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 7;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		4F9B003A2FB8D5C30075DB9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pookjw.AccountitAPI;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 7;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		4F9B00492FB8D5DD0075DB9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pookjw.AccountitAPITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Debug;
+		};
+		4F9B004A2FB8D5DD0075DB9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pookjw.AccountitAPITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Release;
+		};
+		4F9BFF762FB8D2E30075DB9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pookjw.Accountit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Accountit/Accountit-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Debug;
+		};
+		4F9BFF772FB8D2E30075DB9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pookjw.Accountit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Accountit/Accountit-Bridging-Header.h";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Release;
+		};
+		4F9BFF782FB8D2E30075DB9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = xros;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				XROS_DEPLOYMENT_TARGET = 26.5;
+			};
+			name = Debug;
+		};
+		4F9BFF792FB8D2E30075DB9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = P53D29U9LJ;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = xros;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				XROS_DEPLOYMENT_TARGET = 26.5;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4F9B00382FB8D5C30075DB9A /* Build configuration list for PBXNativeTarget "AccountitAPI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F9B00392FB8D5C30075DB9A /* Debug */,
+				4F9B003A2FB8D5C30075DB9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4F9B00482FB8D5DD0075DB9A /* Build configuration list for PBXNativeTarget "AccountitAPITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F9B00492FB8D5DD0075DB9A /* Debug */,
+				4F9B004A2FB8D5DD0075DB9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4F9BFF612FB8D2E20075DB9A /* Build configuration list for PBXProject "Accountit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F9BFF782FB8D2E30075DB9A /* Debug */,
+				4F9BFF792FB8D2E30075DB9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4F9BFF752FB8D2E30075DB9A /* Build configuration list for PBXNativeTarget "Accountit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F9BFF762FB8D2E30075DB9A /* Debug */,
+				4F9BFF772FB8D2E30075DB9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		4F9BFFDE2FB8D42A0075DB9A /* XCLocalSwiftPackageReference "../../MySwiftUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../MySwiftUI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4F9BFFDF2FB8D42A0075DB9A /* MySwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MySwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 4F9BFF5E2FB8D2E20075DB9A /* Project object */;
+}

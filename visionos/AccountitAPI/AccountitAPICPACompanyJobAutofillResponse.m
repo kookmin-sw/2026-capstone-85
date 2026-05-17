@@ -1,0 +1,7 @@
+#import <AccountitAPI/AccountitAPICPACompanyJobAutofillResponse.h>
+
+@implementation AccountitAPICPACompanyJobAutofillDraft
+@end
+
+@implementation AccountitAPICPACompanyJobAutofillResponse
+@end

@@ -1,0 +1,4 @@
+#import <AccountitAPI/AccountitAPICPANotificationUnreadCountResponse.h>
+
+@implementation AccountitAPICPANotificationUnreadCountResponse
+@end
