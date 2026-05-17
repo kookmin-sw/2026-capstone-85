@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Accountit은 회계사와 CPA 준비생을 위한 CPA 특화 채용 큐레이션 플랫폼입니다."
+    />
+    <title>Accountit | CPA 채용 큐레이션 플랫폼</title>
+    <style>
+      :root {
+        --brand: #e8457a;
+        --brand-strong: #d03368;
+        --brand-soft: #fff0f5;
+        --brand-mid: #ffd6e5;
+        --ink: #202738;
+        --text: #434343;
+        --muted: #737782;
+        --line: #ebebeb;
+        --surface: #ffffff;
+        --surface-soft: #fff8fb;
+        --gray-50: #fafafa;
+        --blue: #4f80ff;
+        --green: #20a675;
+        --yellow: #f4b83f;
+        --shadow: 0 18px 50px rgba(32, 39, 56, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--surface);
+        color: var(--text);
+        font-family:
+          Pretendard,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          "Apple SD Gothic Neo",
+          "Noto Sans KR",
+          Arial,
+          sans-serif;
+        line-height: 1.6;
+        word-break: keep-all;
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .skip-link {
+        position: absolute;
+        left: 1rem;
+        top: -4rem;
+        z-index: 20;
+        border-radius: 0.5rem;
+        background: var(--ink);
+        color: #ffffff;
+        padding: 0.7rem 0.9rem;
+        font-weight: 800;
+      }
+
+      .skip-link:focus {
+        top: 1rem;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid rgba(235, 235, 235, 0.86);
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(18px);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.25rem;
+        width: min(100%, 76rem);
+        margin: 0 auto;
+        padding: 0.95rem 1.5rem;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        color: var(--ink);
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 2.15rem;
+        height: 2.15rem;
+        place-items: center;
+        border-radius: 0.5rem;
+        background: var(--brand);
+        color: #ffffff;
+        font-size: 1.05rem;
+        box-shadow: 0 8px 18px rgba(232, 69, 122, 0.24);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .nav-links a {
+        padding: 0.45rem 0.2rem;
+      }
+
+      .nav-links a:hover {
+        color: var(--brand);
+      }
+
+      .nav-cta {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.45rem;
+        border-radius: 0.5rem;
+        background: var(--ink);
+        color: #ffffff;
+        padding: 0 0.9rem;
+        font-size: 0.9rem;
+        font-weight: 800;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, #ffffff 0%, #fffafe 68%, #ffffff 100%);
+      }
+
+      .hero-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(20rem, 1.1fr);
+        align-items: center;
+        gap: clamp(2rem, 5vw, 4.25rem);
+        width: min(100%, 76rem);
+        min-height: 41rem;
+        margin: 0 auto;
+        padding: 5.5rem 1.5rem 4.75rem;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        min-height: 2rem;
+        margin-bottom: 1.35rem;
+        border: 1px solid rgba(232, 69, 122, 0.16);
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        padding: 0 0.9rem;
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .hero h1 {
+        max-width: 34rem;
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(2.85rem, 5vw, 5rem);
+        font-weight: 950;
+        letter-spacing: 0;
+        line-height: 1.12;
+      }
+
+      .hero h1 span {
+        color: var(--brand);
+      }
+
+      .hero-copy {
+        margin: 1.45rem 0 0;
+        max-width: 34rem;
+        color: #5a6170;
+        font-size: 1.05rem;
+        font-weight: 600;
+        line-height: 1.85;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 2rem;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3rem;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        padding: 0 1rem;
+        font-size: 0.94rem;
+        font-weight: 900;
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          background 180ms ease,
+          color 180ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+      }
+
+      .button-primary {
+        background: var(--brand);
+        color: #ffffff;
+        box-shadow: 0 12px 28px rgba(232, 69, 122, 0.22);
+      }
+
+      .button-secondary {
+        border-color: var(--line);
+        background: #ffffff;
+        color: var(--ink);
+      }
+
+      .hero-meta {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 2.25rem;
+        max-width: 34rem;
+      }
+
+      .metric {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 0.95rem;
+        box-shadow: 0 10px 24px rgba(32, 39, 56, 0.04);
+      }
+
+      .metric strong {
+        display: block;
+        color: var(--ink);
+        font-size: 1.35rem;
+        line-height: 1.1;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 0.3rem;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .hero-visual {
+        position: relative;
+        min-width: 0;
+      }
+
+      .hero-visual img {
+        width: 100%;
+        border-radius: 0.5rem;
+        filter: drop-shadow(0 28px 46px rgba(32, 39, 56, 0.18));
+      }
+
+      .floating-panel {
+        position: absolute;
+        right: 1rem;
+        bottom: 1.2rem;
+        width: min(20rem, 70%);
+        border: 1px solid rgba(255, 255, 255, 0.74);
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 1rem;
+        box-shadow: 0 18px 44px rgba(32, 39, 56, 0.16);
+        backdrop-filter: blur(18px);
+      }
+
+      .floating-panel span {
+        color: var(--muted);
+        font-size: 0.76rem;
+        font-weight: 900;
+      }
+
+      .floating-panel strong {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--ink);
+        font-size: 1.35rem;
+        line-height: 1.2;
+      }
+
+      .floating-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.8rem;
+      }
+
+      .floating-tags b {
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        padding: 0.28rem 0.55rem;
+        font-size: 0.72rem;
+      }
+
+      .section {
+        width: min(100%, 76rem);
+        margin: 0 auto;
+        padding: 5.5rem 1.5rem;
+      }
+
+      .section-compact {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+      }
+
+      .section-heading {
+        max-width: 46rem;
+        margin-bottom: 2.2rem;
+      }
+
+      .section-heading.center {
+        margin-right: auto;
+        margin-left: auto;
+        text-align: center;
+      }
+
+      .section-heading p {
+        margin: 0.8rem 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      h2 {
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(1.85rem, 3.2vw, 3rem);
+        font-weight: 950;
+        letter-spacing: 0;
+        line-height: 1.22;
+      }
+
+      h3 {
+        margin: 0;
+        color: var(--ink);
+        font-size: 1.05rem;
+        font-weight: 900;
+        line-height: 1.35;
+      }
+
+      .problem-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .problem-card,
+      .target-card,
+      .team-card,
+      .command-card {
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 1.35rem;
+        box-shadow: 0 10px 26px rgba(32, 39, 56, 0.04);
+      }
+
+      .problem-card p,
+      .target-card p,
+      .team-card p {
+        margin: 0.55rem 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+
+      .card-icon {
+        display: grid;
+        width: 2.4rem;
+        height: 2.4rem;
+        margin-bottom: 0.95rem;
+        place-items: center;
+        border-radius: 0.5rem;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        font-weight: 950;
+      }
+
+      .feature-band {
+        background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .feature-stack {
+        display: grid;
+        gap: 1.4rem;
+      }
+
+      .feature {
+        display: grid;
+        grid-template-columns: minmax(0, 0.86fr) minmax(20rem, 1.14fr);
+        align-items: center;
+        gap: 2rem;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 1.2rem;
+        box-shadow: var(--shadow);
+      }
+
+      .feature:nth-child(even) {
+        grid-template-columns: minmax(20rem, 1.14fr) minmax(0, 0.86fr);
+      }
+
+      .feature:nth-child(even) .feature-copy {
+        order: 2;
+      }
+
+      .feature-copy {
+        min-width: 0;
+        padding: clamp(0.5rem, 2vw, 1.25rem);
+      }
+
+      .feature-kicker {
+        display: inline-flex;
+        margin-bottom: 0.75rem;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        padding: 0.25rem 0.58rem;
+        font-size: 0.76rem;
+        font-weight: 950;
+      }
+
+      .feature p {
+        margin: 0.75rem 0 1.1rem;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      .chip {
+        border: 1px solid rgba(232, 69, 122, 0.16);
+        border-radius: 999px;
+        background: #ffffff;
+        color: var(--brand-strong);
+        padding: 0.34rem 0.62rem;
+        font-size: 0.76rem;
+        font-weight: 900;
+      }
+
+      .feature-shot {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #f7f7f7;
+      }
+
+      .feature-shot img {
+        width: 100%;
+      }
+
+      .targets {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: var(--line);
+      }
+
+      .timeline-item {
+        background: #ffffff;
+        padding: 1.2rem;
+      }
+
+      .timeline-item strong {
+        display: inline-flex;
+        margin-bottom: 0.45rem;
+        color: var(--brand-strong);
+        font-size: 0.82rem;
+        font-weight: 950;
+      }
+
+      .timeline-item p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 650;
+      }
+
+      .team-band {
+        background: var(--surface-soft);
+        border-top: 1px solid rgba(232, 69, 122, 0.1);
+        border-bottom: 1px solid rgba(232, 69, 122, 0.1);
+      }
+
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .team-card {
+        text-align: center;
+      }
+
+      .team-card img {
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 0.85rem;
+        border: 3px solid #ffffff;
+        border-radius: 999px;
+        object-fit: cover;
+        box-shadow: 0 10px 24px rgba(32, 39, 56, 0.12);
+      }
+
+      .team-card span {
+        display: block;
+        margin-top: 0.2rem;
+        color: var(--brand-strong);
+        font-size: 0.78rem;
+        font-weight: 950;
+      }
+
+      .build-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(22rem, 1.08fr);
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .stack-list,
+      .todo-list {
+        display: grid;
+        gap: 0.6rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .stack-list li,
+      .todo-list li {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        color: var(--muted);
+        font-weight: 650;
+      }
+
+      .stack-list li::before,
+      .todo-list li::before {
+        flex: 0 0 auto;
+        width: 0.45rem;
+        height: 0.45rem;
+        margin-top: 0.62rem;
+        border-radius: 999px;
+        background: var(--brand);
+        content: "";
+      }
+
+      .command-card {
+        background: #141821;
+        color: #eef2f7;
+      }
+
+      .command-card h3 {
+        color: #ffffff;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 1rem 0 0;
+        border-radius: 0.5rem;
+        background: #0c1118;
+        padding: 1rem;
+      }
+
+      code {
+        color: #f7d5e2;
+        font-family:
+          "SFMono-Regular",
+          Consolas,
+          "Liberation Mono",
+          monospace;
+        font-size: 0.88rem;
+        line-height: 1.7;
+      }
+
+      .footer {
+        border-top: 1px solid var(--line);
+        background: #ffffff;
+      }
+
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        width: min(100%, 76rem);
+        margin: 0 auto;
+        padding: 1.5rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+      }
+
+      .footer-links a:hover {
+        color: var(--brand);
+      }
+
+      @media (max-width: 980px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero-inner,
+        .feature,
+        .feature:nth-child(even),
+        .build-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .feature:nth-child(even) .feature-copy {
+          order: 0;
+        }
+
+        .problem-grid,
+        .targets {
+          grid-template-columns: 1fr;
+        }
+
+        .timeline,
+        .team-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .nav {
+          padding: 0.8rem 1rem;
+        }
+
+        .nav-cta {
+          display: none;
+        }
+
+        .hero-inner {
+          min-height: auto;
+          padding: 4rem 1rem 3rem;
+        }
+
+        .hero h1 {
+          font-size: 2.65rem;
+        }
+
+        .hero-meta,
+        .timeline,
+        .team-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .floating-panel {
+          position: static;
+          width: 100%;
+          margin-top: 0.75rem;
+        }
+
+        .section {
+          padding: 4rem 1rem;
+        }
+
+        .feature {
+          padding: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">본문으로 이동</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="주요 메뉴">
+        <a class="brand" href="#top" aria-label="Accountit 홈">
+          <span class="brand-mark">A</span>
+          <span>Accountit</span>
+        </a>
+        <div class="nav-links">
+          <a href="#problem">문제 정의</a>
+          <a href="#features">주요 기능</a>
+          <a href="#team">팀 소개</a>
+          <a href="#run">실행 방법</a>
+        </div>
+        <a class="nav-cta" href="http://pj-kmucd2-5-s3.s3-website-us-east-1.amazonaws.com">
+          서비스 데모
+        </a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-inner">
+          <div>
+            <span class="eyebrow">CPA 특화 채용 큐레이션 플랫폼</span>
+            <h1>
+              회계사 채용,
+              <br />
+              <span>필요한 공고만</span>
+              <br />
+              정확하게
+            </h1>
+            <p class="hero-copy">
+              Accountit은 흩어진 회계사 채용 공고를 모아 KICPA 조건, 수습 가능 여부,
+              실무수습기관 인정 여부, 직무, 마감일을 기준으로 빠르게 탐색하게 돕습니다.
+              AI 이력서 분석과 기업 데이터, 캘린더, 커뮤니티까지 하나의 흐름으로 연결합니다.
+            </p>
+            <div class="hero-actions" aria-label="바로가기">
+              <a
+                class="button button-primary"
+                href="http://pj-kmucd2-5-s3.s3-website-us-east-1.amazonaws.com"
+              >
+                서비스 둘러보기
+              </a>
+              <a class="button button-secondary" href="#features">기능 미리보기</a>
+            </div>
+            <div class="hero-meta" aria-label="서비스 핵심 지표">
+              <div class="metric">
+                <strong>CPA</strong>
+                <span>특화 조건 필터</span>
+              </div>
+              <div class="metric">
+                <strong>D-day</strong>
+                <span>마감 중심 탐색</span>
+              </div>
+              <div class="metric">
+                <strong>AI</strong>
+                <span>이력서 적합도 분석</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual" aria-label="Accountit 홈 화면 미리보기">
+            <img
+              src="apps/web/public/landing/accountit-hero.png"
+              alt="Accountit 서비스 화면 미리보기"
+            />
+            <div class="floating-panel" aria-hidden="true">
+              <span>오늘 확인할 공고</span>
+              <strong>수습 가능, KICPA 우대, 마감 임박</strong>
+              <div class="floating-tags">
+                <b>감사</b>
+                <b>세무</b>
+                <b>FAS</b>
+                <b>Big4</b>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-compact" id="problem">
+        <div class="section-heading center">
+          <span class="eyebrow">Problem</span>
+          <h2>회계사 채용 정보는 아직 너무 흩어져 있습니다</h2>
+          <p>
+            지원자는 여러 채널을 오가며 공고 조건과 회사 정보를 직접 대조해야 하고,
+            기업은 지원자의 관심 흐름을 파악하기 어렵습니다.
+          </p>
+        </div>
+
+        <div class="problem-grid">
+          <article class="problem-card">
+            <span class="card-icon">01</span>
+            <h3>공고의 파편화</h3>
+            <p>
+              회사 채용 페이지, KICPA 게시판, 일반 채용 플랫폼에 공고가 분산되어
+              반복 탐색 비용이 큽니다.
+            </p>
+          </article>
+          <article class="problem-card">
+            <span class="card-icon">02</span>
+            <h3>CPA 조건의 불투명성</h3>
+            <p>
+              수습 가능 여부, 실무수습기관 인정 여부, KICPA 필수/우대 조건을
+              공고마다 따로 확인해야 합니다.
+            </p>
+          </article>
+          <article class="problem-card">
+            <span class="card-icon">03</span>
+            <h3>지원 판단 정보의 분산</h3>
+            <p>
+              회사 규모, 평균 연봉, 입사와 퇴사 흐름 등 지원 결정에 필요한 정보가
+              채용 공고와 따로 존재합니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-compact">
+        <div class="section-heading">
+          <span class="eyebrow">Target User</span>
+          <h2>지원자와 기업회원의 흐름을 함께 설계했습니다</h2>
+        </div>
+        <div class="targets">
+          <article class="target-card">
+            <h3>회계사 및 CPA 자격 보유자</h3>
+            <p>
+              감사, 세무, FAS, Deal, 내부회계, 인하우스 등 다양한 회계 직무로
+              커리어를 확장하려는 사용자입니다.
+            </p>
+          </article>
+          <article class="target-card">
+            <h3>CPA 준비생 및 수습 예정자</h3>
+            <p>
+              수습 CPA 가능 공고, 실무수습기관 인정 여부, 신입 채용, KICPA 조건을
+              중심으로 탐색하는 사용자입니다.
+            </p>
+          </article>
+          <article class="target-card">
+            <h3>회계법인 및 채용 기업</h3>
+            <p>
+              공고를 등록하고 지원자 관심도와 공고 성과 데이터를 확인하려는
+              기업회원입니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="feature-band" id="features">
+        <div class="section">
+          <div class="section-heading center">
+            <span class="eyebrow">Product Preview</span>
+            <h2>공고 탐색부터 지원 판단까지 한 화면 안에서 이어집니다</h2>
+            <p>
+              기존 `index.md`의 주요 기능 설명과 실제 웹 UI 캡처를 섞어,
+              GitHub Pages에서도 서비스의 핵심 경험이 바로 보이도록 구성했습니다.
+            </p>
+          </div>
+
+          <div class="feature-stack">
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">Job Discovery</span>
+                <h3>CPA 채용 공고 통합 검색과 맞춤형 필터</h3>
+                <p>
+                  직무, 회사 유형, 지역, 경력, KICPA 조건, 수습 가능 여부,
+                  실무수습기관 여부, 마감 유형 등 CPA 채용에 필요한 조건으로
+                  공고를 좁혀 봅니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">D-day</span>
+                  <span class="chip">KICPA 조건</span>
+                  <span class="chip">수습 가능</span>
+                  <span class="chip">출처 표시</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img src="docs/images/accountit-page/jobs.png" alt="채용 공고 검색 화면" />
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">AI Resume Fit</span>
+                <h3>공고별 AI 적합도 분석</h3>
+                <p>
+                  이력서를 기반으로 공고별 적합도를 계산하고, 강점과 보완점,
+                  핵심 태그와 유의사항을 함께 보여 주어 지원 판단 시간을 줄입니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">이력서 분석</span>
+                  <span class="chip">공고 요약</span>
+                  <span class="chip">적합도 판단</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img
+                  src="docs/images/accountit-page/job-detail-fit.png"
+                  alt="채용 공고 상세 AI 적합도 분석 화면"
+                />
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">Company Analytics</span>
+                <h3>기업회원용 관심 데이터와 공고 성과 분석</h3>
+                <p>
+                  공고 조회수, 원문 클릭수, 북마크 수, 클릭률, 전환 흐름을 확인해
+                  어떤 조건에 지원자가 반응하는지 데이터로 파악합니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">조회 추이</span>
+                  <span class="chip">북마크 흐름</span>
+                  <span class="chip">공고 성과</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img
+                  src="docs/images/accountit-page/company-dashboard.png"
+                  alt="기업회원 대시보드 화면"
+                />
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">Deadline Calendar</span>
+                <h3>마감일 캘린더와 알림</h3>
+                <p>
+                  주간, 월간, 미니 캘린더에서 시작일과 마감일을 확인하고,
+                  북마크 공고의 마감 임박과 상태 변경을 놓치지 않도록 관리합니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">오늘 마감</span>
+                  <span class="chip">이번 주 마감</span>
+                  <span class="chip">관심 태그 알림</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img src="docs/images/accountit-page/calendar.png" alt="마감일 캘린더 화면" />
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">Community & Company</span>
+                <h3>회계사 전용 커뮤니티와 기업 상세 정보</h3>
+                <p>
+                  CPA 준비생, 수습 회계사, 시니어 회계사가 경험을 나누고,
+                  기업 유형, 평균 연봉, 인원 추이, 진행 중 공고를 함께 비교합니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">CPA 인증</span>
+                  <span class="chip">커리어 Q&A</span>
+                  <span class="chip">기업 비교</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img src="docs/images/accountit-page/community.png" alt="커뮤니티 화면" />
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <span class="eyebrow">Workflow</span>
+          <h2>Phase 0는 내부 지원서가 아니라 발견과 큐레이션에 집중합니다</h2>
+          <p>
+            공개 방문자와 개인회원은 공고와 회사 페이지를 탐색하고, 기업회원은 공고 등록을
+            요청하며, 관리자는 검수 후 게시합니다.
+          </p>
+        </div>
+        <div class="timeline" aria-label="서비스 흐름">
+          <div class="timeline-item">
+            <strong>Browse</strong>
+            <p>공개 방문자와 회원이 CPA 채용 공고와 회사 정보를 탐색합니다.</p>
+          </div>
+          <div class="timeline-item">
+            <strong>Submit</strong>
+            <p>기업회원은 채용 공고 게시 요청과 회사 프로필 수정을 제출합니다.</p>
+          </div>
+          <div class="timeline-item">
+            <strong>Review</strong>
+            <p>관리자는 AI 제안, 출처, 마지막 확인 시각을 검수하고 승인합니다.</p>
+          </div>
+          <div class="timeline-item">
+            <strong>Curate</strong>
+            <p>사용자는 마감일, 조건, 관심 태그 기반으로 공고를 관리합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="team-band" id="team">
+        <div class="section">
+          <div class="section-heading center">
+            <span class="eyebrow">Team</span>
+            <h2>AWS-2 분반 SW-05 85팀</h2>
+            <p>CPA 채용 탐색 문제를 제품, 데이터, 웹 경험으로 풀어 가는 팀입니다.</p>
+          </div>
+          <div class="team-grid">
+            <a class="team-card" href="https://github.com/pookjw">
+              <img src="docs/images/team/jinwoo.jpeg" alt="김진우 프로필" />
+              <h3>김진우</h3>
+              <span>Team Lead · BE · PM</span>
+              <p>20182217</p>
+            </a>
+            <a class="team-card" href="https://github.com/suuuujinnnn">
+              <img src="https://github.com/suuuujinnnn.png" alt="박수진 프로필" />
+              <h3>박수진</h3>
+              <span>BE · PM</span>
+              <p>20230152</p>
+            </a>
+            <a class="team-card" href="https://github.com/dfevgd">
+              <img src="https://github.com/dfevgd.png" alt="박지영 프로필" />
+              <h3>박지영</h3>
+              <span>FE</span>
+              <p>20223080</p>
+            </a>
+            <a class="team-card" href="https://github.com/jisw0822">
+              <img src="https://github.com/jisw0822.png" alt="지성은 프로필" />
+              <h3>지성은</h3>
+              <span>FE</span>
+              <p>20223148</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="run">
+        <div class="section-heading">
+          <span class="eyebrow">Build & Run</span>
+          <h2>Next.js, NestJS, Prisma 기반의 npm workspace 모노레포입니다</h2>
+        </div>
+        <div class="build-grid">
+          <article class="problem-card">
+            <h3>기술 스택</h3>
+            <ul class="stack-list">
+              <li>Web: Next.js App Router, TypeScript, Tailwind CSS, shadcn/ui</li>
+              <li>API: NestJS, Prisma, PostgreSQL, Swagger/OpenAPI</li>
+              <li>Shared: 공통 enum과 DTO 친화 타입</li>
+              <li>Auth: username/password, argon2, HTTP-only JWT cookie</li>
+              <li>Roles: JOB_SEEKER, COMPANY, ADMIN</li>
+            </ul>
+          </article>
+          <article class="command-card">
+            <h3>로컬 실행</h3>
+            <pre><code>npm install
+cp .env.example .env
+docker compose up -d
+npm run prisma:migrate
+npm run prisma:mock
+npm run dev</code></pre>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>Accountit · CPA-focused job curation platform</span>
+        <div class="footer-links">
+          <a href="README.md">README</a>
+          <a href="index.md">기존 Markdown</a>
+          <a href="https://github.com/kookmin-sw/2026-capstone-85">GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
