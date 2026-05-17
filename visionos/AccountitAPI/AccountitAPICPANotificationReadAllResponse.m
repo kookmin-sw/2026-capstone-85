@@ -1,0 +1,4 @@
+#import <AccountitAPI/AccountitAPICPANotificationReadAllResponse.h>
+
+@implementation AccountitAPICPANotificationReadAllResponse
+@end

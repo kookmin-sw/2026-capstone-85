@@ -1,0 +1,16 @@
+#import <AccountitAPI/AccountitAPICPACompanyAnalyticsDashboardResponse.h>
+
+@implementation AccountitAPICPACompanyAnalyticsPeriod
+@end
+
+@implementation AccountitAPICPACompanyAnalyticsSummary
+@end
+
+@implementation AccountitAPICPACompanyAnalyticsDailyPoint
+@end
+
+@implementation AccountitAPICPACompanyAnalyticsJobItem
+@end
+
+@implementation AccountitAPICPACompanyAnalyticsDashboardResponse
+@end

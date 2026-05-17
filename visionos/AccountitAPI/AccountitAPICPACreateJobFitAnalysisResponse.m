@@ -1,0 +1,4 @@
+#import <AccountitAPI/AccountitAPICPACreateJobFitAnalysisResponse.h>
+
+@implementation AccountitAPICPACreateJobFitAnalysisResponse
+@end

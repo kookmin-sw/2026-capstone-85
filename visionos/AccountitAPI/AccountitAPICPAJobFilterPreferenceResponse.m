@@ -1,0 +1,4 @@
+#import <AccountitAPI/AccountitAPICPAJobFilterPreferenceResponse.h>
+
+@implementation AccountitAPICPAJobFilterPreferenceResponse
+@end

@@ -1,0 +1,7 @@
+#import <AccountitAPI/AccountitAPICPACommunityPostDetailResponse.h>
+
+@implementation AccountitAPICPACommunityAnswerItem
+@end
+
+@implementation AccountitAPICPACommunityPostDetailResponse
+@end

@@ -13,6 +13,8 @@ apps/api/dist/
 packages/shared/dist/
 apps/web/public/uploads/
 var/uploads/
+visionos/build/
+visionos/**/xcuserdata/
 
 .env
 .env.*
