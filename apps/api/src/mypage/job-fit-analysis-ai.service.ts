@@ -5,6 +5,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import {
+  resolveOpenAIModel,
+  resolveOpenAIReasoningEffort,
+  usesOpenAIReasoning,
+} from '../config/openai-runtime';
 
 type JobFitAnalysisAiJob = {
   title: string;
@@ -53,7 +58,6 @@ export type GeneratedJobFitAnalysis = {
 
 type RawObject = Record<string, unknown>;
 
-const DEFAULT_OPENAI_MODEL = 'gpt-4o';
 const MAX_ITEMS = 4;
 const FILE_INPUT_BAD_REQUEST_STATUSES = new Set([400, 415, 422]);
 
@@ -67,16 +71,23 @@ export class JobFitAnalysisAiService {
     input: GenerateJobFitAnalysisInput,
   ): Promise<GeneratedJobFitAnalysis> {
     const openai = this.getClient();
-    const model =
-      this.config.get<string>('OPENAI_JOB_FIT_MODEL')?.trim() ||
-      this.config.get<string>('OPENAI_MODEL')?.trim() ||
-      DEFAULT_OPENAI_MODEL;
+    const model = resolveOpenAIModel(
+      this.config.get<string>('OPENAI_JOB_FIT_MODEL'),
+      this.config.get<string>('OPENAI_MODEL'),
+    );
+    const reasoningEffort = resolveOpenAIReasoningEffort(
+      this.config.get<string>('OPENAI_JOB_FIT_REASONING_EFFORT'),
+      this.config.get<string>('OPENAI_REASONING_EFFORT'),
+    );
+    const useReasoning = usesOpenAIReasoning(model);
 
     try {
       const response = await openai.responses.create({
         model,
         store: false,
-        temperature: 0.2,
+        ...(useReasoning
+          ? { reasoning: { effort: reasoningEffort } }
+          : { temperature: 0.2 }),
         text: {
           format: {
             type: 'json_schema',
@@ -118,6 +129,7 @@ export class JobFitAnalysisAiService {
           provider: 'openai',
           api: 'responses',
           model,
+          reasoningEffort: useReasoning ? reasoningEffort : null,
           responseId: response.id,
           usage: response.usage ?? null,
           parsed,

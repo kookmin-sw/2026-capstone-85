@@ -119,7 +119,8 @@ describe('JobFitAnalysisAiService file inputs', () => {
     });
     expect(mockResponsesCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'gpt-4o',
+        model: 'gpt-5.5',
+        reasoning: { effort: 'low' },
         store: false,
         text: expect.objectContaining({
           format: expect.objectContaining({
