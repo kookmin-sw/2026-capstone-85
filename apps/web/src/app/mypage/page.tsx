@@ -36,6 +36,7 @@ import {
   type ChangeEvent,
   type FormEvent,
   type ReactNode,
+  Suspense,
   useEffect,
   useRef,
   useState,
@@ -144,6 +145,14 @@ const boardLabels: Record<CommunityBoardType, string> = {
 };
 
 export default function MyPage() {
+  return (
+    <Suspense fallback={<main className={styles.page} />}>
+      <MyPageContent />
+    </Suspense>
+  );
+}
+
+function MyPageContent() {
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<MyProfileResponse | null>(null);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
