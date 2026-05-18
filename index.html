@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Accountit은 회계사와 CPA 준비생을 위한 CPA 특화 채용 큐레이션 플랫폼입니다."
+    />
+    <title>Accountit | CPA 채용 큐레이션 플랫폼</title>
+    <style>
+      :root {
+        --brand: #e8457a;
+        --brand-strong: #d03368;
+        --brand-soft: #fff0f5;
+        --brand-mid: #ffd6e5;
+        --ink: #202738;
+        --text: #434343;
+        --muted: #737782;
+        --line: #ebebeb;
+        --surface: #ffffff;
+        --surface-soft: #fff8fb;
+        --gray-50: #fafafa;
+        --blue: #4f80ff;
+        --green: #20a675;
+        --yellow: #f4b83f;
+        --shadow: 0 18px 50px rgba(32, 39, 56, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--surface);
+        color: var(--text);
+        font-family:
+          Pretendard,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          "Apple SD Gothic Neo",
+          "Noto Sans KR",
+          Arial,
+          sans-serif;
+        line-height: 1.6;
+        word-break: keep-all;
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .skip-link {
+        position: absolute;
+        left: 1rem;
+        top: -4rem;
+        z-index: 20;
+        border-radius: 0.5rem;
+        background: var(--ink);
+        color: #ffffff;
+        padding: 0.7rem 0.9rem;
+        font-weight: 800;
+      }
+
+      .skip-link:focus {
+        top: 1rem;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+        backdrop-filter: blur(12px);
+        transition:
+          box-shadow 180ms ease,
+          background 180ms ease;
+      }
+
+      .site-header.scrolled {
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 12px 30px rgba(32, 39, 56, 0.08);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        width: min(100%, 80rem);
+        min-height: 4.25rem;
+        margin: 0 auto;
+        padding: 0.65rem 1.5rem;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        flex: none;
+        color: var(--ink);
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .brand-logo {
+        width: 9.6rem;
+        height: auto;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: var(--muted);
+        font-size: 0.875rem;
+        font-weight: 800;
+      }
+
+      .nav-links a {
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.85rem;
+      }
+
+      .nav-links a:hover {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .nav-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.45rem;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #ffffff;
+        padding: 0 1rem;
+        font-size: 0.9rem;
+        font-weight: 900;
+        box-shadow: 0 12px 28px rgba(232, 69, 122, 0.18);
+      }
+
+      .repo-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        min-height: 2.45rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #ffffff;
+        color: var(--ink);
+        padding: 0 0.95rem;
+        font-size: 0.88rem;
+        font-weight: 900;
+      }
+
+      .repo-cta svg {
+        width: 1rem;
+        height: 1rem;
+        flex: none;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 91% 22%, rgba(232, 69, 122, 0.06), transparent 16rem),
+          #ffffff;
+      }
+
+      .hero::before {
+        position: absolute;
+        bottom: 2.25rem;
+        left: 0;
+        width: 10rem;
+        height: 10rem;
+        background-image: radial-gradient(rgba(232, 69, 122, 0.1) 1px, transparent 1px);
+        background-size: 1rem 1rem;
+        content: "";
+        animation: driftDots 12s linear infinite;
+      }
+
+      .hero::after {
+        position: absolute;
+        right: 10vw;
+        top: 8rem;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(232, 69, 122, 0.09), transparent 64%);
+        content: "";
+        filter: blur(8px);
+        animation: pulseGlow 5.8s ease-in-out infinite;
+      }
+
+      .hero-inner {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr);
+        align-items: center;
+        gap: clamp(0.75rem, 2vw, 2rem);
+        width: min(100%, 90rem);
+        min-height: 44rem;
+        margin: 0 auto;
+        padding: 6rem clamp(2.5rem, 5vw, 5rem) 5.75rem;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        min-height: 2rem;
+        margin-bottom: 1.35rem;
+        border: 1px solid rgba(232, 69, 122, 0.16);
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        padding: 0 0.9rem;
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .hero h1 {
+        max-width: 31rem;
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(2.55rem, 4.8vw, 3.05rem);
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1.16;
+      }
+
+      .hero h1 span {
+        color: var(--brand);
+      }
+
+      .hero-copy {
+        margin: 1.75rem 0 0;
+        max-width: 30rem;
+        color: #5a6170;
+        font-size: 1rem;
+        font-weight: 500;
+        line-height: 1.85;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 2.55rem;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3rem;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        padding: 0 1rem;
+        font-size: 0.94rem;
+        font-weight: 900;
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          background 180ms ease,
+          color 180ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+      }
+
+      .button-primary {
+        background: var(--brand);
+        color: #ffffff;
+        box-shadow: 0 12px 28px rgba(232, 69, 122, 0.22);
+      }
+
+      .button-primary:hover {
+        box-shadow: 0 18px 34px rgba(232, 69, 122, 0.28);
+      }
+
+      .button-secondary {
+        border-color: var(--line);
+        background: #ffffff;
+        color: var(--ink);
+      }
+
+      .hero-visual {
+        position: relative;
+        min-width: 0;
+        -webkit-mask-image: radial-gradient(
+          ellipse 78% 72% at 56% 50%,
+          black 28%,
+          rgba(0, 0, 0, 0.7) 52%,
+          transparent 100%
+        );
+        mask-image: radial-gradient(
+          ellipse 78% 72% at 56% 50%,
+          black 28%,
+          rgba(0, 0, 0, 0.7) 52%,
+          transparent 100%
+        );
+      }
+
+      .hero-visual::before {
+        position: absolute;
+        right: 4%;
+        top: 3%;
+        width: 13.5rem;
+        height: 13.5rem;
+        border-radius: 999px;
+        background: rgba(232, 69, 122, 0.04);
+        content: "";
+      }
+
+      .hero-visual img {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: min(56rem, 105%);
+        max-width: none;
+        height: auto;
+        margin-left: -2.5rem;
+        animation: floatPreview 7s ease-in-out infinite;
+      }
+
+      .hero-signal {
+        position: absolute;
+        z-index: 2;
+        right: clamp(0.5rem, 4vw, 3rem);
+        bottom: 4.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid rgba(232, 69, 122, 0.16);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--ink);
+        padding: 0.55rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 900;
+        box-shadow: 0 16px 36px rgba(32, 39, 56, 0.1);
+        backdrop-filter: blur(14px);
+      }
+
+      .hero-signal::before {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: var(--brand);
+        content: "";
+        box-shadow: 0 0 0 rgba(232, 69, 122, 0.5);
+        animation: pingDot 1.9s ease-out infinite;
+      }
+
+      .section {
+        width: min(100%, 76rem);
+        margin: 0 auto;
+        padding: 5.5rem 1.5rem;
+      }
+
+      .section-compact {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+      }
+
+      .section-heading {
+        max-width: 46rem;
+        margin-bottom: 2.2rem;
+      }
+
+      .section-heading.center {
+        margin-right: auto;
+        margin-left: auto;
+        text-align: center;
+      }
+
+      .section-heading p {
+        margin: 0.8rem 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      h2 {
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(1.55rem, 2.35vw, 2.25rem);
+        font-weight: 950;
+        letter-spacing: 0;
+        line-height: 1.22;
+      }
+
+      h3 {
+        margin: 0;
+        color: var(--ink);
+        font-size: 1.05rem;
+        font-weight: 900;
+        line-height: 1.35;
+      }
+
+      .problem-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .problem-card,
+      .team-card,
+      .command-card {
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 1.35rem;
+        box-shadow: 0 10px 26px rgba(32, 39, 56, 0.04);
+      }
+
+      .problem-card p,
+      .target-card p,
+      .team-card p {
+        margin: 0.55rem 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+
+      .card-icon {
+        display: grid;
+        width: 2.4rem;
+        height: 2.4rem;
+        margin-bottom: 0.95rem;
+        place-items: center;
+        border-radius: 0.5rem;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        font-weight: 950;
+      }
+
+      .feature-band {
+        background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .feature-stack {
+        display: grid;
+        gap: 1.4rem;
+      }
+
+      .feature {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 0.86fr) minmax(20rem, 1.14fr);
+        align-items: center;
+        gap: 2rem;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 1.2rem;
+        box-shadow: var(--shadow);
+        transition:
+          transform 220ms ease,
+          border-color 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .feature::before {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(135deg, rgba(232, 69, 122, 0.16), rgba(232, 69, 122, 0) 36%);
+        content: "";
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 220ms ease;
+      }
+
+      .feature:hover {
+        border-color: rgba(232, 69, 122, 0.22);
+        box-shadow: 0 24px 64px rgba(32, 39, 56, 0.11);
+        transform: translateY(-3px);
+      }
+
+      .feature:hover::before {
+        opacity: 1;
+      }
+
+      .feature:nth-child(even) {
+        grid-template-columns: minmax(20rem, 1.14fr) minmax(0, 0.86fr);
+      }
+
+      .feature:nth-child(even) .feature-copy {
+        order: 2;
+      }
+
+      .feature-copy {
+        min-width: 0;
+        padding: clamp(0.5rem, 2vw, 1.25rem);
+      }
+
+      .feature-kicker {
+        display: inline-flex;
+        margin-bottom: 0.75rem;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        padding: 0.25rem 0.58rem;
+        font-size: 0.76rem;
+        font-weight: 950;
+      }
+
+      .feature p {
+        margin: 0.75rem 0 1.1rem;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      .chip {
+        border: 1px solid rgba(232, 69, 122, 0.16);
+        border-radius: 999px;
+        background: #ffffff;
+        color: var(--brand-strong);
+        padding: 0.34rem 0.62rem;
+        font-size: 0.76rem;
+        font-weight: 900;
+      }
+
+      .feature-shot {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #f7f7f7;
+      }
+
+      .feature-shot::after {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.42) 42%, transparent 58%);
+        content: "";
+        transform: translateX(-120%);
+        transition: transform 700ms ease;
+      }
+
+      .feature:hover .feature-shot::after {
+        transform: translateX(120%);
+      }
+
+      .feature-shot img {
+        width: 100%;
+        transition: transform 420ms ease;
+      }
+
+      .feature:hover .feature-shot img {
+        transform: scale(1.012);
+      }
+
+      .targets {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .target-card {
+        display: flex;
+        min-height: 100%;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 1rem;
+        text-align: center;
+      }
+
+      .target-figure {
+        width: min(100%, 13.25rem);
+        margin: 0 auto 1rem;
+      }
+
+      .target-figure img {
+        width: 100%;
+        height: auto;
+      }
+
+      .team-band {
+        background: var(--surface-soft);
+        border-top: 1px solid rgba(232, 69, 122, 0.1);
+        border-bottom: 1px solid rgba(232, 69, 122, 0.1);
+      }
+
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .team-card {
+        text-align: center;
+      }
+
+      .team-card img {
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 0.85rem;
+        border: 3px solid #ffffff;
+        border-radius: 999px;
+        object-fit: cover;
+        box-shadow: 0 10px 24px rgba(32, 39, 56, 0.12);
+      }
+
+      .team-card span {
+        display: block;
+        margin-top: 0.2rem;
+        color: var(--brand-strong);
+        font-size: 0.78rem;
+        font-weight: 950;
+      }
+
+      .build-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .architecture-card {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 0.82fr) minmax(28rem, 1.18fr);
+        gap: 1.4rem;
+        align-items: center;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 1.2rem;
+        box-shadow: var(--shadow);
+      }
+
+      .architecture-card::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -18%;
+        width: 18%;
+        background: linear-gradient(90deg, transparent, rgba(232, 69, 122, 0.12), transparent);
+        content: "";
+        animation: scanArchitecture 6s ease-in-out infinite;
+      }
+
+      .architecture-copy {
+        min-width: 0;
+        padding: clamp(0.5rem, 2vw, 1.25rem);
+      }
+
+      .architecture-copy p {
+        margin: 0.75rem 0 0;
+        color: var(--muted);
+        font-weight: 650;
+      }
+
+      .architecture-shot {
+        margin: 0;
+      }
+
+      .architecture-shot img {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+      }
+
+      .architecture-shot figcaption {
+        margin-top: 0.55rem;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .tech-card {
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 1.25rem;
+        box-shadow: 0 10px 26px rgba(32, 39, 56, 0.04);
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .tech-card:hover {
+        border-color: rgba(232, 69, 122, 0.18);
+        box-shadow: 0 18px 38px rgba(32, 39, 56, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .stack-list,
+      .todo-list {
+        display: grid;
+        gap: 0.6rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .stack-list li,
+      .todo-list li {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        color: var(--muted);
+        font-weight: 650;
+      }
+
+      .stack-list li::before,
+      .todo-list li::before {
+        flex: 0 0 auto;
+        width: 0.45rem;
+        height: 0.45rem;
+        margin-top: 0.62rem;
+        border-radius: 999px;
+        background: var(--brand);
+        content: "";
+      }
+
+      .command-card {
+        background: #141821;
+        color: #eef2f7;
+      }
+
+      .command-card h3 {
+        color: #ffffff;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 1rem 0 0;
+        border-radius: 0.5rem;
+        background: #0c1118;
+        padding: 1rem;
+      }
+
+      code {
+        color: #f7d5e2;
+        font-family:
+          "SFMono-Regular",
+          Consolas,
+          "Liberation Mono",
+          monospace;
+        font-size: 0.88rem;
+        line-height: 1.7;
+      }
+
+      .footer {
+        border-top: 1px solid var(--line);
+        background: #ffffff;
+      }
+
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        width: min(100%, 76rem);
+        margin: 0 auto;
+        padding: 1.5rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+      }
+
+      .footer-links a:hover {
+        color: var(--brand);
+      }
+
+      body.anim-ready .section-heading,
+      body.anim-ready .problem-card,
+      body.anim-ready .target-card,
+      body.anim-ready .feature,
+      body.anim-ready .team-card,
+      body.anim-ready .architecture-card,
+      body.anim-ready .tech-card,
+      body.anim-ready .build-grid > article {
+        opacity: 0;
+        transform: translateY(22px);
+        transition:
+          opacity 520ms ease,
+          transform 520ms ease;
+      }
+
+      body.anim-ready .section-heading.is-visible,
+      body.anim-ready .problem-card.is-visible,
+      body.anim-ready .target-card.is-visible,
+      body.anim-ready .feature.is-visible,
+      body.anim-ready .team-card.is-visible,
+      body.anim-ready .architecture-card.is-visible,
+      body.anim-ready .tech-card.is-visible,
+      body.anim-ready .build-grid > article.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @keyframes floatPreview {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes pingDot {
+        0% {
+          box-shadow: 0 0 0 0 rgba(232, 69, 122, 0.42);
+        }
+        80%,
+        100% {
+          box-shadow: 0 0 0 0.65rem rgba(232, 69, 122, 0);
+        }
+      }
+
+      @keyframes pulseGlow {
+        0%,
+        100% {
+          opacity: 0.62;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.08);
+        }
+      }
+
+      @keyframes driftDots {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 1rem 1rem;
+        }
+      }
+
+      @keyframes scanArchitecture {
+        0%,
+        35% {
+          transform: translateX(0);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        75%,
+        100% {
+          transform: translateX(760%);
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero-inner,
+        .feature,
+        .feature:nth-child(even),
+        .build-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .feature:nth-child(even) .feature-copy {
+          order: 0;
+        }
+
+        .problem-grid,
+        .targets {
+          grid-template-columns: 1fr;
+        }
+
+        .team-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .hero-visual img {
+          width: min(44rem, 100%);
+          margin-left: 0;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">본문으로 이동</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="주요 메뉴">
+        <a class="brand" href="#top" aria-label="Accountit 홈">
+          <img class="brand-logo" src="apps/web/public/logo.png" alt="Accountit" />
+        </a>
+        <div class="nav-links">
+          <a href="#overview">프로젝트</a>
+          <a href="#features">주요 기능</a>
+          <a href="#team">팀 소개</a>
+          <a href="#run">기술/실행</a>
+        </div>
+        <div class="nav-actions">
+          <a
+            class="repo-cta"
+            href="https://github.com/kookmin-sw/2026-capstone-85"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.02c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A11.03 11.03 0 0 1 12 6.18c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.67.42.36.78 1.07.78 2.16v3.01c0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"
+              />
+            </svg>
+            GitHub Repo
+          </a>
+          <a class="nav-cta" href="http://pj-kmucd2-5-s3.s3-website-us-east-1.amazonaws.com">
+            서비스 데모
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-inner">
+          <div>
+            <span class="eyebrow">CPA 특화 채용 큐레이션 플랫폼</span>
+            <h1>
+              회계사 채용,
+              <br />
+              <span>필요한 공고만</span>
+              <br />
+              <span>정확하게</span>
+            </h1>
+            <p class="hero-copy">
+              수습·KICPA·직무·연차·마감일 기준으로 필요한 공고만 모아드립니다.
+            </p>
+            <div class="hero-actions" aria-label="바로가기">
+              <a
+                class="button button-primary"
+                href="http://pj-kmucd2-5-s3.s3-website-us-east-1.amazonaws.com"
+              >
+                서비스 둘러보기
+              </a>
+            </div>
+          </div>
+
+          <div class="hero-visual" aria-label="Accountit 홈 화면 미리보기">
+            <img
+              src="apps/web/public/landing/accountit-hero.png"
+              alt="Accountit 서비스 화면 미리보기"
+            />
+            <div class="hero-signal" aria-hidden="true">큐레이션 업데이트 중</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-compact" id="overview">
+        <div class="section-heading center">
+          <span class="eyebrow">Overview</span>
+          <h2>Accountit은 CPA 채용 정보를 한곳에 모으는 플랫폼입니다</h2>
+          <p>
+            수습 가능 여부, KICPA 조건, 마감일, 회사 정보를 함께 보여 주어
+            회계 직무 탐색 시간을 줄이는 것을 목표로 합니다.
+          </p>
+        </div>
+
+        <div class="problem-grid">
+          <article class="problem-card">
+            <span class="card-icon">01</span>
+            <h3>CPA 공고 큐레이션</h3>
+            <p>
+              여러 채널의 회계 직무 공고를 모아 출처와 마지막 확인 시간을 함께 제공합니다.
+            </p>
+          </article>
+          <article class="problem-card">
+            <span class="card-icon">02</span>
+            <h3>조건 기반 탐색</h3>
+            <p>
+              실무수습, KICPA, 직무, 연차, 마감일 기준으로 필요한 공고만 좁혀 봅니다.
+            </p>
+          </article>
+          <article class="problem-card">
+            <span class="card-icon">03</span>
+            <h3>AI 지원 판단 보조</h3>
+            <p>
+              이력서와 공고 조건을 비교해 적합도와 보완 포인트를 요약합니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-compact">
+        <div class="section-heading">
+          <span class="eyebrow">Target User</span>
+          <h2>Target User</h2>
+          <p>프로젝트 포스터의 핵심 사용자군을 기준으로 정리했습니다.</p>
+        </div>
+        <div class="targets">
+          <article class="target-card">
+            <div class="target-figure" aria-hidden="true">
+              <img src="apps/web/public/target-accountant.png" alt="" />
+            </div>
+            <h3>회계사 및 CPA 자격 보유자</h3>
+            <p>
+              회계 직무 이직과 커리어 확장을 준비하는 사용자입니다.
+            </p>
+          </article>
+          <article class="target-card">
+            <div class="target-figure" aria-hidden="true">
+              <img src="apps/web/public/target-company.png" alt="" />
+            </div>
+            <h3>회계법인 및 채용 기업</h3>
+            <p>
+              CPA 채용 공고를 등록하고 성과를 확인하는 기업회원입니다.
+            </p>
+          </article>
+          <article class="target-card">
+            <div class="target-figure" aria-hidden="true">
+              <img src="apps/web/public/target-trainee.png" alt="" />
+            </div>
+            <h3>CPA 준비생 및 수습 예정자</h3>
+            <p>
+              실무수습 가능 공고와 신입 채용 정보를 찾는 사용자입니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="feature-band" id="features">
+        <div class="section">
+          <div class="section-heading center">
+            <span class="eyebrow">Features</span>
+            <h2>Key Features</h2>
+            <p>
+              대표 기능과 실제 화면 세 가지만 간단히 소개합니다.
+            </p>
+          </div>
+
+          <div class="feature-stack">
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">Job Discovery</span>
+                <h3>CPA 채용 공고 검색</h3>
+                <p>
+                  직무, 회사 유형, 지역, 경력, KICPA 조건, 수습 가능 여부로
+                  공고를 탐색합니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">D-day</span>
+                  <span class="chip">KICPA 조건</span>
+                  <span class="chip">수습 가능</span>
+                  <span class="chip">출처 표시</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img src="apps/web/public/job-page.png" alt="채용 공고 검색 화면" />
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">AI Resume Fit</span>
+                <h3>AI 적합도 분석</h3>
+                <p>
+                  이력서와 공고 조건을 비교해 강점, 보완점, 핵심 태그를 요약합니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">이력서 분석</span>
+                  <span class="chip">공고 요약</span>
+                  <span class="chip">적합도 판단</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img
+                  src="apps/web/public/job-detail-page.png"
+                  alt="채용 공고 상세 AI 적합도 분석 화면"
+                />
+              </div>
+            </article>
+
+            <article class="feature">
+              <div class="feature-copy">
+                <span class="feature-kicker">Company Analytics</span>
+                <h3>기업회원 대시보드</h3>
+                <p>
+                  공고 조회수, 북마크 수, 클릭률 등 채용 공고 성과를 확인합니다.
+                </p>
+                <div class="chips">
+                  <span class="chip">조회 추이</span>
+                  <span class="chip">북마크 흐름</span>
+                  <span class="chip">공고 성과</span>
+                </div>
+              </div>
+              <div class="feature-shot">
+                <img
+                  src="apps/web/public/company-analysis.png"
+                  alt="기업회원 대시보드 화면"
+                />
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="team-band" id="team">
+        <div class="section">
+          <div class="section-heading center">
+            <span class="eyebrow">Team</span>
+            <h2>AWS-2 분반 SW-05 85팀</h2>
+            <p>CPA 채용 탐색 문제를 제품, 데이터, 웹 경험으로 풀어 가는 팀입니다.</p>
+          </div>
+          <div class="team-grid">
+            <a class="team-card" href="https://github.com/pookjw">
+              <img src="docs/images/team/jinwoo.jpeg" alt="김진우 프로필" />
+              <h3>김진우</h3>
+              <span>Team Lead · BE · PM</span>
+              <p>20182217</p>
+            </a>
+            <a class="team-card" href="https://github.com/suuuujinnnn">
+              <img src="https://github.com/suuuujinnnn.png" alt="박수진 프로필" />
+              <h3>박수진</h3>
+              <span>BE · PM</span>
+              <p>20230152</p>
+            </a>
+            <a class="team-card" href="https://github.com/dfevgd">
+              <img src="https://github.com/dfevgd.png" alt="박지영 프로필" />
+              <h3>박지영</h3>
+              <span>FE</span>
+              <p>20223080</p>
+            </a>
+            <a class="team-card" href="https://github.com/jisw0822">
+              <img src="https://github.com/jisw0822.png" alt="지성은 프로필" />
+              <h3>지성은</h3>
+              <span>FE</span>
+              <p>20223148</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="run">
+        <div class="section-heading">
+          <span class="eyebrow">Tech</span>
+          <h2>Architecture & Stack</h2>
+          <p>
+            프로젝트 구조를 파악하는 데 필요한 기술 정보만 간단히 정리했습니다.
+          </p>
+        </div>
+
+        <article class="architecture-card">
+          <div class="architecture-copy">
+            <span class="feature-kicker">System Architecture</span>
+            <h3>서비스 아키텍처</h3>
+            <p>
+              Next.js 웹, NestJS API, Prisma/PostgreSQL, S3 정적 자산으로 구성된
+              CPA 채용 큐레이션 서비스입니다.
+            </p>
+          </div>
+          <figure class="architecture-shot">
+            <img
+              src="apps/web/public/system-architecture.png"
+              alt="Accountit 채용 공고 목록 조회 시스템 아키텍처"
+            />
+            <figcaption>
+              Static Web Hosting, API Routing, Service Layer, Database 흐름을 나타냅니다.
+            </figcaption>
+          </figure>
+        </article>
+
+        <div class="tech-grid" aria-label="프로젝트 기술 정보">
+          <article class="tech-card">
+            <h3>Monorepo</h3>
+            <ul class="stack-list">
+              <li>apps/web</li>
+              <li>apps/api</li>
+              <li>packages/shared</li>
+              <li>prisma</li>
+            </ul>
+          </article>
+          <article class="tech-card">
+            <h3>Stack</h3>
+            <ul class="stack-list">
+              <li>Web: Next.js, TypeScript, Tailwind CSS</li>
+              <li>API: NestJS, Prisma ORM, PostgreSQL</li>
+              <li>Auth: argon2, HTTP-only JWT cookie</li>
+              <li>UI: shadcn/ui, lucide-react</li>
+            </ul>
+          </article>
+          <article class="tech-card">
+            <h3>Roles</h3>
+            <ul class="stack-list">
+              <li>JOB_SEEKER</li>
+              <li>COMPANY</li>
+              <li>ADMIN</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="build-grid">
+          <article class="command-card">
+            <h3>Local Development</h3>
+            <pre><code>npm install
+cp .env.example .env
+docker compose up -d
+npm run prisma:migrate
+npm run prisma:mock
+npm run dev
+
+# focused checks
+npm run typecheck
+npm run lint
+npm run test</code></pre>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>Accountit · CPA-focused job curation platform</span>
+        <div class="footer-links">
+          <a href="README.md">README</a>
+          <a href="https://github.com/kookmin-sw/2026-capstone-85">GitHub</a>
+          <a href="http://pj-kmucd2-5-s3.s3-website-us-east-1.amazonaws.com">Demo</a>
+        </div>
+      </div>
+    </footer>
+    <script>
+      (() => {
+        const header = document.querySelector(".site-header");
+        const revealTargets = document.querySelectorAll(
+          ".section-heading, .problem-card, .target-card, .feature, .team-card, .architecture-card, .tech-card, .build-grid > article"
+        );
+
+        document.body.classList.add("anim-ready");
+
+        const updateHeader = () => {
+          if (!header) return;
+          header.classList.toggle("scrolled", window.scrollY > 12);
+        };
+
+        updateHeader();
+        window.addEventListener("scroll", updateHeader, { passive: true });
+
+        if (!("IntersectionObserver" in window)) {
+          revealTargets.forEach((element) => element.classList.add("is-visible"));
+          return;
+        }
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            });
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+        );
+
+        revealTargets.forEach((element, index) => {
+          element.style.transitionDelay = `${(index % 4) * 70}ms`;
+          observer.observe(element);
+        });
+      })();
+    </script>
+  </body>
+</html>
