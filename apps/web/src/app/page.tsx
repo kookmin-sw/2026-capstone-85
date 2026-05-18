@@ -26,6 +26,7 @@ import {
   defaultJobFilters,
   type JobFilterState,
 } from '@/lib/job-filters';
+import { HomeTransitions } from './home-transitions';
 import styles from './page.module.css';
 
 const problemCards: Array<{
@@ -356,10 +357,11 @@ export default function Home() {
   return (
     <main className={styles.page}>
       <SiteNav variant="landing" />
+      <HomeTransitions />
 
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.heroCopy}>
+          <div className={styles.heroCopy} data-home-reveal="">
             <span className={styles.eyebrow}>CPA 전용 채용 큐레이션 플랫폼</span>
             <h1 className={styles.headline}>
               회계사 채용,
@@ -381,7 +383,7 @@ export default function Home() {
             </ActionLink>
           </div>
 
-          <div className={styles.heroVisual} aria-hidden="true">
+          <div className={styles.heroVisual} aria-hidden="true" data-home-reveal="">
             <Image
               className={styles.heroImage}
               src={`${assetBasePath}/landing/accountit-hero.png`}
@@ -399,7 +401,12 @@ export default function Home() {
         <div className={styles.quickRow}>
           {homeQuickFilters.map((item) => {
             return (
-              <Link className={styles.quickItem} href={buildHomeQuickHref(item.values)} key={item.id}>
+              <Link
+                className={styles.quickItem}
+                data-home-reveal=""
+                href={buildHomeQuickHref(item.values)}
+                key={item.id}
+              >
                 <span className={styles.quickIcon}>
                   {QuickNavIcons[item.id]}
                 </span>
@@ -411,13 +418,13 @@ export default function Home() {
       </section>
 
       <section className={styles.problemSection} aria-labelledby="problem-title">
-        <div className={styles.sectionHeader}>
+        <div className={styles.sectionHeader} data-home-reveal="">
           <h2 id="problem-title">회계사 채용, 왜 어려울까요?</h2>
           <p>파편화된 정보와 복잡한 조건들 속에서 원하는 공고를 찾기가 쉽지 않습니다.</p>
         </div>
         <div className={styles.problemGrid}>
           {problemCards.map((item) => (
-            <article className={styles.problemCard} key={item.title}>
+            <article className={styles.problemCard} data-home-reveal="" key={item.title}>
               <IconTile icon={item.icon} size="lg" tone="neutral" className={styles.problemIcon} />
               <h3>{item.title}</h3>
               <p>{item.description}</p>
@@ -428,7 +435,11 @@ export default function Home() {
 
       <section className={styles.intelligenceSection} aria-label="AI와 기업회원 분석 기능">
         {intelligenceSections.map(({ icon: Icon, ...section }, index) => (
-          <article className={styles.intelligencePanel} key={section.eyebrow}>
+          <article
+            className={styles.intelligencePanel}
+            data-home-reveal=""
+            key={section.eyebrow}
+          >
             <div className={styles.intelligenceCopy}>
               <span className={styles.intelligenceEyebrow}>
                 <Icon size={15} aria-hidden="true" />
@@ -503,7 +514,7 @@ export default function Home() {
 
       <section className={styles.communitySection} aria-labelledby="community-title">
         <div className={styles.communityPanel}>
-          <div className={styles.communityVisual} aria-hidden="true">
+          <div className={styles.communityVisual} aria-hidden="true" data-home-reveal="">
             <Image
               className={styles.communityImage}
               src={`${assetBasePath}/landing/accountit-community.png`}
@@ -514,7 +525,7 @@ export default function Home() {
             />
           </div>
 
-          <div className={styles.communityCopy}>
+          <div className={styles.communityCopy} data-home-reveal="">
             <span className={styles.communityEyebrow}>
               <MessageCircle size={16} aria-hidden="true" />
               CPA Community
@@ -566,7 +577,7 @@ export default function Home() {
           </h2>
           <div className={styles.statsGrid}>
             {stats.map(({ value, label }) => (
-              <div className={styles.statCard} key={label}>
+              <div className={styles.statCard} data-home-reveal="" key={label}>
                 <strong>{value}</strong>
                 <span>{label}</span>
               </div>
@@ -575,7 +586,7 @@ export default function Home() {
         </section>
 
         <section className={styles.ctaSection} aria-labelledby="cta-title">
-          <div className={styles.ctaInner}>
+          <div className={styles.ctaInner} data-home-reveal="">
             <h2 id="cta-title">
               공고를 찾는 순간부터 마감 관리까지
               <br />

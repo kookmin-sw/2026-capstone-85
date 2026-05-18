@@ -6,10 +6,18 @@
   background: color-mix(in srgb, var(--surface) 94%, transparent);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(12px);
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .landingNav {
   background: rgba(255, 255, 255, 0.94);
+}
+
+.landingNavScrolled {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 12px 30px rgba(32, 39, 56, 0.08);
 }
 
 .inner {

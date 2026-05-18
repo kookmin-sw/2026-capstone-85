@@ -87,6 +87,14 @@
         background: rgba(255, 255, 255, 0.94);
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
         backdrop-filter: blur(12px);
+        transition:
+          box-shadow 180ms ease,
+          background 180ms ease;
+      }
+
+      .site-header.scrolled {
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 12px 30px rgba(32, 39, 56, 0.08);
       }
 
       .nav {
@@ -157,6 +165,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 0.45rem;
         min-height: 2.45rem;
         border: 1px solid var(--line);
         border-radius: 999px;
@@ -165,6 +174,12 @@
         padding: 0 0.95rem;
         font-size: 0.88rem;
         font-weight: 900;
+      }
+
+      .repo-cta svg {
+        width: 1rem;
+        height: 1rem;
+        flex: none;
       }
 
       .hero {
@@ -184,6 +199,20 @@
         background-image: radial-gradient(rgba(232, 69, 122, 0.1) 1px, transparent 1px);
         background-size: 1rem 1rem;
         content: "";
+        animation: driftDots 12s linear infinite;
+      }
+
+      .hero::after {
+        position: absolute;
+        right: 10vw;
+        top: 8rem;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(232, 69, 122, 0.09), transparent 64%);
+        content: "";
+        filter: blur(8px);
+        animation: pulseGlow 5.8s ease-in-out infinite;
       }
 
       .hero-inner {
@@ -214,13 +243,13 @@
       }
 
       .hero h1 {
-        max-width: 35rem;
+        max-width: 31rem;
         margin: 0;
         color: var(--ink);
-        font-size: clamp(3.2rem, 6.4vw, 5rem);
+        font-size: clamp(2.55rem, 4.8vw, 3.05rem);
         font-weight: 900;
         letter-spacing: 0;
-        line-height: 1.14;
+        line-height: 1.16;
       }
 
       .hero h1 span {
@@ -270,6 +299,10 @@
         box-shadow: 0 12px 28px rgba(232, 69, 122, 0.22);
       }
 
+      .button-primary:hover {
+        box-shadow: 0 18px 34px rgba(232, 69, 122, 0.28);
+      }
+
       .button-secondary {
         border-color: var(--line);
         background: #ffffff;
@@ -312,6 +345,36 @@
         max-width: none;
         height: auto;
         margin-left: -2.5rem;
+        animation: floatPreview 7s ease-in-out infinite;
+      }
+
+      .hero-signal {
+        position: absolute;
+        z-index: 2;
+        right: clamp(0.5rem, 4vw, 3rem);
+        bottom: 4.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid rgba(232, 69, 122, 0.16);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--ink);
+        padding: 0.55rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 900;
+        box-shadow: 0 16px 36px rgba(32, 39, 56, 0.1);
+        backdrop-filter: blur(14px);
+      }
+
+      .hero-signal::before {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: var(--brand);
+        content: "";
+        box-shadow: 0 0 0 rgba(232, 69, 122, 0.5);
+        animation: pingDot 1.9s ease-out infinite;
       }
 
       .section {
@@ -346,7 +409,7 @@
       h2 {
         margin: 0;
         color: var(--ink);
-        font-size: clamp(1.85rem, 3.2vw, 3rem);
+        font-size: clamp(1.55rem, 2.35vw, 2.25rem);
         font-weight: 950;
         letter-spacing: 0;
         line-height: 1.22;
@@ -409,15 +472,42 @@
       }
 
       .feature {
+        position: relative;
         display: grid;
         grid-template-columns: minmax(0, 0.86fr) minmax(20rem, 1.14fr);
         align-items: center;
         gap: 2rem;
+        overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 0.5rem;
         background: #ffffff;
         padding: 1.2rem;
         box-shadow: var(--shadow);
+        transition:
+          transform 220ms ease,
+          border-color 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .feature::before {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(135deg, rgba(232, 69, 122, 0.16), rgba(232, 69, 122, 0) 36%);
+        content: "";
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 220ms ease;
+      }
+
+      .feature:hover {
+        border-color: rgba(232, 69, 122, 0.22);
+        box-shadow: 0 24px 64px rgba(32, 39, 56, 0.11);
+        transform: translateY(-3px);
+      }
+
+      .feature:hover::before {
+        opacity: 1;
       }
 
       .feature:nth-child(even) {
@@ -467,14 +557,33 @@
       }
 
       .feature-shot {
+        position: relative;
         overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 0.5rem;
         background: #f7f7f7;
       }
 
+      .feature-shot::after {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.42) 42%, transparent 58%);
+        content: "";
+        transform: translateX(-120%);
+        transition: transform 700ms ease;
+      }
+
+      .feature:hover .feature-shot::after {
+        transform: translateX(120%);
+      }
+
       .feature-shot img {
         width: 100%;
+        transition: transform 420ms ease;
+      }
+
+      .feature:hover .feature-shot img {
+        transform: scale(1.012);
       }
 
       .targets {
@@ -500,36 +609,6 @@
       .target-figure img {
         width: 100%;
         height: auto;
-      }
-
-      .timeline {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 1px;
-        overflow: hidden;
-        border: 1px solid var(--line);
-        border-radius: 0.5rem;
-        background: var(--line);
-      }
-
-      .timeline-item {
-        background: #ffffff;
-        padding: 1.2rem;
-      }
-
-      .timeline-item strong {
-        display: inline-flex;
-        margin-bottom: 0.45rem;
-        color: var(--brand-strong);
-        font-size: 0.82rem;
-        font-weight: 950;
-      }
-
-      .timeline-item p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.9rem;
-        font-weight: 650;
       }
 
       .team-band {
@@ -568,22 +647,35 @@
 
       .build-grid {
         display: grid;
-        grid-template-columns: minmax(0, 0.92fr) minmax(22rem, 1.08fr);
+        grid-template-columns: minmax(0, 1fr);
         gap: 1rem;
         align-items: start;
       }
 
       .architecture-card {
+        position: relative;
         display: grid;
         grid-template-columns: minmax(0, 0.82fr) minmax(28rem, 1.18fr);
         gap: 1.4rem;
         align-items: center;
+        overflow: hidden;
         margin-bottom: 1rem;
         border: 1px solid var(--line);
         border-radius: 0.5rem;
         background: #ffffff;
         padding: 1.2rem;
         box-shadow: var(--shadow);
+      }
+
+      .architecture-card::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -18%;
+        width: 18%;
+        background: linear-gradient(90deg, transparent, rgba(232, 69, 122, 0.12), transparent);
+        content: "";
+        animation: scanArchitecture 6s ease-in-out infinite;
       }
 
       .architecture-copy {
@@ -628,6 +720,16 @@
         background: #ffffff;
         padding: 1.25rem;
         box-shadow: 0 10px 26px rgba(32, 39, 56, 0.04);
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .tech-card:hover {
+        border-color: rgba(232, 69, 122, 0.18);
+        box-shadow: 0 18px 38px rgba(32, 39, 56, 0.08);
+        transform: translateY(-2px);
       }
 
       .stack-list,
@@ -716,6 +818,101 @@
         color: var(--brand);
       }
 
+      body.anim-ready .section-heading,
+      body.anim-ready .problem-card,
+      body.anim-ready .target-card,
+      body.anim-ready .feature,
+      body.anim-ready .team-card,
+      body.anim-ready .architecture-card,
+      body.anim-ready .tech-card,
+      body.anim-ready .build-grid > article {
+        opacity: 0;
+        transform: translateY(22px);
+        transition:
+          opacity 520ms ease,
+          transform 520ms ease;
+      }
+
+      body.anim-ready .section-heading.is-visible,
+      body.anim-ready .problem-card.is-visible,
+      body.anim-ready .target-card.is-visible,
+      body.anim-ready .feature.is-visible,
+      body.anim-ready .team-card.is-visible,
+      body.anim-ready .architecture-card.is-visible,
+      body.anim-ready .tech-card.is-visible,
+      body.anim-ready .build-grid > article.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @keyframes floatPreview {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes pingDot {
+        0% {
+          box-shadow: 0 0 0 0 rgba(232, 69, 122, 0.42);
+        }
+        80%,
+        100% {
+          box-shadow: 0 0 0 0.65rem rgba(232, 69, 122, 0);
+        }
+      }
+
+      @keyframes pulseGlow {
+        0%,
+        100% {
+          opacity: 0.62;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.08);
+        }
+      }
+
+      @keyframes driftDots {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 1rem 1rem;
+        }
+      }
+
+      @keyframes scanArchitecture {
+        0%,
+        35% {
+          transform: translateX(0);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        75%,
+        100% {
+          transform: translateX(760%);
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
       @media (max-width: 980px) {
         .nav-links {
           display: none;
@@ -737,7 +934,6 @@
           grid-template-columns: 1fr;
         }
 
-        .timeline,
         .team-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -758,10 +954,10 @@
           <img class="brand-logo" src="apps/web/public/logo.png" alt="Accountit" />
         </a>
         <div class="nav-links">
-          <a href="#problem">문제 정의</a>
+          <a href="#overview">프로젝트</a>
           <a href="#features">주요 기능</a>
           <a href="#team">팀 소개</a>
-          <a href="#run">실행 방법</a>
+          <a href="#run">기술/실행</a>
         </div>
         <div class="nav-actions">
           <a
@@ -770,6 +966,11 @@
             target="_blank"
             rel="noreferrer"
           >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.02c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A11.03 11.03 0 0 1 12 6.18c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.67.42.36.78 1.07.78 2.16v3.01c0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"
+              />
+            </svg>
             GitHub Repo
           </a>
           <a class="nav-cta" href="http://pj-kmucd2-5-s3.s3-website-us-east-1.amazonaws.com">
@@ -809,43 +1010,41 @@
               src="apps/web/public/landing/accountit-hero.png"
               alt="Accountit 서비스 화면 미리보기"
             />
+            <div class="hero-signal" aria-hidden="true">큐레이션 업데이트 중</div>
           </div>
         </div>
       </section>
 
-      <section class="section section-compact" id="problem">
+      <section class="section section-compact" id="overview">
         <div class="section-heading center">
-          <span class="eyebrow">Problem</span>
-          <h2>회계사 채용 정보는 아직 너무 흩어져 있습니다</h2>
+          <span class="eyebrow">Overview</span>
+          <h2>Accountit은 CPA 채용 정보를 한곳에 모으는 플랫폼입니다</h2>
           <p>
-            지원자는 여러 채널을 오가며 공고 조건과 회사 정보를 직접 대조해야 하고,
-            기업은 지원자의 관심 흐름을 파악하기 어렵습니다.
+            수습 가능 여부, KICPA 조건, 마감일, 회사 정보를 함께 보여 주어
+            회계 직무 탐색 시간을 줄이는 것을 목표로 합니다.
           </p>
         </div>
 
         <div class="problem-grid">
           <article class="problem-card">
             <span class="card-icon">01</span>
-            <h3>공고의 파편화</h3>
+            <h3>CPA 공고 큐레이션</h3>
             <p>
-              회사 채용 페이지, KICPA 게시판, 일반 채용 플랫폼에 공고가 분산되어
-              반복 탐색 비용이 큽니다.
+              여러 채널의 회계 직무 공고를 모아 출처와 마지막 확인 시간을 함께 제공합니다.
             </p>
           </article>
           <article class="problem-card">
             <span class="card-icon">02</span>
-            <h3>CPA 조건의 불투명성</h3>
+            <h3>조건 기반 탐색</h3>
             <p>
-              수습 가능 여부, 실무수습기관 인정 여부, KICPA 필수/우대 조건을
-              공고마다 따로 확인해야 합니다.
+              실무수습, KICPA, 직무, 연차, 마감일 기준으로 필요한 공고만 좁혀 봅니다.
             </p>
           </article>
           <article class="problem-card">
             <span class="card-icon">03</span>
-            <h3>지원 판단 정보의 분산</h3>
+            <h3>AI 지원 판단 보조</h3>
             <p>
-              회사 규모, 평균 연봉, 입사와 퇴사 흐름 등 지원 결정에 필요한 정보가
-              채용 공고와 따로 존재합니다.
+              이력서와 공고 조건을 비교해 적합도와 보완 포인트를 요약합니다.
             </p>
           </article>
         </div>
@@ -854,7 +1053,8 @@
       <section class="section section-compact">
         <div class="section-heading">
           <span class="eyebrow">Target User</span>
-          <h2>우리는 이런 사용자를 위해 준비했습니다</h2>
+          <h2>Target User</h2>
+          <p>프로젝트 포스터의 핵심 사용자군을 기준으로 정리했습니다.</p>
         </div>
         <div class="targets">
           <article class="target-card">
@@ -863,8 +1063,7 @@
             </div>
             <h3>회계사 및 CPA 자격 보유자</h3>
             <p>
-              감사, 세무, FAS, Deal, 내부회계, 인하우스 등 다양한 회계 직무로
-              커리어를 확장하려는 사용자입니다.
+              회계 직무 이직과 커리어 확장을 준비하는 사용자입니다.
             </p>
           </article>
           <article class="target-card">
@@ -873,8 +1072,7 @@
             </div>
             <h3>회계법인 및 채용 기업</h3>
             <p>
-              공고를 등록하고 지원자 관심도와 공고 성과 데이터를 확인하려는
-              기업회원입니다.
+              CPA 채용 공고를 등록하고 성과를 확인하는 기업회원입니다.
             </p>
           </article>
           <article class="target-card">
@@ -883,8 +1081,7 @@
             </div>
             <h3>CPA 준비생 및 수습 예정자</h3>
             <p>
-              수습 CPA 가능 공고, 실무수습기관 인정 여부, 신입 채용, KICPA 조건을
-              중심으로 탐색하는 사용자입니다.
+              실무수습 가능 공고와 신입 채용 정보를 찾는 사용자입니다.
             </p>
           </article>
         </div>
@@ -893,11 +1090,10 @@
       <section class="feature-band" id="features">
         <div class="section">
           <div class="section-heading center">
-            <span class="eyebrow">Product Preview</span>
-            <h2>공고 탐색부터 지원 판단까지 한 화면 안에서 이어집니다</h2>
+            <span class="eyebrow">Features</span>
+            <h2>Key Features</h2>
             <p>
-              실제 서비스 화면을 기준으로 공고 탐색, AI 적합도 분석, 기업회원 분석,
-              마감 관리와 커뮤니티 흐름을 정리했습니다.
+              대표 기능과 실제 화면 세 가지만 간단히 소개합니다.
             </p>
           </div>
 
@@ -905,11 +1101,10 @@
             <article class="feature">
               <div class="feature-copy">
                 <span class="feature-kicker">Job Discovery</span>
-                <h3>CPA 채용 공고 통합 검색과 맞춤형 필터</h3>
+                <h3>CPA 채용 공고 검색</h3>
                 <p>
-                  직무, 회사 유형, 지역, 경력, KICPA 조건, 수습 가능 여부,
-                  실무수습기관 여부, 마감 유형 등 CPA 채용에 필요한 조건으로
-                  공고를 좁혀 봅니다.
+                  직무, 회사 유형, 지역, 경력, KICPA 조건, 수습 가능 여부로
+                  공고를 탐색합니다.
                 </p>
                 <div class="chips">
                   <span class="chip">D-day</span>
@@ -926,10 +1121,9 @@
             <article class="feature">
               <div class="feature-copy">
                 <span class="feature-kicker">AI Resume Fit</span>
-                <h3>공고별 AI 적합도 분석</h3>
+                <h3>AI 적합도 분석</h3>
                 <p>
-                  이력서를 기반으로 공고별 적합도를 계산하고, 강점과 보완점,
-                  핵심 태그와 유의사항을 함께 보여 주어 지원 판단 시간을 줄입니다.
+                  이력서와 공고 조건을 비교해 강점, 보완점, 핵심 태그를 요약합니다.
                 </p>
                 <div class="chips">
                   <span class="chip">이력서 분석</span>
@@ -948,10 +1142,9 @@
             <article class="feature">
               <div class="feature-copy">
                 <span class="feature-kicker">Company Analytics</span>
-                <h3>기업회원용 관심 데이터와 공고 성과 분석</h3>
+                <h3>기업회원 대시보드</h3>
                 <p>
-                  공고 조회수, 원문 클릭수, 북마크 수, 클릭률, 전환 흐름을 확인해
-                  어떤 조건에 지원자가 반응하는지 데이터로 파악합니다.
+                  공고 조회수, 북마크 수, 클릭률 등 채용 공고 성과를 확인합니다.
                 </p>
                 <div class="chips">
                   <span class="chip">조회 추이</span>
@@ -966,73 +1159,6 @@
                 />
               </div>
             </article>
-
-            <article class="feature">
-              <div class="feature-copy">
-                <span class="feature-kicker">Deadline Calendar</span>
-                <h3>마감일 캘린더와 알림</h3>
-                <p>
-                  주간, 월간, 미니 캘린더에서 시작일과 마감일을 확인하고,
-                  북마크 공고의 마감 임박과 상태 변경을 놓치지 않도록 관리합니다.
-                </p>
-                <div class="chips">
-                  <span class="chip">오늘 마감</span>
-                  <span class="chip">이번 주 마감</span>
-                  <span class="chip">관심 태그 알림</span>
-                </div>
-              </div>
-              <div class="feature-shot">
-                <img src="apps/web/public/calendar-page.png" alt="마감일 캘린더 화면" />
-              </div>
-            </article>
-
-            <article class="feature">
-              <div class="feature-copy">
-                <span class="feature-kicker">Community & Company</span>
-                <h3>회계사 전용 커뮤니티와 기업 상세 정보</h3>
-                <p>
-                  CPA 준비생, 수습 회계사, 시니어 회계사가 경험을 나누고,
-                  기업 유형, 평균 연봉, 인원 추이, 진행 중 공고를 함께 비교합니다.
-                </p>
-                <div class="chips">
-                  <span class="chip">CPA 인증</span>
-                  <span class="chip">커리어 Q&A</span>
-                  <span class="chip">기업 비교</span>
-                </div>
-              </div>
-              <div class="feature-shot">
-                <img src="apps/web/public/community-page.png" alt="커뮤니티 화면" />
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-heading">
-          <span class="eyebrow">Workflow</span>
-          <h2>Phase 0는 내부 지원서가 아니라 발견과 큐레이션에 집중합니다</h2>
-          <p>
-            공개 방문자와 개인회원은 공고와 회사 페이지를 탐색하고, 기업회원은 공고 등록을
-            요청하며, 관리자는 검수 후 게시합니다.
-          </p>
-        </div>
-        <div class="timeline" aria-label="서비스 흐름">
-          <div class="timeline-item">
-            <strong>Browse</strong>
-            <p>공개 방문자와 회원이 CPA 채용 공고와 회사 정보를 탐색합니다.</p>
-          </div>
-          <div class="timeline-item">
-            <strong>Submit</strong>
-            <p>기업회원은 채용 공고 게시 요청과 회사 프로필 수정을 제출합니다.</p>
-          </div>
-          <div class="timeline-item">
-            <strong>Review</strong>
-            <p>관리자는 AI 제안, 출처, 마지막 확인 시각을 검수하고 승인합니다.</p>
-          </div>
-          <div class="timeline-item">
-            <strong>Curate</strong>
-            <p>사용자는 마감일, 조건, 관심 태그 기반으로 공고를 관리합니다.</p>
           </div>
         </div>
       </section>
@@ -1075,24 +1201,20 @@
 
       <section class="section" id="run">
         <div class="section-heading">
-          <span class="eyebrow">Engineering</span>
-          <h2>정적 웹, API, 데이터베이스를 분리한 npm workspace 모노레포입니다</h2>
+          <span class="eyebrow">Tech</span>
+          <h2>Architecture & Stack</h2>
           <p>
-            GitHub Pages에서 프로젝트를 볼 때 필요한 아키텍처, 워크스페이스 구조,
-            실행 명령과 검증 명령을 한곳에 정리했습니다.
+            프로젝트 구조를 파악하는 데 필요한 기술 정보만 간단히 정리했습니다.
           </p>
         </div>
 
         <article class="architecture-card">
           <div class="architecture-copy">
             <span class="feature-kicker">System Architecture</span>
-            <h3>채용 공고 목록 조회 흐름</h3>
+            <h3>서비스 아키텍처</h3>
             <p>
-              사용자는 CloudFront를 통해 S3에 배포된 Next.js 정적 페이지를 받아 보고,
-              API 요청은 고정 접속 주소와 Caddy 라우팅을 거쳐 EC2의 NestJS 서버로 전달됩니다.
-              NestJS는 JobsService와 Prisma ORM을 통해 PostgreSQL의 Jobs, Companies,
-              Sources, Labels 데이터를 조회하고, API 로그는 CloudWatch Logs로 수집합니다.
-              회사 로고와 이미지 파일은 별도 S3 버킷에서 정적 자산으로 관리합니다.
+              Next.js 웹, NestJS API, Prisma/PostgreSQL, S3 정적 자산으로 구성된
+              CPA 채용 큐레이션 서비스입니다.
             </p>
           </div>
           <figure class="architecture-shot">
@@ -1101,52 +1223,41 @@
               alt="Accountit 채용 공고 목록 조회 시스템 아키텍처"
             />
             <figcaption>
-              Static Web Hosting, API Routing, NestJS Service Layer, Prisma/PostgreSQL,
-              CloudWatch Logs로 이어지는 목록 조회 아키텍처입니다.
+              Static Web Hosting, API Routing, Service Layer, Database 흐름을 나타냅니다.
             </figcaption>
           </figure>
         </article>
 
         <div class="tech-grid" aria-label="프로젝트 기술 정보">
           <article class="tech-card">
-            <h3>Workspace</h3>
+            <h3>Monorepo</h3>
             <ul class="stack-list">
-              <li>apps/web: Next.js App Router 기반 사용자·관리자 UI</li>
-              <li>apps/api: NestJS REST API, Swagger/OpenAPI, 인증과 권한</li>
-              <li>packages/shared: enum, 공통 타입, DTO 친화 모델</li>
-              <li>prisma: schema, migrations, seed/mock 데이터</li>
+              <li>apps/web</li>
+              <li>apps/api</li>
+              <li>packages/shared</li>
+              <li>prisma</li>
             </ul>
           </article>
           <article class="tech-card">
-            <h3>Core Stack</h3>
+            <h3>Stack</h3>
             <ul class="stack-list">
-              <li>Web: TypeScript, Tailwind CSS, shadcn/ui, lucide-react</li>
+              <li>Web: Next.js, TypeScript, Tailwind CSS</li>
               <li>API: NestJS, Prisma ORM, PostgreSQL</li>
-              <li>Auth: username/password, argon2, HTTP-only JWT cookie</li>
-              <li>Roles: JOB_SEEKER, COMPANY, ADMIN</li>
+              <li>Auth: argon2, HTTP-only JWT cookie</li>
+              <li>UI: shadcn/ui, lucide-react</li>
             </ul>
           </article>
           <article class="tech-card">
-            <h3>Product Scope</h3>
+            <h3>Roles</h3>
             <ul class="stack-list">
-              <li>Phase 0는 내부 지원서가 아니라 공고 발견과 큐레이션에 집중</li>
-              <li>공고 데이터는 출처와 마지막 확인 시간을 함께 노출</li>
-              <li>기업회원 요청은 관리자 검수 후 게시</li>
-              <li>CSV import, URL preview, AI labels는 untrusted input으로 처리</li>
+              <li>JOB_SEEKER</li>
+              <li>COMPANY</li>
+              <li>ADMIN</li>
             </ul>
           </article>
         </div>
 
         <div class="build-grid">
-          <article class="problem-card">
-            <h3>Repository Checklist</h3>
-            <ul class="stack-list">
-              <li>npm workspaces로 web, api, shared 패키지를 한 저장소에서 관리</li>
-              <li>Prisma schema와 migration으로 DB 구조를 버전 관리</li>
-              <li>Swagger/OpenAPI로 API 명세를 확인할 수 있도록 구성</li>
-              <li>GitHub 저장소와 서비스 데모 링크를 페이지 상단에서 바로 접근</li>
-            </ul>
-          </article>
           <article class="command-card">
             <h3>Local Development</h3>
             <pre><code>npm install
@@ -1170,10 +1281,49 @@ npm run test</code></pre>
         <span>Accountit · CPA-focused job curation platform</span>
         <div class="footer-links">
           <a href="README.md">README</a>
-          <a href="index.md">기존 Markdown</a>
           <a href="https://github.com/kookmin-sw/2026-capstone-85">GitHub</a>
+          <a href="http://pj-kmucd2-5-s3.s3-website-us-east-1.amazonaws.com">Demo</a>
         </div>
       </div>
     </footer>
+    <script>
+      (() => {
+        const header = document.querySelector(".site-header");
+        const revealTargets = document.querySelectorAll(
+          ".section-heading, .problem-card, .target-card, .feature, .team-card, .architecture-card, .tech-card, .build-grid > article"
+        );
+
+        document.body.classList.add("anim-ready");
+
+        const updateHeader = () => {
+          if (!header) return;
+          header.classList.toggle("scrolled", window.scrollY > 12);
+        };
+
+        updateHeader();
+        window.addEventListener("scroll", updateHeader, { passive: true });
+
+        if (!("IntersectionObserver" in window)) {
+          revealTargets.forEach((element) => element.classList.add("is-visible"));
+          return;
+        }
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            });
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+        );
+
+        revealTargets.forEach((element, index) => {
+          element.style.transitionDelay = `${(index % 4) * 70}ms`;
+          observer.observe(element);
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -48,7 +48,21 @@ export function SiteNav({ variant = "app" }: SiteNavProps) {
   const [notificationPreviewLoading, setNotificationPreviewLoading] =
     useState(false);
   const [notificationPreviewError, setNotificationPreviewError] = useState("");
+  const [landingScrolled, setLandingScrolled] = useState(false);
   const notificationPopoverRef = useRef<HTMLDivElement>(null);
+  const isLanding = variant === "landing";
+
+  useEffect(() => {
+    if (!isLanding) return;
+
+    const updateScrolled = () => {
+      setLandingScrolled(window.scrollY > 12);
+    };
+
+    updateScrolled();
+    window.addEventListener("scroll", updateScrolled, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrolled);
+  }, [isLanding]);
 
   useEffect(() => {
     let ignore = false;
@@ -127,7 +141,7 @@ export function SiteNav({ variant = "app" }: SiteNavProps) {
     } finally {
       setNotificationPreviewLoading(false);
     }
-  }, [user?.id, user?.role]);
+  }, [pathname, user?.id, user?.role]);
 
   useEffect(() => {
     if (!notificationsOpen) return;
@@ -157,8 +171,6 @@ export function SiteNav({ variant = "app" }: SiteNavProps) {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [notificationsOpen]);
-
-  const isLanding = variant === "landing";
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
@@ -220,7 +232,13 @@ export function SiteNav({ variant = "app" }: SiteNavProps) {
   }
 
   return (
-    <nav className={cn(styles.nav, isLanding && styles.landingNav)}>
+    <nav
+      className={cn(
+        styles.nav,
+        isLanding && styles.landingNav,
+        isLanding && landingScrolled && styles.landingNavScrolled,
+      )}
+    >
       <div className={styles.inner}>
         <Link href="/" className={styles.logo}>
           <span className={styles.logoMark} aria-hidden="true" />
