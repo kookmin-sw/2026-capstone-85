@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import {
   DeadlineType,
@@ -16,6 +17,7 @@ import type {
   JobListItem as SharedJobListItem,
 } from '@cpa/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { LoggingService } from '../logging/logging.service';
 import { ListJobCalendarDto } from './dto/list-job-calendar.dto';
 import { ListJobsDto } from './dto/list-jobs.dto';
 import { buildJobPresetWhere } from './job-presets';
@@ -35,8 +37,20 @@ const jobInclude = {
   },
 } satisfies Prisma.JobInclude;
 
+const jobDetailInclude = {
+  ...jobInclude,
+  aiSuggestions: {
+    where: { status: 'APPROVED' as const },
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+  },
+} satisfies Prisma.JobInclude;
+
 type JobWithRelations = Job &
   Prisma.JobGetPayload<{ include: typeof jobInclude }>;
+type JobDetailRecord = Prisma.JobGetPayload<{
+  include: typeof jobDetailInclude;
+}>;
 
 const kstDateFormatter = new Intl.DateTimeFormat('en-US', {
   timeZone: 'Asia/Seoul',
@@ -54,30 +68,49 @@ const salaryLevelRanges = {
 
 @Injectable()
 export class JobsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional()
+    private readonly loggingService?: LoggingService,
+  ) {}
 
   async list(query: ListJobsDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const where = await this.buildWhere(query);
     if ((query.sort ?? 'deadlineAsc') === 'deadlineAsc') {
-      return this.listByDeadlineAsc(where, page, pageSize);
+      return this.listByDeadlineAsc(where, page, pageSize, query);
     }
     if (query.sort === 'expired') {
-      return this.listExpired(where, page, pageSize);
+      return this.listExpired(where, page, pageSize, query);
     }
     const orderBy = this.buildOrderBy(query.sort);
 
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.job.findMany({
-        where,
-        include: jobInclude,
-        orderBy,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.job.count({ where }),
-    ]);
+    let items: JobWithRelations[];
+    let total: number;
+    try {
+      [items, total] = await this.prisma.$transaction([
+        this.prisma.job.findMany({
+          where,
+          include: jobInclude,
+          orderBy,
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        this.prisma.job.count({ where }),
+      ]);
+    } catch (error) {
+      await this.loggingService?.record({
+        key: 'jobs_query_error',
+        level: 'error',
+        source: 'BE',
+        properties: {
+          error: errorSummary(error),
+          queries: jobQuerySummary(query),
+        },
+      });
+      throw error;
+    }
 
     return {
       items: items.map((job) => this.toListItem(job)),
@@ -91,6 +124,7 @@ export class JobsService {
     where: Prisma.JobWhereInput,
     page: number,
     pageSize: number,
+    query: ListJobsDto,
   ) {
     const today = startOfToday();
     const buckets = [
@@ -122,9 +156,28 @@ export class JobsService {
       },
     ];
 
-    const counts = await this.prisma.$transaction(
-      buckets.map((bucket) => this.prisma.job.count({ where: bucket.where })),
-    );
+    let counts: number[];
+    try {
+      counts = await this.prisma.$transaction(
+        buckets.map((bucket) => this.prisma.job.count({ where: bucket.where })),
+      );
+    } catch (error) {
+      await this.loggingService?.record({
+        key: 'jobs_query_error',
+        level: 'error',
+        source: 'BE',
+        properties: {
+          error: errorSummary(error),
+          queries: jobQuerySummary({
+            ...query,
+            sort: query.sort ?? 'deadlineAsc',
+            page,
+            pageSize,
+          }),
+        },
+      });
+      throw error;
+    }
     const total = counts.reduce((sum, count) => sum + count, 0);
     const items: JobWithRelations[] = [];
     let skipped = (page - 1) * pageSize;
@@ -137,13 +190,32 @@ export class JobsService {
         continue;
       }
 
-      const bucketItems = await this.prisma.job.findMany({
-        where: buckets[index].where,
-        include: jobInclude,
-        orderBy: buckets[index].orderBy,
-        skip: skipped,
-        take: remaining,
-      });
+      let bucketItems: JobWithRelations[];
+      try {
+        bucketItems = await this.prisma.job.findMany({
+          where: buckets[index].where,
+          include: jobInclude,
+          orderBy: buckets[index].orderBy,
+          skip: skipped,
+          take: remaining,
+        });
+      } catch (error) {
+        await this.loggingService?.record({
+          key: 'jobs_query_error',
+          level: 'error',
+          source: 'BE',
+          properties: {
+            error: errorSummary(error),
+            queries: `${jobQuerySummary({
+              ...query,
+              sort: query.sort ?? 'deadlineAsc',
+              page,
+              pageSize,
+            })}&bucket=${index}`,
+          },
+        });
+        throw error;
+      }
       items.push(...bucketItems);
       remaining -= bucketItems.length;
       skipped = 0;
@@ -161,6 +233,7 @@ export class JobsService {
     where: Prisma.JobWhereInput,
     page: number,
     pageSize: number,
+    query: ListJobsDto,
   ) {
     const expiredWhere = this.withAnd(where, {
       deadlineType: DeadlineType.FIXED_DATE,
@@ -171,16 +244,36 @@ export class JobsService {
       { createdAt: 'desc' as const },
     ];
 
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.job.findMany({
-        where: expiredWhere,
-        include: jobInclude,
-        orderBy,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.job.count({ where: expiredWhere }),
-    ]);
+    let items: JobWithRelations[];
+    let total: number;
+    try {
+      [items, total] = await this.prisma.$transaction([
+        this.prisma.job.findMany({
+          where: expiredWhere,
+          include: jobInclude,
+          orderBy,
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        this.prisma.job.count({ where: expiredWhere }),
+      ]);
+    } catch (error) {
+      await this.loggingService?.record({
+        key: 'jobs_query_error',
+        level: 'error',
+        source: 'BE',
+        properties: {
+          error: errorSummary(error),
+          queries: jobQuerySummary({
+            ...query,
+            sort: 'expired',
+            page,
+            pageSize,
+          }),
+        },
+      });
+      throw error;
+    }
 
     return {
       items: items.map((job) => this.toListItem(job)),
@@ -191,18 +284,28 @@ export class JobsService {
   }
 
   async detail(id: string) {
-    const job = await this.prisma.job.findFirst({
-      where: { id, status: JobStatus.OPEN },
-      include: {
-        ...jobInclude,
-        aiSuggestions: {
-          where: { status: 'APPROVED' },
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-      },
-    });
+    let job: JobDetailRecord | null;
+    try {
+      job = await this.prisma.job.findFirst({
+        where: { id, status: JobStatus.OPEN },
+        include: jobDetailInclude,
+      });
+    } catch (error) {
+      await this.loggingService?.record({
+        key: 'jobs_query_error',
+        level: 'error',
+        source: 'BE',
+        properties: { error: errorSummary(error), queries: `id=${id}` },
+      });
+      throw error;
+    }
     if (!job) {
+      await this.loggingService?.record({
+        key: 'jobs_query_error',
+        level: 'warn',
+        source: 'BE',
+        properties: { error: 'not_found', queries: `id=${id}` },
+      });
       throw new NotFoundException('공고를 찾을 수 없습니다.');
     }
 
@@ -684,4 +787,19 @@ function startOfToday() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return today;
+}
+
+function jobQuerySummary(query: ListJobsDto) {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, String(value));
+    }
+  });
+  return params.toString() || 'all';
+}
+
+function errorSummary(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }

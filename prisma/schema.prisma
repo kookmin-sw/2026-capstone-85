@@ -173,6 +173,7 @@ model User {
   reviewedPersonalVerificationRequests PersonalVerificationRequest[] @relation("PersonalVerificationRequestReviewer")
   communityPosts                       CommunityPost[]               @relation("CommunityPostAuthor")
   communityAnswers                     CommunityAnswer[]             @relation("CommunityAnswerAuthor")
+  appLogs                              AppLog[]                      @relation("AppLogUser")
 }
 
 model PersonalProfile {
@@ -608,4 +609,25 @@ model CommunityAnswer {
 
   @@index([postId, createdAt])
   @@index([authorId, createdAt])
+}
+
+model AppLog {
+  id              String   @id @default(uuid())
+  key             String
+  level           String   @default("info")
+  source          String   @default("FE")
+  userId          String?
+  incognitoUserId String?
+  path            String?
+  userAgent       String?
+  ipAddress       String?
+  properties      Json?
+  createdAt       DateTime @default(now())
+
+  user User? @relation("AppLogUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([key, createdAt])
+  @@index([userId, createdAt])
+  @@index([incognitoUserId, createdAt])
+  @@index([source, createdAt])
 }

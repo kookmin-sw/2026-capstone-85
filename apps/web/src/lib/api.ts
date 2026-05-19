@@ -49,6 +49,11 @@ import type {
   UserJobPresetItem,
   UserJobPresetListResponse,
 } from "@cpa/shared";
+import {
+  getIncognitoUserId,
+  logClientError,
+  logClientWarn,
+} from "./client-logger";
 import { getApiBaseUrl } from "./runtime-config";
 
 const API_BASE_URL = getApiBaseUrl();
@@ -136,7 +141,9 @@ export async function fetchJobs(params: URLSearchParams) {
     cache: "no-store",
   });
   if (!response.ok) {
-    throw new Error("공고 목록을 불러오지 못했습니다.");
+    throw new Error(
+      await readApiError(response, "공고 목록을 불러오지 못했습니다."),
+    );
   }
   return (await response.json()) as JobListResponse;
 }
@@ -146,7 +153,9 @@ export async function fetchJobDetail(id: string) {
     cache: "no-store",
   });
   if (!response.ok) {
-    throw new Error("공고 상세를 불러오지 못했습니다.");
+    throw new Error(
+      await readApiError(response, "공고 상세를 불러오지 못했습니다."),
+    );
   }
   return (await response.json()) as JobDetailItem;
 }
@@ -180,7 +189,9 @@ export async function fetchJobCalendar(params: URLSearchParams) {
     },
   );
   if (!response.ok) {
-    throw new Error("마감 캘린더를 불러오지 못했습니다.");
+    throw new Error(
+      await readApiError(response, "마감 캘린더를 불러오지 못했습니다."),
+    );
   }
   return (await response.json()) as JobCalendarResponse;
 }
@@ -193,7 +204,9 @@ export async function fetchCompanies(params: URLSearchParams) {
     },
   );
   if (!response.ok) {
-    throw new Error("회사 목록을 불러오지 못했습니다.");
+    throw new Error(
+      await readApiError(response, "회사 목록을 불러오지 못했습니다."),
+    );
   }
   return (await response.json()) as CompanyListResponse;
 }
@@ -203,7 +216,9 @@ export async function fetchCompanyDetail(id: string) {
     cache: "no-store",
   });
   if (!response.ok) {
-    throw new Error("회사 상세를 불러오지 못했습니다.");
+    throw new Error(
+      await readApiError(response, "회사 상세를 불러오지 못했습니다."),
+    );
   }
   return (await response.json()) as CompanyDetailItem;
 }
@@ -212,15 +227,25 @@ export async function authRequest(
   mode: "login" | "register",
   payload: Record<string, string>,
 ) {
+  const incognitoUserId = getIncognitoUserId();
   const response = await fetch(`${API_BASE_URL}/auth/${mode}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      ...(incognitoUserId ? { incognitoUserId } : {}),
+    }),
   });
   const data = (await response.json()) as { user?: AuthUser; message?: string };
   if (!response.ok) {
-    throw new Error(data.message ?? "인증 요청에 실패했습니다.");
+    const message = data.message ?? "인증 요청에 실패했습니다.";
+    logClientWarn("api.auth_request_failed", new Error(message), {
+      mode,
+      status: response.status,
+      url: apiLogUrl(response.url),
+    });
+    throw new Error(message);
   }
   return data.user;
 }
@@ -415,10 +440,7 @@ export async function uploadMyProfileImage(file: File) {
   if (!completeResponse.ok) {
     const errorData = completeData as { message?: string | string[] };
     throw new Error(
-      readMessage(
-        errorData.message,
-        "프로필 사진 업로드 확인에 실패했습니다.",
-      ),
+      readMessage(errorData.message, "프로필 사진 업로드 확인에 실패했습니다."),
     );
   }
   if (!("asset" in completeData)) {
@@ -469,7 +491,12 @@ export async function fetchCurrentUser() {
   if (response.status === 401) return null;
   const data = (await response.json()) as { user?: AuthUser; message?: string };
   if (!response.ok) {
-    throw new Error(data.message ?? "현재 사용자를 불러오지 못했습니다.");
+    const message = data.message ?? "현재 사용자를 불러오지 못했습니다.";
+    logClientError("api.current_user_failed", new Error(message), {
+      status: response.status,
+      url: apiLogUrl(response.url),
+    });
+    throw new Error(message);
   }
   return data.user ?? null;
 }
@@ -1126,10 +1153,13 @@ export async function markAllNotificationsRead() {
 }
 
 export async function fetchTagSubscriptions() {
-  const response = await fetch(`${API_BASE_URL}/notifications/tag-subscriptions`, {
-    credentials: "include",
-    cache: "no-store",
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/notifications/tag-subscriptions`,
+    {
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
   if (!response.ok) {
     throw new Error(
       await readApiError(response, "태그 구독 목록을 불러오지 못했습니다."),
@@ -1147,9 +1177,7 @@ export async function subscribeTag(labelId: string) {
     },
   );
   if (!response.ok) {
-    throw new Error(
-      await readApiError(response, "태그 구독에 실패했습니다."),
-    );
+    throw new Error(await readApiError(response, "태그 구독에 실패했습니다."));
   }
   return (await response.json()) as TagSubscriptionItem;
 }
@@ -1171,17 +1199,39 @@ export async function unsubscribeTag(labelId: string) {
 }
 
 async function readApiError(response: Response, fallback: string) {
+  let message = fallback;
+
   try {
     const data = (await response.json()) as { message?: string | string[] };
-    return readMessage(data.message, fallback);
-  } catch {
-    return fallback;
+    message = readMessage(data.message, fallback);
+  } catch (caught) {
+    logClientWarn("api.error_body_parse_failed", caught, {
+      status: response.status,
+      url: apiLogUrl(response.url),
+    });
   }
+
+  logClientError("api.request_failed", new Error(message), {
+    status: response.status,
+    statusText: response.statusText,
+    url: apiLogUrl(response.url),
+  });
+
+  return message;
 }
 
 function readMessage(message: string | string[] | undefined, fallback: string) {
   if (Array.isArray(message)) return message.join(" ");
   return message ?? fallback;
+}
+
+function apiLogUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.pathname}${parsed.search}`;
+  } catch {
+    return url;
+  }
 }
 
 // ─── Mypage ──────────────────────────────────────────────────

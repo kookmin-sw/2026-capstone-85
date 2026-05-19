@@ -82,6 +82,7 @@ export class AuthService {
         return { ...createdUser, ownedCompany: { id: company.id } };
       });
 
+      await this.linkIncognitoLogsToUser(dto.incognitoUserId, user.id);
       return this.toAuthResponse(user);
     }
 
@@ -95,6 +96,7 @@ export class AuthService {
       },
     });
 
+    await this.linkIncognitoLogsToUser(dto.incognitoUserId, user.id);
     return this.toAuthResponse({ ...user, ownedCompany: null });
   }
 
@@ -112,6 +114,7 @@ export class AuthService {
       );
     }
 
+    await this.linkIncognitoLogsToUser(dto.incognitoUserId, user.id);
     return this.toAuthResponse(user);
   }
 
@@ -141,6 +144,26 @@ export class AuthService {
     });
 
     return { user: safeUser, accessToken };
+  }
+
+  private async linkIncognitoLogsToUser(
+    incognitoUserId: string | undefined,
+    userId: string,
+  ) {
+    const normalizedIncognitoUserId = incognitoUserId?.trim();
+    if (!normalizedIncognitoUserId) return;
+
+    try {
+      await this.prisma.appLog.updateMany({
+        where: {
+          incognitoUserId: normalizedIncognitoUserId,
+          userId: null,
+        },
+        data: { userId },
+      });
+    } catch {
+      // Auth must not fail just because log attribution could not be updated.
+    }
   }
 
   private toSafeUser(user: SafeUserRecord): SafeAuthUser {

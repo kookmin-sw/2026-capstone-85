@@ -44,4 +44,10 @@ export class RegisterDto {
   @IsOptional()
   @IsEnum(CompanyType)
   companyType?: CompanyType;
+
+  @ApiPropertyOptional({ example: 'd2fb2d38-cf62-4e50-a6f1-bd7ac7dc5d77' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  incognitoUserId?: string;
 }

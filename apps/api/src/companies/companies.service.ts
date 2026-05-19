@@ -29,6 +29,7 @@ import {
 } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { LoggingService } from '../logging/logging.service';
 import { CompanyJobAutofillService } from './company-job-autofill.service';
 import { CreateCompanyJobAutofillDto } from './dto/create-company-job-autofill.dto';
 import { CreateCompanyJobSubmissionDto } from './dto/create-company-job-submission.dto';
@@ -148,32 +149,51 @@ export class CompaniesService {
     private readonly notificationsService?: NotificationsService,
     @Optional()
     private readonly jobAutofillService?: CompanyJobAutofillService,
+    @Optional()
+    private readonly loggingService?: LoggingService,
   ) {}
 
   async list(query: ListCompaniesDto) {
     const where = await this.buildWhere(query);
 
-    const [companies, total, openTotal, noJobTotal] =
-      await this.prisma.$transaction([
-        this.prisma.company.findMany({
-          where,
-          include: companyListInclude,
-          orderBy: this.buildOrderBy(query.sort),
-        }),
-        this.prisma.company.count({ where }),
-        this.prisma.company.count({
-          where: {
-            ...where,
-            jobs: { some: { status: JobStatus.OPEN } },
-          },
-        }),
-        this.prisma.company.count({
-          where: {
-            ...where,
-            jobs: { none: { status: JobStatus.OPEN } },
-          },
-        }),
-      ]);
+    let companies: CompanyListRecord[];
+    let total: number;
+    let openTotal: number;
+    let noJobTotal: number;
+    try {
+      [companies, total, openTotal, noJobTotal] =
+        await this.prisma.$transaction([
+          this.prisma.company.findMany({
+            where,
+            include: companyListInclude,
+            orderBy: this.buildOrderBy(query.sort),
+          }),
+          this.prisma.company.count({ where }),
+          this.prisma.company.count({
+            where: {
+              ...where,
+              jobs: { some: { status: JobStatus.OPEN } },
+            },
+          }),
+          this.prisma.company.count({
+            where: {
+              ...where,
+              jobs: { none: { status: JobStatus.OPEN } },
+            },
+          }),
+        ]);
+    } catch (error) {
+      await this.loggingService?.record({
+        key: 'companies_query_error',
+        level: 'error',
+        source: 'BE',
+        properties: {
+          error: errorSummary(error),
+          queries: companyQuerySummary(query),
+        },
+      });
+      throw error;
+    }
 
     return {
       items: companies.map((company) => this.toListItem(company)),
@@ -184,12 +204,29 @@ export class CompaniesService {
   }
 
   async detail(id: string) {
-    const company = await this.prisma.company.findUnique({
-      where: { id },
-      include: companyDetailInclude,
-    });
+    let company: CompanyDetailRecord | null;
+    try {
+      company = await this.prisma.company.findUnique({
+        where: { id },
+        include: companyDetailInclude,
+      });
+    } catch (error) {
+      await this.loggingService?.record({
+        key: 'companies_query_error',
+        level: 'error',
+        source: 'BE',
+        properties: { error: errorSummary(error), queries: `id=${id}` },
+      });
+      throw error;
+    }
 
     if (!company) {
+      await this.loggingService?.record({
+        key: 'companies_query_error',
+        level: 'warn',
+        source: 'BE',
+        properties: { error: 'not_found', queries: `id=${id}` },
+      });
       throw new NotFoundException('회사를 찾을 수 없습니다.');
     }
 
@@ -1135,4 +1172,19 @@ function formatKstDateKey(date: Date) {
 function percentage(part: number, total: number) {
   if (total <= 0) return 0;
   return Math.round((part / total) * 1000) / 10;
+}
+
+function companyQuerySummary(query: ListCompaniesDto) {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, String(value));
+    }
+  });
+  return params.toString() || 'all';
+}
+
+function errorSummary(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }

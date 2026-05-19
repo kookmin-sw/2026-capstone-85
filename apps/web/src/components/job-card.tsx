@@ -22,12 +22,23 @@ import {
 import { cn } from "@/lib/utils";
 import { actionButtonClassName } from "@/components/ui/action-button";
 import { recordJobEngagement } from "@/lib/api";
+import { logClientEvent, logClientWarn } from "@/lib/client-logger";
 import { jobDetailHref } from "@/lib/routes";
 import styles from "./job-card.module.css";
 
 export function JobCard({ job }: { job: JobListItem }) {
   return (
-    <Link href={jobDetailHref(job.id)} className={styles.card}>
+    <Link
+      href={jobDetailHref(job.id)}
+      className={styles.card}
+      onClick={() =>
+        logClientEvent("move_to_job_detail", {
+          jobId: job.id,
+          jobTitle: job.title,
+          company: job.companyName,
+        })
+      }
+    >
       <div className={styles.header}>
         <div className="min-w-0 flex-1">
           <div className={styles.badgeRow}>
@@ -47,6 +58,11 @@ export function JobCard({ job }: { job: JobListItem }) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              logClientEvent("click_original_job_post", {
+                jobId: job.id,
+                jobTitle: job.title,
+                company: job.companyName,
+              });
               trackOriginalClick(job.id);
               window.open(job.originalUrl, "_blank", "noreferrer");
             }}
@@ -119,7 +135,41 @@ export function JobGridCard({
   const mediaLabel = dDayLabel ?? deadlineTypeLabels[job.deadlineType];
 
   return (
-    <Link href={jobDetailHref(job.id)} className={styles.gridCard}>
+    <Link
+      href={jobDetailHref(job.id)}
+      className={styles.gridCard}
+      onClick={() =>
+        logClientEvent("move_to_job_detail", {
+          jobId: job.id,
+          jobTitle: job.title,
+          company: job.companyName,
+        })
+      }
+    >
+      {onToggleBookmark && (
+        <button
+          type="button"
+          className={styles.bookmarkBtn}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            logClientEvent("click_job_bookmark", {
+              jobId: job.id,
+              jobTitle: job.title,
+              company: job.companyName,
+              nextBookmarked: !bookmarked,
+            });
+            onToggleBookmark(job.id);
+          }}
+          aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
+        >
+          <Bookmark
+            size={18}
+            fill={bookmarked ? "#facc15" : "none"}
+            stroke={bookmarked ? "#facc15" : "currentColor"}
+          />
+        </button>
+      )}
       <div className={styles.banner}>
         {job.companyBackgroundUrl ? (
           <>
@@ -193,6 +243,11 @@ export function JobGridCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              logClientEvent("click_original_job_post", {
+                jobId: job.id,
+                jobTitle: job.title,
+                company: job.companyName,
+              });
               trackOriginalClick(job.id);
               window.open(job.originalUrl, "_blank", "noreferrer");
             }}
@@ -211,7 +266,9 @@ export function JobGridCard({
 }
 
 function trackOriginalClick(jobId: string) {
-  void recordJobEngagement(jobId, "ORIGINAL_CLICK").catch(() => {});
+  void recordJobEngagement(jobId, "ORIGINAL_CLICK").catch((caught) => {
+    logClientWarn("jobs.original_click_tracking_failed", caught, { jobId });
+  });
 }
 
 function dDayToneClassName(dDay: number | null) {
