@@ -66,7 +66,10 @@ export function JobCard({ job }: { job: JobListItem }) {
               trackOriginalClick(job.id);
               window.open(job.originalUrl, "_blank", "noreferrer");
             }}
-            className={actionButtonClassName({ variant: "outline", size: "sm" })}
+            className={actionButtonClassName({
+              variant: "outline",
+              size: "sm",
+            })}
           >
             원문
             <ExternalLink size={14} />
@@ -100,12 +103,9 @@ export function JobCard({ job }: { job: JobListItem }) {
         최종 확인: {new Date(job.lastCheckedAt).toLocaleString("ko-KR")}
         <span className={styles.labelList}>
           {job.labels.map((label) => (
-          <span
-            key={label}
-            className={styles.tag}
-          >
-            #{label}
-          </span>
+            <span key={label} className={styles.tag}>
+              #{label}
+            </span>
           ))}
         </span>
       </div>
@@ -132,6 +132,7 @@ export function JobGridCard({
         : dDay === 0
           ? "D-Day"
           : `D-${dDay}`;
+  const mediaLabel = dDayLabel ?? deadlineTypeLabels[job.deadlineType];
 
   return (
     <Link
@@ -181,28 +182,39 @@ export function JobGridCard({
             <div className={styles.bannerOverlay} />
           </>
         ) : null}
-        <div className={styles.logo}>
-          {job.companyLogoUrl ? (
-            <img
-              src={job.companyLogoUrl}
-              alt={job.companyName}
-            />
-          ) : (
-            initial
+        <div className={styles.bannerTopRow}>
+          <span className={cn(styles.mediaBadge, dDayToneClassName(dDay))}>
+            {mediaLabel}
+          </span>
+          {onToggleBookmark && (
+            <button
+              type="button"
+              className={styles.bookmarkBtn}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleBookmark(job.id);
+              }}
+              aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
+            >
+              <Bookmark
+                size={22}
+                fill={bookmarked ? "#facc15" : "none"}
+                stroke={bookmarked ? "#facc15" : "currentColor"}
+              />
+            </button>
           )}
-        </div>
-        <div className={styles.companySummary}>
-          <p className={styles.companyName}>{job.companyName}</p>
-          <p className={styles.companyType}>{companyTypeLabels[job.companyType]}</p>
         </div>
       </div>
 
       <div className={styles.gridBody}>
-        {dDayLabel && (
-          <span className={cn(styles.dDay, dDayToneClassName(dDay))}>
-            {dDayLabel}
-          </span>
-        )}
+        <div className={styles.logo}>
+          {job.companyLogoUrl ? (
+            <img src={job.companyLogoUrl} alt={job.companyName} />
+          ) : (
+            initial
+          )}
+        </div>
         <div className={styles.gridTopRow}>
           <div className={styles.badgeRow}>
             <Badge tone="pink">{jobFamilyLabels[job.jobFamily]}</Badge>
@@ -210,6 +222,9 @@ export function JobGridCard({
           </div>
         </div>
         <h3 className={styles.gridTitle}>{job.title}</h3>
+        <p className={styles.gridCompanyLine}>
+          {job.companyName} · {companyTypeLabels[job.companyType]}
+        </p>
         <div className={styles.factGrid}>
           <Fact icon={MapPin} text={job.location ?? "지역 불명확"} />
           <Fact icon={GraduationCap} text={kicpaLabels[job.kicpaCondition]} />
@@ -291,9 +306,7 @@ export function Badge({
   tone?: "pink";
 }) {
   return (
-    <span
-      className={cn(styles.badge, tone === "pink" && styles.badgeBrand)}
-    >
+    <span className={cn(styles.badge, tone === "pink" && styles.badgeBrand)}>
       {children}
     </span>
   );
@@ -308,13 +321,7 @@ export function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Fact({
-  icon: Icon,
-  text,
-}: {
-  icon: typeof MapPin;
-  text: string;
-}) {
+function Fact({ icon: Icon, text }: { icon: typeof MapPin; text: string }) {
   return (
     <span className={styles.fact}>
       <Icon size={13} />
