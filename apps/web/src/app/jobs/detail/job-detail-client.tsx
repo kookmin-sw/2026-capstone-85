@@ -47,7 +47,7 @@ import {
   recordJobEngagement,
   type AuthUser,
 } from "@/lib/api";
-import { logClientError, logClientWarn } from "@/lib/client-logger";
+import { logClientError, logClientEvent, logClientWarn } from "@/lib/client-logger";
 import {
   companyTypeLabels,
   deadlineTypeLabels,
@@ -801,6 +801,11 @@ function JobDetail({
   const aiSummaryText =
     job.aiSummary?.trim() || job.aiSuggestion?.summary || null;
   const trackOriginalClick = () => {
+    logClientEvent("click_original_job_post", {
+      jobId: job.id,
+      jobTitle: job.title,
+      company: job.companyName,
+    });
     void recordJobEngagement(job.id, "ORIGINAL_CLICK").catch((caught) => {
       logClientWarn("jobs.detail_original_click_tracking_failed", caught, {
         jobId: job.id,
@@ -856,6 +861,13 @@ function JobDetail({
                 <Link
                   href={companyDetailHref(job.companyId)}
                   className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-[var(--brand)]"
+                  onClick={() =>
+                    logClientEvent("move_to_company_page", {
+                      companyId: job.companyId,
+                      company: job.companyName,
+                      fromJobId: job.id,
+                    })
+                  }
                 >
                   <BriefcaseBusiness size={13} />
                   {job.companyName}
@@ -1013,6 +1025,13 @@ function JobDetail({
           <Link
             href={companyDetailHref(job.companyId)}
             className={styles.companyLink}
+            onClick={() =>
+              logClientEvent("move_to_company_page", {
+                companyId: job.companyId,
+                company: job.companyName,
+                fromJobId: job.id,
+              })
+            }
           >
             <div className={styles.companyMiniIcon}>
               {job.companyName.charAt(0)}

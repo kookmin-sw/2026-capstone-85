@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AppRouteLogger } from "@/components/app-route-logger";
 import { S3WebRedirect } from "@/components/s3-web-redirect";
 import "./globals.css";
 
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <S3WebRedirect />
+        <AppRouteLogger />
         {children}
       </body>
     </html>

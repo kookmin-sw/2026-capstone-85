@@ -22,13 +22,23 @@ import {
 import { cn } from "@/lib/utils";
 import { actionButtonClassName } from "@/components/ui/action-button";
 import { recordJobEngagement } from "@/lib/api";
-import { logClientWarn } from "@/lib/client-logger";
+import { logClientEvent, logClientWarn } from "@/lib/client-logger";
 import { jobDetailHref } from "@/lib/routes";
 import styles from "./job-card.module.css";
 
 export function JobCard({ job }: { job: JobListItem }) {
   return (
-    <Link href={jobDetailHref(job.id)} className={styles.card}>
+    <Link
+      href={jobDetailHref(job.id)}
+      className={styles.card}
+      onClick={() =>
+        logClientEvent("move_to_job_detail", {
+          jobId: job.id,
+          jobTitle: job.title,
+          company: job.companyName,
+        })
+      }
+    >
       <div className={styles.header}>
         <div className="min-w-0 flex-1">
           <div className={styles.badgeRow}>
@@ -48,6 +58,11 @@ export function JobCard({ job }: { job: JobListItem }) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              logClientEvent("click_original_job_post", {
+                jobId: job.id,
+                jobTitle: job.title,
+                company: job.companyName,
+              });
               trackOriginalClick(job.id);
               window.open(job.originalUrl, "_blank", "noreferrer");
             }}
@@ -119,7 +134,17 @@ export function JobGridCard({
           : `D-${dDay}`;
 
   return (
-    <Link href={jobDetailHref(job.id)} className={styles.gridCard}>
+    <Link
+      href={jobDetailHref(job.id)}
+      className={styles.gridCard}
+      onClick={() =>
+        logClientEvent("move_to_job_detail", {
+          jobId: job.id,
+          jobTitle: job.title,
+          company: job.companyName,
+        })
+      }
+    >
       {onToggleBookmark && (
         <button
           type="button"
@@ -127,6 +152,12 @@ export function JobGridCard({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            logClientEvent("click_job_bookmark", {
+              jobId: job.id,
+              jobTitle: job.title,
+              company: job.companyName,
+              nextBookmarked: !bookmarked,
+            });
             onToggleBookmark(job.id);
           }}
           aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
@@ -197,6 +228,11 @@ export function JobGridCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              logClientEvent("click_original_job_post", {
+                jobId: job.id,
+                jobTitle: job.title,
+                company: job.companyName,
+              });
               trackOriginalClick(job.id);
               window.open(job.originalUrl, "_blank", "noreferrer");
             }}

@@ -24,6 +24,9 @@ describe('AuthService', () => {
       findUnique: jest.Mock;
       create: jest.Mock;
     };
+    appLog: {
+      updateMany: jest.Mock;
+    };
     $transaction: jest.Mock;
   };
   let service: AuthService;
@@ -37,6 +40,9 @@ describe('AuthService', () => {
       company: {
         findUnique: jest.fn(),
         create: jest.fn(),
+      },
+      appLog: {
+        updateMany: jest.fn().mockResolvedValue({ count: 0 }),
       },
       $transaction: jest.fn((callback: (client: typeof prisma) => unknown) =>
         callback(prisma),
@@ -81,6 +87,7 @@ describe('AuthService', () => {
       displayName: '담당자',
       companyName: '테스트회계법인',
       companyType: CompanyType.LOCAL_ACCOUNTING_FIRM,
+      incognitoUserId: 'anonymous-device-1',
     });
 
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
@@ -95,6 +102,13 @@ describe('AuthService', () => {
       username: 'company-user',
       role: UserRole.COMPANY,
       companyId: 'company-1',
+    });
+    expect(prisma.appLog.updateMany).toHaveBeenCalledWith({
+      where: {
+        incognitoUserId: 'anonymous-device-1',
+        userId: null,
+      },
+      data: { userId: 'user-1' },
     });
   });
 
@@ -111,6 +125,68 @@ describe('AuthService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.company.create).not.toHaveBeenCalled();
     expect(argon2.hash).not.toHaveBeenCalled();
+  });
+
+  it('links anonymous logs to the user after successful login', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      username: 'jobseeker',
+      passwordHash: 'hashed-password',
+      displayName: null,
+      profileImageUrl: null,
+      role: UserRole.JOB_SEEKER,
+      ownedCompany: null,
+      profileImageAsset: null,
+    });
+    (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+    await expect(
+      service.login({
+        username: 'jobseeker',
+        password: 'password123',
+        incognitoUserId: 'anonymous-device-1',
+      }),
+    ).resolves.toMatchObject({
+      user: {
+        id: 'user-1',
+        username: 'jobseeker',
+      },
+    });
+
+    expect(prisma.appLog.updateMany).toHaveBeenCalledWith({
+      where: {
+        incognitoUserId: 'anonymous-device-1',
+        userId: null,
+      },
+      data: { userId: 'user-1' },
+    });
+  });
+
+  it('does not fail login when anonymous log linking fails', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      username: 'jobseeker',
+      passwordHash: 'hashed-password',
+      displayName: null,
+      profileImageUrl: null,
+      role: UserRole.JOB_SEEKER,
+      ownedCompany: null,
+      profileImageAsset: null,
+    });
+    prisma.appLog.updateMany.mockRejectedValueOnce(new Error('db unavailable'));
+    (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+    await expect(
+      service.login({
+        username: 'jobseeker',
+        password: 'password123',
+        incognitoUserId: 'anonymous-device-1',
+      }),
+    ).resolves.toMatchObject({
+      user: {
+        id: 'user-1',
+      },
+    });
   });
 
   it('returns the latest safe user with profile image URL', async () => {

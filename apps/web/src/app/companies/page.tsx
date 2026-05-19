@@ -24,7 +24,7 @@ import {
   fetchCurrentUser,
   fetchMyBookmarks,
 } from "@/lib/api";
-import { logClientError, logClientWarn } from "@/lib/client-logger";
+import { logClientError, logClientEvent, logClientWarn } from "@/lib/client-logger";
 import { companyTypeLabels } from "@/lib/labels";
 import { companyDetailHref, companyDetailJobsHref } from "@/lib/routes";
 import styles from "./companies-page.module.css";
@@ -532,6 +532,11 @@ function CompanyCard({
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
+            logClientEvent("click_company_bookmark", {
+              companyId: company.id,
+              company: company.name,
+              nextBookmarked: !bookmarked,
+            });
             onToggleBookmark(company.id);
           }}
           aria-label={bookmarked ? "북마크 해제" : "북마크 추가"}
@@ -543,7 +548,16 @@ function CompanyCard({
           />
         </button>
       )}
-      <Link href={companyDetailHref(company.id)} className={styles.cardMainLink}>
+      <Link
+        href={companyDetailHref(company.id)}
+        className={styles.cardMainLink}
+        onClick={() =>
+          logClientEvent("move_to_company_page", {
+            companyId: company.id,
+            company: company.name,
+          })
+        }
+      >
         <div className={styles.banner}>
           {company.backgroundUrl ? (
             <>
@@ -609,7 +623,17 @@ function CompanyCard({
         </div>
       </Link>
       {hasJobs ? (
-        <Link href={companyDetailJobsHref(company.id)} className={styles.openJobsLink}>
+        <Link
+          href={companyDetailJobsHref(company.id)}
+          className={styles.openJobsLink}
+          onClick={() =>
+            logClientEvent("move_to_company_jobs", {
+              companyId: company.id,
+              company: company.name,
+              openJobCount: company.openJobCount,
+            })
+          }
+        >
           채용 중 공고 {company.openJobCount.toLocaleString("ko-KR")}개
           <span aria-hidden="true">→</span>
         </Link>
